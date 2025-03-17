@@ -1077,24 +1077,26 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
  */
 function getRequiredExpForLevel(level) {
   if (level <= 10) {
-    // 레벨 1 ~ 10: 낮은 곡선, 예를 들어 40 * level²
-    return Math.floor(40 * Math.pow(level, 2));
+    // 레벨 1~10: 20 * level² (예: 레벨 10이면 20*100 = 2000 EXP)
+    return Math.floor(20 * Math.pow(level, 2));
   } else if (level <= 20) {
-    // 레벨 11 ~ 20:
-    // 10레벨까지의 누적 경험치
-    const baseFor10 = Math.floor(40 * Math.pow(10, 2)); // 40 * 100 = 4000
-    // 레벨 11부터 20까지는 선형 증가 + 약간의 2차항 추가
-    const extra = Math.floor(150 * (level - 10) + 20 * Math.pow(level - 10, 2));
+    // 레벨 11~20:
+    // 10레벨까지 누적: 20 * 10² = 2000
+    const baseFor10 = Math.floor(20 * Math.pow(10, 2)); 
+    // 레벨 11부터 20까지는 선형 증가와 2차항 추가: 
+    // 예: extra = 80*(level - 10) + 10*(level - 10)²
+    const extra = Math.floor(80 * (level - 10) + 10 * Math.pow(level - 10, 2));
     return baseFor10 + extra;
   } else {
     // 레벨 21 이상:
-    // 20레벨까지의 누적 경험치
-    const baseFor20 = Math.floor(40 * Math.pow(10, 2)) + Math.floor(150 * 10 + 20 * Math.pow(10, 2));
-    // 이후 레벨은 선형과 2차항의 증가폭을 더 크게 적용
-    const extra = Math.floor(300 * (level - 20) + 50 * Math.pow(level - 20, 2));
+    // 20레벨까지 누적: baseFor20 = 2000 + [80*10 + 10*10²] = 2000 + (800 + 1000) = 3800
+    const baseFor20 = Math.floor(20 * Math.pow(10, 2)) + Math.floor(80 * 10 + 10 * Math.pow(10, 2));
+    // 이후 레벨은 선형과 2차항을 적용: 예: extra = 150*(level - 20) + 25*(level - 20)²
+    const extra = Math.floor(150 * (level - 20) + 25 * Math.pow(level - 20, 2));
     return baseFor20 + extra;
   }
 }
+
 
 
 /**
