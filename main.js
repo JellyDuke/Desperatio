@@ -1147,7 +1147,13 @@ function checkLevelUp(messageContainer) {
     if (player.experience >= requiredExp) {
       player.experience -= requiredExp;
       player.level++;
-      
+
+      // 레벨업 시 계급 업데이트
+      updateRankByLevel();
+      // 업데이트된 계급을 UI에 반영
+      updateUserClass();
+      updateUserStatus();
+	    
       // 플레이어 최대 체력 갱신: 초기 50에서 레벨당 1.3배씩 증가
       player.health = Math.floor(50 * Math.pow(1.3, player.level - 1));
       
