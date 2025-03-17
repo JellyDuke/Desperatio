@@ -1426,7 +1426,30 @@ function saveGameState() {
   localStorage.setItem('gameState', JSON.stringify(gameState));
 }
 
+//회복중 전투 금지
+document.addEventListener('DOMContentLoaded', () => {
+  const healMenuBtn = document.querySelector('.menu.heal');
+  const healPopup = document.querySelector('.popup.heal');
+  // 메시지 출력 영역; 예시로 전투 메시지 영역 사용 (필요에 따라 수정)
+  const messageContainer = document.querySelector('.kingdom-message-combat');
 
+  if (healMenuBtn && healPopup) {
+    healMenuBtn.addEventListener('click', () => {
+      // 만약 전투(수색)가 진행 중이면
+      if (combatInProgress) {
+        if (messageContainer) {
+          const msgDiv = document.createElement('div');
+          msgDiv.textContent = "수색중입니다!";
+          messageContainer.appendChild(msgDiv);
+          messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+        return; // 팝업 열지 않음
+      }
+      // 전투 중이 아니라면 healing 팝업을 열기
+      healPopup.style.display = 'flex';
+    });
+  }
+});
 //회복 로직
 document.addEventListener('DOMContentLoaded', () => {
   const healMenuBtn = document.querySelector('.menu.heal');
