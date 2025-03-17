@@ -1042,11 +1042,12 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
   let roundNumber = 1;
   
   function roundFight() {
+    // 한 라운드 시작 메시지
     const roundMsg = document.createElement('div');
     roundMsg.textContent = `=== Round ${roundNumber} ===`;
     msgContainer.appendChild(roundMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-    
+    // 플레이어의 공격 데미지: 무력레벨 당 3~7의 랜덤 값
     const playerDamage = gameState.player.militaryLevel * (Math.floor(Math.random() * 5) + 3);
     const playerAttackMsg = document.createElement('div');
     playerAttackMsg.textContent = `플레이어가 ${playerDamage}의 데미지를 입혔습니다.`;
@@ -1054,14 +1055,21 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     msgContainer.scrollTop = msgContainer.scrollHeight;
     
     currentMonsterHealth -= playerDamage;
-    
+	  
+    // 몬스터의 공격 데미지: 몬스터 무력레벨 당 3~7의 랜덤 값
     const monsterDamage = monster.militaryLevel * (Math.floor(Math.random() * 5) + 3);
     gameState.player.health -= monsterDamage;
+	
+    // 체력을 음수가 되지 않도록 0으로 클램프(clamp)
+    if (gameState.player.health < 0) {
+      gameState.player.health = 0;
+    }
+	  
     const monsterAttackMsg = document.createElement('div');
     monsterAttackMsg.textContent = `몬스터가 ${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-    
+     // 전투 결과 판정
     if (currentMonsterHealth <= 0) {
       const victoryMsg = document.createElement('div');
       victoryMsg.textContent = monster.victoryMessage;
@@ -1102,8 +1110,26 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
  * 예: level * 100
  */
 function getRequiredExpForLevel(level) {
-  return level * 100;
+  if (level <= 10) {
+    // 레벨 1 ~ 10: 낮은 곡선, 예를 들어 40 * level²
+    return Math.floor(40 * Math.pow(level, 2));
+  } else if (level <= 20) {
+    // 레벨 11 ~ 20:
+    // 10레벨까지의 누적 경험치
+    const baseFor10 = Math.floor(40 * Math.pow(10, 2)); // 40 * 100 = 4000
+    // 레벨 11부터 20까지는 선형 증가 + 약간의 2차항 추가
+    const extra = Math.floor(150 * (level - 10) + 20 * Math.pow(level - 10, 2));
+    return baseFor10 + extra;
+  } else {
+    // 레벨 21 이상:
+    // 20레벨까지의 누적 경험치
+    const baseFor20 = Math.floor(40 * Math.pow(10, 2)) + Math.floor(150 * 10 + 20 * Math.pow(10, 2));
+    // 이후 레벨은 선형과 2차항의 증가폭을 더 크게 적용
+    const extra = Math.floor(300 * (level - 20) + 50 * Math.pow(level - 20, 2));
+    return baseFor20 + extra;
+  }
 }
+
 
 /**
  * 몬스터 처치 후 전리품 & 경험치를 지급하고, 레벨업 여부 확인
