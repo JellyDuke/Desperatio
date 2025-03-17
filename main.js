@@ -1428,18 +1428,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (healMenuBtn && healPopup && healLoading) {
     healMenuBtn.addEventListener('click', () => {
-      // 회복 중 전투 금지: 전투가 진행 중이면 메시지 출력 후 팝업 열지 않음
-      if (combatInProgress) {
+      // 플레이어가 이동 중이거나 전투(수색)가 진행 중이면 healing 기능 실행 안 함
+      if (gameState.player.isMoving || combatInProgress) {
         if (messageContainer) {
           const msgDiv = document.createElement('div');
-          msgDiv.textContent = "수색중입니다!";
+          msgDiv.textContent = "이동중입니다!";
           messageContainer.appendChild(msgDiv);
           messageContainer.scrollTop = messageContainer.scrollHeight;
         }
         return;
       }
       
-      // 전투 중이 아니면 healing 팝업 열기
+      // 전투나 이동 중이 아니라면 healing 팝업 열기
       healPopup.style.display = 'flex';
       
       // 휴식중 애니메이션 시작 (사람이 자는 듯한 애니메이션)
@@ -1448,7 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 치유 진행 동안 치유 버튼 비활성화
       healMenuBtn.disabled = true;
       
-      // 5초~20초 랜덤 회복 시간 (밀리초 단위)
+      // 회복 시간: 5초 ~ 20초 랜덤 (밀리초 단위)
       const healingDuration = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
       
       setTimeout(() => {
@@ -1467,6 +1467,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
 
 
 let sleepAnimationInterval = null;
