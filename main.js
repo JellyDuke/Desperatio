@@ -836,7 +836,6 @@ function moveTo(destination, msgContainer) {
   saveGameState();
 }
 
-// [추가] 이동 버튼 이벤트 등록
 function initLocationList() {
   const locList = document.querySelector('.location-list');
   if (!locList) return;
@@ -876,6 +875,7 @@ function initLocationList() {
   });
 }
 
+
 //전투 팝업 업데이트
 /*********************************************************
  * 전투 팝업 업데이트 (헤더: 지역명만 표시)
@@ -894,54 +894,6 @@ function updateCombatPopupUI() {
 
   // [추가] 지역별 몬스터 목록 UI 생성
   updateCombatList(location);
-}
-
-/**
- * [추가된 코드] 카드 목록(.card-list) 내부에, regionMonsters의 각 지역마다
- * .move-list를 생성하여 지역명(.location-name)과 이동 버튼을 배치
- */
-
-function initLocationList() {
-  // .location-list 요소를 찾음 (이곳에 지역 목록이 표시됩니다)
-  const locList = document.querySelector('.location-list');
-  if (!locList) return;
-  locList.innerHTML = ''; // 기존 내용 초기화
-
-  // regionMonsters 객체에서 지역 이름 목록을 추출
-  const regions = Object.keys(regionMonsters);
-
-  // "최근 활동" 영역 가져오기
-  const msgContainer = document.querySelector('.kingdom-message-combat');
-
-  // 각 지역에 대해 목록 생성
-  regions.forEach(region => {
-    // .move-list 컨테이너 생성
-    const moveDiv = document.createElement('div');
-    moveDiv.classList.add('move-list', 'flex');
-
-    // 지역명을 표시할 .location-name 요소 생성
-    const locName = document.createElement('div');
-    locName.classList.add('location-name');
-    locName.textContent = region;
-
-    // 이동 버튼 생성
-    const btn = document.createElement('a');
-    btn.href = '#';
-    btn.classList.add('move-btn', 'w-button');
-    btn.textContent = '이동';
-
-    // 버튼 클릭 시 moveTo 함수 호출
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      if (!msgContainer) return;
-      moveTo(region, msgContainer);
-    });
-
-    // 생성된 요소들을 moveDiv에 추가하고, 최종적으로 locList에 추가
-    moveDiv.appendChild(locName);
-    moveDiv.appendChild(btn);
-    locList.appendChild(moveDiv);
-  });
 }
 
 //전투 관련
