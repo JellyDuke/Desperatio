@@ -1426,16 +1426,16 @@ function saveGameState() {
   localStorage.setItem('gameState', JSON.stringify(gameState));
 }
 
-//회복중 전투 금지
+//회복로직
 document.addEventListener('DOMContentLoaded', () => {
   const healMenuBtn = document.querySelector('.menu.heal');
   const healPopup = document.querySelector('.popup.heal');
-  // 메시지 출력 영역; 예시로 전투 메시지 영역 사용 (필요에 따라 수정)
+  const healLoading = document.querySelector('.heal-loading');
   const messageContainer = document.querySelector('.kingdom-message-combat');
 
-  if (healMenuBtn && healPopup) {
+  if (healMenuBtn && healPopup && healLoading) {
     healMenuBtn.addEventListener('click', () => {
-      // 만약 전투(수색)가 진행 중이면
+      // 회복 중 전투 금지: 전투가 진행 중이면 메시지 출력 후 팝업 열지 않음
       if (combatInProgress) {
         if (messageContainer) {
           const msgDiv = document.createElement('div');
@@ -1443,22 +1443,10 @@ document.addEventListener('DOMContentLoaded', () => {
           messageContainer.appendChild(msgDiv);
           messageContainer.scrollTop = messageContainer.scrollHeight;
         }
-        return; // 팝업 열지 않음
+        return;
       }
-      // 전투 중이 아니라면 healing 팝업을 열기
-      healPopup.style.display = 'flex';
-    });
-  }
-});
-//회복 로직
-document.addEventListener('DOMContentLoaded', () => {
-  const healMenuBtn = document.querySelector('.menu.heal');
-  const healPopup = document.querySelector('.popup.heal');
-  const healLoading = document.querySelector('.heal-loading');
-
-  if (healMenuBtn && healPopup && healLoading) {
-    healMenuBtn.addEventListener('click', () => {
-      // 팝업 열기
+      
+      // 전투 중이 아니면 healing 팝업 열기
       healPopup.style.display = 'flex';
       
       // 휴식중 애니메이션 시작 (사람이 자는 듯한 애니메이션)
@@ -1468,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
       healMenuBtn.disabled = true;
       
       // 30초 ~ 60초 랜덤 회복 시간 (밀리초 단위)
-      const healingDuration = Math.floor(Math.random() * (40000 - 10000 + 1)) + 30000;
+      const healingDuration = Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000;
       
       setTimeout(() => {
         // 플레이어 체력 회복 (최대 체력으로)
@@ -1486,6 +1474,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
 
 let sleepAnimationInterval = null;
 
