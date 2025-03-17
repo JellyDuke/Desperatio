@@ -1482,7 +1482,7 @@ document.addEventListener('DOMContentLoaded', () => {
       healMenuBtn.disabled = true;
       
       // 30초 ~ 60초 랜덤 회복 시간 (밀리초 단위)
-      const healingDuration = Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000;
+      const healingDuration = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
       
       setTimeout(() => {
         // 플레이어 체력 회복 (최대 체력으로)
