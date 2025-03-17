@@ -1,4 +1,4 @@
-<script>
+
 /*********************************************************
  * 데이터 구조 & 게임 상태
  ********************************************************/
@@ -428,9 +428,7 @@ function updateHealthBar() {
 // 예를 들어 플레이어 데이터에 bonusHealth를 추가하는 방법:
 gameState.player.bonusHealth = 0;  // 초기에는 보너스 체력 0
 
-</script>
 
-<script>
 //게임 시작 버튼 눌렀을때
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -575,10 +573,6 @@ function exportSaveData(saveData) {
   URL.revokeObjectURL(url);
 }
 
-</script>
-
-
-<script>
 // [수정된 코드]
 function showMessageGuideOnHover() {
   const buttonBoxes = document.querySelectorAll('.button-box');
@@ -934,11 +928,6 @@ function initLocationList() {
   });
 }
 
-
-</script>
-
-
-<script>
 //전투 관련
 // 전역 변수 선언 (전투 진행 여부)
 let combatInProgress = false;
@@ -1268,10 +1257,6 @@ function updateInventory() {
   }
 }
 
-
-</script>
-
-<script>
 //사망시
 function resetGameExceptSkills() {
   const savedSkills = gameState?.player?.skills ? [...gameState.player.skills] : [];
@@ -1309,10 +1294,6 @@ function resetGameExceptSkills() {
   updateInventory();
 }
 
-</script>
-
-
-<script>
 //날짜
 // 전역 변수 선언 (페이지 로드 시 한 번만 초기화)
 // [수정된 부분] 전역 변수 선언: 지난 '분' (즉, 일수)를 localStorage에서 불러오거나 기본값 0으로 설정
@@ -1561,18 +1542,13 @@ function stopSleepAnimation() {
   }
 }
 
-</script>
-
-<script>
 // 스크롤 기능 함수: 컨테이너에 .scroll 클래스가 있으면 맨 아래로 스크롤
 function scrollToBottom(container) {
   if (container && container.classList.contains('scroll')) {
     container.scrollTop = container.scrollHeight;
   }
 }
-</script>
 
-<script>
 //page 첫 애니
 document.addEventListener('DOMContentLoaded', () => {
   initFireflyAnimation();
@@ -1673,4 +1649,3 @@ function initFireflyAnimation() {
   }, 200);
 }
 
-</script>
