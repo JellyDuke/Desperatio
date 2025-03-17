@@ -463,9 +463,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initGameStart(); //게임 새 시작시
   initExport(); // 게임 내보내기
   initLoad(); //게임 불러오기
-	showMessageGuideOnHover() //mouse hover	
+  showMessageGuideOnHover() //mouse hover	
   updateInventory() //인벤토리
-  initMoveButtons(); //이동 버튼 이벤트 등록
   updateCombatPopupUI();// 팝업 UI에 현재 위치와 몬스터 표시
   initLocationList();// 동적 이동
 });
