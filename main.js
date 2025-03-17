@@ -837,27 +837,43 @@ function moveTo(destination, msgContainer) {
 }
 
 // [추가] 이동 버튼 이벤트 등록
-function initMoveButtons() {
-  // "최근 활동" 영역 (예: .kingdom-message-combat)
-  const messageContainer = document.querySelector('.kingdom-message-combat');
-  if (!messageContainer) return;
+function initLocationList() {
+  const locList = document.querySelector('.location-list');
+  if (!locList) return;
   
-  // 왕국 서부 이동
-  const westBtn = document.querySelector('.kingdom-west + .move-btn');
-  if (westBtn) {
-    westBtn.addEventListener('click', e => {
+  // 기존 내용 초기화
+  locList.innerHTML = '';
+
+  // regionMonsters 객체에 있는 모든 지역에 대해 버튼 생성
+  Object.keys(regionMonsters).forEach(region => {
+    // 버튼을 감싸는 컨테이너 생성 (예: .move-list)
+    const moveDiv = document.createElement('div');
+    moveDiv.classList.add('move-list', 'flex');
+
+    // 지역 이름 표시
+    const locName = document.createElement('div');
+    locName.classList.add('location-name');
+    locName.textContent = region;
+
+    // 이동 버튼 생성
+    const btn = document.createElement('a');
+    btn.href = '#';
+    btn.classList.add('move-btn', 'w-button');
+    btn.textContent = '이동';
+
+    // 버튼 클릭 시 moveTo 함수 호출
+    btn.addEventListener('click', e => {
       e.preventDefault();
-      moveTo("왕국 서부", messageContainer);
+      const messageContainer = document.querySelector('.kingdom-message-combat');
+      if (!messageContainer) return;
+      moveTo(region, messageContainer);
     });
-  }
-  // 왕국 동부 이동
-  const eastBtn = document.querySelector('.kingdom-eastern + .move-btn');
-  if (eastBtn) {
-    eastBtn.addEventListener('click', e => {
-      e.preventDefault();
-      moveTo("왕국 동부", messageContainer);
-    });
-  }
+
+    // 요소 조립 및 추가
+    moveDiv.appendChild(locName);
+    moveDiv.appendChild(btn);
+    locList.appendChild(moveDiv);
+  });
 }
 
 //전투 팝업 업데이트
