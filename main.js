@@ -1437,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gameState.player.isMoving || combatInProgress) {
         if (messageContainer) {
           const msgDiv = document.createElement('div');
-          msgDiv.textContent = "이동중입니다!";
+          msgDiv.textContent = "활동을 마무리 해주세요!";
           messageContainer.appendChild(msgDiv);
           messageContainer.scrollTop = messageContainer.scrollHeight;
         }
