@@ -660,19 +660,18 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function updateRankByLevel() {
   const level = gameState.player.level;
-  let newRank = "노예";
-
+  let newRank = "노예";  // 기본값
   if (level >= 2 && level < 5) {
     newRank = "시민";
-  } else if (level >= 5 && level < 10) {
-    newRank = "이병";
-  } else if (level >= 10 && level < 15) {
-    newRank = "일병";
+  } else if (["이병", "상병", "병장"].includes(gameState.player.rank)) {
+    newRank = "private";
+  } else if (["간부", "장교"].includes(gameState.player.rank)) {
+    newRank = "old-solder";
   } else if (level >= 15) {
     newRank = "상병";
   }
-
   gameState.player.rank = newRank;
+  console.log("새로운 계급:", newRank);
 }
 
 /**
