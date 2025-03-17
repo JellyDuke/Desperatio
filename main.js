@@ -1481,7 +1481,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 치유 진행 동안 치유 버튼 비활성화
       healMenuBtn.disabled = true;
       
-      // 30초 ~ 60초 랜덤 회복 시간 (밀리초 단위)
+      // 5초~20초 랜덤 회복 시간 (밀리초 단위)
       const healingDuration = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
       
       setTimeout(() => {
