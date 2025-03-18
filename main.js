@@ -12,7 +12,9 @@ const monsterData = {
     deathMessage: "전투에서 패배하여 사망했습니다...",
     victoryMessage: "전투에서 승리했습니다!",
     militaryLevel: 1,
-    loot: "잎파리",
+    loot: [
+	{ item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.7 },
+    ],
     experience: 10,
     narrativeSteps: [
       "주변의 숲속이 서서히 어두워집니다...",
@@ -25,12 +27,17 @@ const monsterData = {
   slime: {
     name: "슬라임",
     discoveryMessage: "슬라임을 발견했습니다! 전투를 시작합니다...",
-    maxDelay: 20000,     // 20초 이내 랜덤 시간
-    health: 30,  // 슬라임 체력
+    maxDelay: 20000,
+    health: 30,
     deathMessage: "슬라임에게 패배하여 사망했습니다...",
     victoryMessage: "슬라임을 처치했습니다!",
     militaryLevel: 2,
-    loot: "슬라임 젤리",
+    // 여러 전리품 후보와 각 드랍 확률을 설정
+    loot: [
+      { item: "슬라임 젤리", basePrice: 15, variance: 10, dropChance: 0.5 },
+      { item: "슬라임 점액", basePrice: 8, variance: 5, dropChance: 0.3 },
+      { item: "슬라임 코어", basePrice: 25, variance: 15, dropChance: 0.1 }
+    ],
     experience: 20,
     narrativeSteps: [
       "젤리가 천천히 흘러내리며 슬라임의 윤곽이 드러납니다...",
@@ -48,7 +55,9 @@ const monsterData = {
     deathMessage: "오크와의 전투에서 패배하여 사망했습니다...",
     victoryMessage: "오크를 무찔렀습니다!",
     militaryLevel: 4,
-    loot: "오크의 투구",
+    loot: [
+	{ item: "오크의 투구", basePrice: 35, variance: 20, dropChance: 0.6 },
+    ],
     experience: 50,
     narrativeSteps: [
       "먼 산 너머로 우뢰와 같은 포효가 들려옵니다...",
@@ -1096,43 +1105,74 @@ function getRequiredExpForLevel(level) {
     return baseFor20 + extra;
   }
 }
+function seededRandom(seed) {
+  return Math.abs(Math.sin(seed)) % 1;
+}
 
+function getTodaySeed() {
+  const now = new Date();
+  return Number(
+    now.getFullYear().toString() +
+    (now.getMonth() + 1).toString().padStart(2, '0') +
+    now.getDate().toString().padStart(2, '0')
+  );
+}
 
+function getDailyRandomPrice(basePrice, variance) {
+  const seed = getTodaySeed();
+  const randomValue = seededRandom(seed);
+  return basePrice + Math.floor(randomValue * variance);
+}
 
+function getDroppedLoot(lootArray) {
+  const dropped = [];
+  lootArray.forEach(loot => {
+    // Math.random()은 0 이상 1 미만의 값을 반환합니다.
+    if (Math.random() < loot.dropChance) {
+      dropped.push(loot);
+    }
+  });
+  // 만약 아무것도 드랍되지 않았다면, 기본적으로 하나 랜덤하게 드랍하도록 할 수도 있습니다.
+  if (dropped.length === 0 && lootArray.length > 0) {
+    dropped.push(lootArray[Math.floor(Math.random() * lootArray.length)]);
+  }
+  return dropped;
+}
 /**
  * 몬스터 처치 후 전리품 & 경험치를 지급하고, 레벨업 여부 확인
  * @param {string} monsterKey - 'plant', 'slime' 등
  * @param {HTMLElement} messageContainer - 최근 활동(.kingdom-message-combat) 요소
  */
 function onMonsterDefeated(monsterKey, messageContainer) {
-  // [수정된 부분] monsterData에서 해당 몬스터 정보를 읽어옵니다.
   const monster = monsterData[monsterKey];
   if (!monster) return;
-
-  // [추가된 코드] 전리품(loot) 지급 처리
-  const lootItem = monster.loot; // 예: "잎파리", "슬라임 젤리", "오크의 투구"
-  // 현재 인벤토리에서 해당 아이템의 개수를 계산
-  const currentLootCount = gameState.player.inventory.filter(item => item === lootItem).length;
   
-  if (currentLootCount < 99) { // 스택 최대 99개 제한
-    gameState.player.inventory.push(lootItem);
-    const lootDiv = document.createElement('div');
-    // [수정된 부분] 전리품 및 경험치 문자열 표기 수정
-    lootDiv.textContent = `${lootItem} 1개와 경험치 ${monster.experience}을 획득했습니다.`;
-    messageContainer.appendChild(lootDiv);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
-  } else {
-    // [추가된 코드] 인벤토리 가득 찼을 때 메시지 출력
-    const fullDiv = document.createElement('div');
-    fullDiv.textContent = "인벤토리가 가득 찼습니다! (최대 99개)";
-    messageContainer.appendChild(fullDiv);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
-  }
+  // loot 배열에서 랜덤으로 드랍할 아이템들을 결정
+  const droppedLoot = getDroppedLoot(monster.loot);
   
-  // [추가된 코드] 경험치 지급 (인벤토리가 가득 차도 경험치는 추가)
+  droppedLoot.forEach(lootData => {
+    // 예시: 각 아이템에 대해, 오늘 날짜 기반 가격 계산
+    const lootPrice = getDailyRandomPrice(lootData.basePrice, lootData.variance);
+    const lootItem = lootData.item;
+    
+    const currentLootCount = gameState.player.inventory.filter(item => item === lootItem).length;
+    
+    if (currentLootCount < 99) {
+      gameState.player.inventory.push(lootItem);
+      const lootDiv = document.createElement('div');
+      lootDiv.textContent = `${lootItem} (가격: ${lootPrice}) 1개와 경험치 ${monster.experience}을 획득했습니다.`;
+      messageContainer.appendChild(lootDiv);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    } else {
+      const fullDiv = document.createElement('div');
+      fullDiv.textContent = "인벤토리가 가득 찼습니다! (최대 99개)";
+      messageContainer.appendChild(fullDiv);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+  });
+  
   gameState.player.experience += monster.experience;
-
-  // 기존 기능: 인벤토리 UI 갱신, 레벨업 체크, 진행사항 저장
+  
   updateInventory();
   checkLevelUp(messageContainer);
   saveGameState();
