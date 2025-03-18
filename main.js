@@ -13,7 +13,7 @@ const monsterData = {
     victoryMessage: "전투에서 승리했습니다!",
     militaryLevel: 1,
     loot: [
-	{ item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.7 },
+	{ item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.1 },
     ],
     experience: 10,
     narrativeSteps: [
