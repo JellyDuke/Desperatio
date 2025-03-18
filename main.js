@@ -1331,29 +1331,6 @@ function addShopItemClickListeners() {
       const lootInfo = getLootPriceInfo(itemName);
       if (lootInfo) {
         const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
-        connoisseur.textContent = `아이템: ${itemName}, 가격: ${price}`;
-      } else {
-        connoisseur.textContent = `아이템: ${itemName}`;
-      }
-    });
-  });
-}
-
-// 상점 인벤토리 아이템 클릭 시, .connoisseur에 이름과 가격 표기
-function addShopItemClickListeners() {
-  const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
-  shopInvBoxes.forEach(box => {
-    box.addEventListener('click', function(e) {
-      e.preventDefault();
-      const itemName = this.dataset.item;
-      if (!itemName) return;
-      const connoisseur = document.querySelector('.popup.shop .connoisseur');
-      if (!connoisseur) return;
-      
-      // lootMapping에서 해당 아이템의 가격 정보를 참조하여 계산
-      const priceData = lootMapping[itemName];
-      if (priceData) {
-        const price = getDailyRandomPrice(priceData.basePrice, priceData.variance);
         connoisseur.textContent = `${itemName}, 가격: ${price}`;
       } else {
         connoisseur.textContent = `${itemName}`;
@@ -1361,6 +1338,7 @@ function addShopItemClickListeners() {
     });
   });
 }
+
 
 //인벤토리
 // [추가] 인벤토리 갱신 함수: .inventory-box 내부에 .leaf 요소를 찾아 잎파리 개수를 표시
