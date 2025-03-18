@@ -1115,17 +1115,17 @@ function seededRandom(seed) {
   return Math.abs(Math.sin(seed)) % 1;
 }
 
-function getTodaySeed() {
-  const now = new Date();
+function getGameTimeSeed() {
+  const date = gameState.currentDate; // 예: { year: 24, month: 4, day: 12 }
   return Number(
-    now.getFullYear().toString() +
-    (now.getMonth() + 1).toString().padStart(2, '0') +
-    now.getDate().toString().padStart(2, '0')
+    date.year.toString() +
+    date.month.toString().padStart(2, '0') +
+    date.day.toString().padStart(2, '0')
   );
 }
 
 function getDailyRandomPrice(basePrice, variance) {
-  const seed = getTodaySeed();
+  const seed = getGameTimeSeed();
   const randomValue = seededRandom(seed);
   return basePrice + Math.floor(randomValue * variance);
 }
