@@ -13,7 +13,7 @@ const monsterData = {
     victoryMessage: "전투에서 승리했습니다!",
     militaryLevel: 1,
     loot: [
-	{ item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.1 },
+	{ item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.8 },
     ],
     experience: 10,
     narrativeSteps: [
@@ -34,7 +34,7 @@ const monsterData = {
     militaryLevel: 2,
     // 여러 전리품 후보와 각 드랍 확률을 설정
     loot: [
-      { item: "슬라임 젤리", basePrice: 15, variance: 10, dropChance: 0.5 },
+      { item: "슬라임 젤리", basePrice: 15, variance: 10, dropChance: 0.7 },
       { item: "슬라임 코어", basePrice: 25, variance: 15, dropChance: 0.1 }
     ],
     experience: 20,
