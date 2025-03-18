@@ -610,7 +610,8 @@ document.addEventListener('DOMContentLoaded', () => {
     { menu: '.menu.inventory',  popup: '.popup.inventory' },
     { menu: '.menu.skill',      popup: '.popup.skill' },
     { menu: '.menu.move',       popup: '.popup.move' },
-    { menu: '.button-map',      popup: '.popup.map-info' }
+    { menu: '.button-map',      popup: '.popup.map-info' }.
+    { menu: '.menu.shop',      popup: '.popup.shop' }
   ];
   
   mappings.forEach(mapping => {
