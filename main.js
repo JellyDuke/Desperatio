@@ -1566,6 +1566,9 @@ function updateGameDate() {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
 
+  // 여기에 gameState.currentDate를 업데이트하는 부분 추가
+  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
+	
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
