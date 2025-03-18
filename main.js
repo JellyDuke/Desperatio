@@ -3,6 +3,12 @@
  * 데이터 구조 & 게임 상태
  ********************************************************/
 //DB
+const lootMapping = {
+  "잎파리": { basePrice: 5, variance: 6 },
+  "슬라임 젤리": { basePrice: 15, variance: 10 },
+  "슬라임 코어": { basePrice: 25, variance: 15 },
+  "오크의 투구": { basePrice: 35, variance: 20 }
+};
 const monsterData = {
   plant: {
     name: "식물",
@@ -1247,31 +1253,30 @@ function checkLevelUp(messageContainer) {
 }
 
 //상점
+// 상점 인벤토리 업데이트 함수
 function updateShopInventory() {
-  // .popup.shop 내부의 모든 inventory-box 선택
+  // .popup.shop 내의 모든 inventory-box 요소 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   if (!shopInvBoxes.length) return;
 
-  // 플레이어 인벤토리를 아이템별로 그룹화 (예: { "잎파리": 10, "슬라임 젤리": 3, ... })
+  // 플레이어 인벤토리를 아이템별로 그룹화
   const inventoryCounts = {};
   gameState.player.inventory.forEach(item => {
     inventoryCounts[item] = (inventoryCounts[item] || 0) + 1;
   });
 
-  // 그룹화된 데이터를 슬롯 배열로 변환 (각 슬롯은 { item, count } 객체)
+  // 그룹화된 데이터를 슬롯 배열로 변환 (각 슬롯: { item, count })
   let slots = Object.keys(inventoryCounts).map(item => ({
     item: item,
     count: Math.min(inventoryCounts[item], 99)
   }));
 
-  // 슬롯 종류가 inventory-box 개수를 초과하면 초과하는 슬롯은 무시
-  let isFull = false;
+  // 슬롯 수가 inventory-box 개수를 초과하면 초과 슬롯은 무시
   if (slots.length > shopInvBoxes.length) {
     slots = slots.slice(0, shopInvBoxes.length);
-    isFull = true;
   }
 
-  // 아이템명에 따른 CSS 클래스 매핑 (기존 인벤토리 팝업과 동일한 스타일 적용)
+  // (옵션) 아이템명에 따른 CSS 클래스 매핑 – 기존 인벤토리 팝업 스타일과 동일하게
   const itemClassMapping = {
     "잎파리": "leaf",
     "슬라임 젤리": "jelly",
@@ -1279,37 +1284,49 @@ function updateShopInventory() {
     "오크의 투구": "helmet"
   };
 
-	
-  // 각 inventory-box 업데이트 (기존 코드와 동일하게)
   shopInvBoxes.forEach((box, index) => {
     // 기존 클래스 초기화 (기본 클래스 유지)
     box.className = 'inventory-box';
     if (index < slots.length) {
       const slot = slots[index];
-      // 슬롯에 해당하는 아이템 수량 텍스트 적용 (숫자만 표시)
+      // 슬롯에 아이템 개수를 텍스트로 표시
       box.textContent = slot.count.toString();
+      // data-item 속성에 아이템 이름 저장 (클릭 시 사용)
+      box.dataset.item = slot.item;
       // 아이템에 대응하는 CSS 클래스 추가
       let className = itemClassMapping[slot.item] || slot.item.replace(/\s+/g, '-').toLowerCase();
       box.classList.add(className);
     } else {
       box.textContent = '';
+      delete box.dataset.item;
     }
   });
 
-  // 만약 슬롯 종류가 inventory-box 개수를 초과하면, 상점 팝업에도 인벤토리가 꽉 찼다는 메시지를 추가 (옵션)
-  if (isFull) {
-    // 여기서는 .popup.shop 내부에 별도의 메시지 컨테이너가 있다면 그곳에 추가합니다.
-    const shopMsgContainer = document.querySelector('.popup.shop .message-container');
-    if (shopMsgContainer) {
-      const fullMsg = document.createElement('div');
-      fullMsg.textContent = "인벤토리가 꽉찼습니다! (최대 99개)";
-      fullMsg.style.color = "yellow";
-      shopMsgContainer.appendChild(fullMsg);
-      shopMsgContainer.scrollTop = shopMsgContainer.scrollHeight;
-    }
-  }
+  // 상점 인벤토리 아이템 클릭 이벤트 등록
+  addShopItemClickListeners();
 }
-
+// 상점 인벤토리 아이템 클릭 시, .connoisseur에 이름과 가격 표기
+function addShopItemClickListeners() {
+  const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
+  shopInvBoxes.forEach(box => {
+    box.addEventListener('click', function(e) {
+      e.preventDefault();
+      const itemName = this.dataset.item;
+      if (!itemName) return;
+      const connoisseur = document.querySelector('.popup.shop .connoisseur');
+      if (!connoisseur) return;
+      
+      // lootMapping에서 해당 아이템의 가격 정보를 참조하여 계산
+      const priceData = lootMapping[itemName];
+      if (priceData) {
+        const price = getDailyRandomPrice(priceData.basePrice, priceData.variance);
+        connoisseur.textContent = `아이템: ${itemName}, 가격: ${price}`;
+      } else {
+        connoisseur.textContent = `아이템: ${itemName}`;
+      }
+    });
+  });
+}
 
 //인벤토리
 // [추가] 인벤토리 갱신 함수: .inventory-box 내부에 .leaf 요소를 찾아 잎파리 개수를 표시
