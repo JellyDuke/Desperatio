@@ -3,12 +3,6 @@
  * 데이터 구조 & 게임 상태
  ********************************************************/
 //DB
-const lootMapping = {
-  "잎파리": { basePrice: 5, variance: 6 },
-  "슬라임 젤리": { basePrice: 15, variance: 10 },
-  "슬라임 코어": { basePrice: 25, variance: 15 },
-  "오크의 투구": { basePrice: 35, variance: 20 }
-};
 const monsterData = {
   plant: {
     name: "식물",
@@ -1253,13 +1247,27 @@ function checkLevelUp(messageContainer) {
 }
 
 //상점
+function getLootPriceInfo(itemName) {
+  // monsterData의 각 몬스터에서 loot 배열을 검사
+  for (const key in monsterData) {
+    if (monsterData.hasOwnProperty(key)) {
+      const lootArray = monsterData[key].loot;
+      for (let i = 0; i < lootArray.length; i++) {
+        if (lootArray[i].item === itemName) {
+          return lootArray[i]; // { item, basePrice, variance, dropChance }
+        }
+      }
+    }
+  }
+  return null; // 해당 아이템 정보를 찾지 못한 경우
+}
 // 상점 인벤토리 업데이트 함수
 function updateShopInventory() {
-  // .popup.shop 내의 모든 inventory-box 요소 선택
+  // .popup.shop 내부의 모든 inventory-box 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   if (!shopInvBoxes.length) return;
 
-  // 플레이어 인벤토리를 아이템별로 그룹화
+  // 플레이어 인벤토리를 아이템별로 그룹화 (예: { "잎파리": 10, "슬라임 젤리": 3, ... })
   const inventoryCounts = {};
   gameState.player.inventory.forEach(item => {
     inventoryCounts[item] = (inventoryCounts[item] || 0) + 1;
@@ -1276,7 +1284,7 @@ function updateShopInventory() {
     slots = slots.slice(0, shopInvBoxes.length);
   }
 
-  // (옵션) 아이템명에 따른 CSS 클래스 매핑 – 기존 인벤토리 팝업 스타일과 동일하게
+  // 아이템명에 따른 CSS 클래스 매핑 (원하는 경우)
   const itemClassMapping = {
     "잎파리": "leaf",
     "슬라임 젤리": "jelly",
@@ -1285,7 +1293,7 @@ function updateShopInventory() {
   };
 
   shopInvBoxes.forEach((box, index) => {
-    // 기존 클래스 초기화 (기본 클래스 유지)
+    // 기존 클래스 초기화 (기본 클래스 'inventory-box' 유지)
     box.className = 'inventory-box';
     if (index < slots.length) {
       const slot = slots[index];
@@ -1301,10 +1309,36 @@ function updateShopInventory() {
       delete box.dataset.item;
     }
   });
-
-  // 상점 인벤토리 아이템 클릭 이벤트 등록
+  
+  // 아이템 클릭 이벤트 등록
   addShopItemClickListeners();
 }
+
+function addShopItemClickListeners() {
+  // .popup.shop 내의 모든 inventory-box 요소 선택
+  const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
+  shopInvBoxes.forEach(box => {
+    box.addEventListener('click', function(e) {
+      e.preventDefault();
+      // data-item 속성에서 아이템 이름 가져오기
+      const itemName = this.dataset.item;
+      if (!itemName) return;
+      
+      const connoisseur = document.querySelector('.popup.shop .connoisseur');
+      if (!connoisseur) return;
+      
+      // monsterData 내의 loot 정보를 통해 가격 정보 가져오기
+      const lootInfo = getLootPriceInfo(itemName);
+      if (lootInfo) {
+        const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
+        connoisseur.textContent = `아이템: ${itemName}, 가격: ${price}`;
+      } else {
+        connoisseur.textContent = `아이템: ${itemName}`;
+      }
+    });
+  });
+}
+
 // 상점 인벤토리 아이템 클릭 시, .connoisseur에 이름과 가격 표기
 function addShopItemClickListeners() {
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
