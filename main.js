@@ -1263,6 +1263,7 @@ function updateInventory() {
   const itemClassMapping = {
     "잎파리": "leaf",
     "슬라임 젤리": "jelly",
+    "슬라임 코어": "jelly-core",
     "오크의 투구": "helmet"
   };
 
@@ -1312,7 +1313,7 @@ function resetGameExceptSkills() {
     inventory: [],
     location: "왕국 서부",    // [추가] 위치 초기화
     isMoving: false,     // [추가] 이동 상태 초기화
-		health: 50,
+    health: 50,
     money: 0  
   };
   gameState.currentDate = {
