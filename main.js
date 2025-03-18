@@ -1275,6 +1275,7 @@ function updateShopInventory() {
   const itemClassMapping = {
     "잎파리": "leaf",
     "슬라임 젤리": "jelly",
+    "슬라임 코어": "jelly-core",
     "오크의 투구": "helmet"
   };
 
