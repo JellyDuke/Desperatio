@@ -1146,36 +1146,50 @@ function onMonsterDefeated(monsterKey, messageContainer) {
   const monster = monsterData[monsterKey];
   if (!monster) return;
   
-  // loot 배열에서 랜덤으로 드랍할 아이템들을 결정
+  // 전리품 드랍 처리: loot 배열에서 드랍할 아이템들을 결정합니다.
   const droppedLoot = getDroppedLoot(monster.loot);
   
-  droppedLoot.forEach(lootData => {
-    // 예시: 각 아이템에 대해, 오늘 날짜 기반 가격 계산
-    const lootPrice = getDailyRandomPrice(lootData.basePrice, lootData.variance);
-    const lootItem = lootData.item;
-    
-    const currentLootCount = gameState.player.inventory.filter(item => item === lootItem).length;
-    
-    if (currentLootCount < 99) {
-      gameState.player.inventory.push(lootItem);
-      const lootDiv = document.createElement('div');
-      lootDiv.textContent = `${lootItem} 1개와 경험치 ${monster.experience}을 획득했습니다.`;
-      messageContainer.appendChild(lootDiv);
-      messageContainer.scrollTop = messageContainer.scrollHeight;
-    } else {
-      const fullDiv = document.createElement('div');
-      fullDiv.textContent = "인벤토리가 가득 찼습니다! (최대 99개)";
-      messageContainer.appendChild(fullDiv);
-      messageContainer.scrollTop = messageContainer.scrollHeight;
-    }
-  });
+  // 전리품 메시지 출력 (드랍된 아이템들이 있으면)
+  if (droppedLoot.length > 0) {
+    droppedLoot.forEach(lootData => {
+      const lootPrice = getDailyRandomPrice(lootData.basePrice, lootData.variance);
+      const lootItem = lootData.item;
+      const currentLootCount = gameState.player.inventory.filter(item => item === lootItem).length;
+      
+      if (currentLootCount < 99) {
+        gameState.player.inventory.push(lootItem);
+        const lootDiv = document.createElement('div');
+        lootDiv.textContent = `전리품: ${lootItem}을(를) 획득했습니다.`;
+        messageContainer.appendChild(lootDiv);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+      } else {
+        const fullDiv = document.createElement('div');
+        fullDiv.textContent = "인벤토리가 가득 찼습니다! (최대 99개)";
+        messageContainer.appendChild(fullDiv);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+      }
+    });
+  } else {
+    // 드랍된 전리품이 없을 경우
+    const noLootDiv = document.createElement('div');
+    noLootDiv.textContent = "전리품이 떨어지지 않았습니다.";
+    messageContainer.appendChild(noLootDiv);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  }
   
+  // 경험치는 별도로 추가 및 출력
   gameState.player.experience += monster.experience;
+  const expDiv = document.createElement('div');
+  expDiv.textContent = `경험치 ${monster.experience} 획득했습니다.`;
+  messageContainer.appendChild(expDiv);
+  messageContainer.scrollTop = messageContainer.scrollHeight;
   
+  // 기타 업데이트 처리: 인벤토리, 레벨업 체크, 게임 상태 저장 등
   updateInventory();
   checkLevelUp(messageContainer);
   saveGameState();
 }
+
 /**
  * 플레이어 경험치를 확인하고 레벨업, 무력레벨업
  * 레벨업 시 최근 활동 영역에 메시지 표시
