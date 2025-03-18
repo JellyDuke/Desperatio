@@ -35,7 +35,6 @@ const monsterData = {
     // 여러 전리품 후보와 각 드랍 확률을 설정
     loot: [
       { item: "슬라임 젤리", basePrice: 15, variance: 10, dropChance: 0.5 },
-      { item: "슬라임 점액", basePrice: 8, variance: 5, dropChance: 0.3 },
       { item: "슬라임 코어", basePrice: 25, variance: 15, dropChance: 0.1 }
     ],
     experience: 20,
