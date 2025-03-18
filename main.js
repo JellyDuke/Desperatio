@@ -1116,12 +1116,14 @@ function seededRandom(seed) {
 }
 
 function getGameTimeSeed() {
-  const date = gameState.currentDate; // 예: { year: 24, month: 4, day: 12 }
-  return Number(
+  const date = gameState.currentDate;
+  const seed = Number(
     date.year.toString() +
     date.month.toString().padStart(2, '0') +
     date.day.toString().padStart(2, '0')
   );
+  console.log("Game Time Seed:", seed, gameState.currentDate);
+  return seed;
 }
 
 function getDailyRandomPrice(basePrice, variance) {
