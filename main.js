@@ -1160,7 +1160,7 @@ function onMonsterDefeated(monsterKey, messageContainer) {
     if (currentLootCount < 99) {
       gameState.player.inventory.push(lootItem);
       const lootDiv = document.createElement('div');
-      lootDiv.textContent = `${lootItem} (가격: ${lootPrice}) 1개와 경험치 ${monster.experience}을 획득했습니다.`;
+      lootDiv.textContent = `${lootItem} 1개와 경험치 ${monster.experience}을 획득했습니다.`;
       messageContainer.appendChild(lootDiv);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     } else {
