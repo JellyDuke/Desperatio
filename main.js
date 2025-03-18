@@ -1131,10 +1131,6 @@ function getDroppedLoot(lootArray) {
       dropped.push(loot);
     }
   });
-  // 만약 아무것도 드랍되지 않았다면, 기본적으로 하나 랜덤하게 드랍하도록 할 수도 있습니다.
-  if (dropped.length === 0 && lootArray.length > 0) {
-    dropped.push(lootArray[Math.floor(Math.random() * lootArray.length)]);
-  }
   return dropped;
 }
 /**
