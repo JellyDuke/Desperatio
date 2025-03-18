@@ -1320,9 +1320,9 @@ function addShopItemClickListeners() {
       const priceData = lootMapping[itemName];
       if (priceData) {
         const price = getDailyRandomPrice(priceData.basePrice, priceData.variance);
-        connoisseur.textContent = `아이템: ${itemName}, 가격: ${price}`;
+        connoisseur.textContent = `${itemName}, 가격: ${price}`;
       } else {
-        connoisseur.textContent = `아이템: ${itemName}`;
+        connoisseur.textContent = `${itemName}`;
       }
     });
   });
