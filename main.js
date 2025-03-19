@@ -475,6 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   updateKingdomStatus(gameState.kingdom);//랜덤 초기값
   updateMyInfo(); // 내 정보 팝업 갱신
+  updateRankByLevel();
   initGameStart(); //게임 새 시작시
   initExport(); // 게임 내보내기
   initLoad(); //게임 불러오기
