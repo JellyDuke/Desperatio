@@ -1380,6 +1380,11 @@ function sellAllItems() {
   // 게임 상태 저장
   saveGameState();
 }
+ // .money 요소를 바로 찾아 업데이트 (즉시 갱신)
+  const moneyElem = document.querySelector('.money');
+  if (moneyElem) {
+    moneyElem.textContent = gameState.player.money;
+  }
 
 // .sell-all-btn 버튼에 이벤트 등록
 document.addEventListener('DOMContentLoaded', () => {
