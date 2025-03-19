@@ -1370,7 +1370,10 @@ function sellAllItems() {
   // 인벤토리 및 상점 UI 업데이트
   updateInventory();
   updateShopInventory();  // 상점 팝업 내 인벤토리 업데이트 (필요 시)
-  
+
+  // updateUserStatus 함수를 호출하여 돈 등의 UI를 즉시 갱신
+  updateUserStatus();
+
   // .connoisseur 영역에 판매 결과 메시지 출력 (상점 팝업 내에 있어야 함)
   const connoisseur = document.querySelector('.popup.shop .connoisseur');
   if (connoisseur) {
@@ -1482,6 +1485,8 @@ function setupSellSelectFunctionality() {
         updateInventory();
         updateShopInventory();
         saveGameState();
+	updateUserStatus();
+
       }
       
       // 입력 필드 초기화, 선택 항목 초기화, 선택 표시 제거
