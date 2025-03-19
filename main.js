@@ -1496,21 +1496,6 @@ function setupSellSelectFunctionality() {
   }
 }
 
-// monsterData 내의 loot 정보를 순회하여 해당 아이템의 가격 정보를 반환하는 함수
-function getLootPriceInfo(itemName) {
-  for (const key in monsterData) {
-    if (monsterData.hasOwnProperty(key)) {
-      const lootArray = monsterData[key].loot;
-      for (let i = 0; i < lootArray.length; i++) {
-        if (lootArray[i].item === itemName) {
-          return lootArray[i];
-        }
-      }
-    }
-  }
-  return null;
-}
-
 // DOMContentLoaded 시 Sell Select 기능 설정
 document.addEventListener('DOMContentLoaded', () => {
   setupSellSelectFunctionality();
