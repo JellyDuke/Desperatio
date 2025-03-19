@@ -1327,7 +1327,7 @@ function addShopItemClickListeners() {
         b.style.border = ""; // 초기 상태로 복구
       });
       // 현재 클릭한 박스에 border 적용
-      this.style.border = "2px solid black";
+      this.style.border = "2px solid white";
       
       // data-item 속성에서 아이템 이름 가져오기
       const itemName = this.dataset.item;
