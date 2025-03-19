@@ -1321,6 +1321,14 @@ function addShopItemClickListeners() {
   shopInvBoxes.forEach(box => {
     box.addEventListener('click', function(e) {
       e.preventDefault();
+      
+      // 다른 박스를 클릭하면 기존에 선택된 박스의 border 초기화
+      shopInvBoxes.forEach(b => {
+        b.style.border = ""; // 초기 상태로 복구
+      });
+      // 현재 클릭한 박스에 border 적용
+      this.style.border = "2px solid black";
+      
       // data-item 속성에서 아이템 이름 가져오기
       const itemName = this.dataset.item;
       if (!itemName) return;
@@ -1339,6 +1347,7 @@ function addShopItemClickListeners() {
     });
   });
 }
+
 function sellAllItems() {
   let totalSale = 0;
   // 플레이어 인벤토리 배열 순회 (각 아이템은 문자열로 저장되어 있음)
