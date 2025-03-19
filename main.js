@@ -1366,7 +1366,7 @@ function sellAllItems() {
   // .connoisseur 영역에 판매 결과 메시지 출력 (상점 팝업 내에 있어야 함)
   const connoisseur = document.querySelector('.popup.shop .connoisseur');
   if (connoisseur) {
-    connoisseur.textContent = `모든 아이템을 팔아 ${totalSale}원이 획득되었습니다.`;
+    connoisseur.textContent = `모든 아이템을 팔아 ${totalSale}원을 획득했습니다.`;
   }
   
   // 게임 상태 저장
