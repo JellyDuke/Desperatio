@@ -1809,12 +1809,12 @@ function startSleepAnimation() {
   const healLoading = document.querySelector('.heal-loading');
   if (!healLoading) return;
   
-  // .heal-loading의 크기를 150px x 150px로 설정 (이미 CSS에 설정되어 있다면 이 부분은 생략해도 됩니다.)
+  // heal-loading의 크기와 위치 설정
   healLoading.style.width = '150px';
   healLoading.style.height = '150px';
   healLoading.style.position = 'relative';
   
-  // .heal-loading 내부에 sleep-container 생성 (이미 없으면)
+  // sleep-container가 없으면 생성
   let sleepContainer = document.querySelector('.sleep-container');
   if (!sleepContainer) {
     sleepContainer = document.createElement('div');
@@ -1828,25 +1828,13 @@ function startSleepAnimation() {
     healLoading.appendChild(sleepContainer);
   }
   
-  // "잠자는 사람" 요소 생성 (예: 😴 이모지)
-  let personElem = document.querySelector('.sleep-person');
-  if (!personElem) {
-    personElem = document.createElement('div');
-    personElem.className = 'sleep-person';
-    personElem.textContent = '😴';
-    personElem.style.fontSize = '50px';
-    personElem.style.position = 'absolute';
-    personElem.style.left = '50%';
-    personElem.style.bottom = '10px';
-    personElem.style.transform = 'translateX(-50%)';
-    sleepContainer.appendChild(personElem);
-  }
+  // "잠자는 사람" 이모지 관련 요소 제거 (이제 생성하지 않음)
   
   // 500ms마다 "Z" 문자를 생성하여 위로 떠오르는 애니메이션 적용
   sleepAnimationInterval = setInterval(() => {
     const zElem = document.createElement('span');
     zElem.textContent = "Z";
-    // .heal-loading 영역이 150px이므로 0~150px 사이의 랜덤 가로 위치 설정
+    // heal-loading 영역이 150px이므로 0~150px 사이의 랜덤 가로 위치 설정
     const randomLeft = Math.random() * 150;
     zElem.style.position = 'absolute';
     zElem.style.left = randomLeft + 'px';
