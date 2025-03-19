@@ -1382,6 +1382,139 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+let selectedSellItem = null; // 현재 판매할 아이템을 저장할 전역 변수
+
+function setupSellSelectFunctionality() {
+  // 1. 인벤토리 아이템 클릭 시 판매할 아이템 선택
+  const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
+  shopInvBoxes.forEach(box => {
+    box.addEventListener('click', function(e) {
+      e.preventDefault();
+      // data-item 속성에 저장된 아이템 이름을 선택
+      const itemName = this.dataset.item;
+      if (!itemName) return;
+      selectedSellItem = itemName;
+      // 모든 아이템의 선택 표시 제거 후, 이 항목에 선택 표시 추가
+      shopInvBoxes.forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      // .connoisseur 영역에 선택된 아이템 표시 (옵션)
+      const connoisseur = document.querySelector('.popup.shop .connoisseur');
+      if (connoisseur) {
+        connoisseur.textContent = `선택됨: ${selectedSellItem}`;
+      }
+    });
+  });
+  
+  // 2. .sell-select-btn 클릭 시 판매 입력 창(.input-sell) 표시
+  const sellSelectBtn = document.querySelector('.sell-select-btn');
+  if (sellSelectBtn) {
+    sellSelectBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (!selectedSellItem) {
+        alert("판매할 아이템을 먼저 선택하세요!");
+        return;
+      }
+      const inputSellWindow = document.querySelector('.input-sell');
+      if (inputSellWindow) {
+        inputSellWindow.style.display = 'block';
+      }
+    });
+  }
+  
+  // 3. .sell-input-btn 클릭 시 입력된 개수만큼 판매 처리
+  const sellInputBtn = document.querySelector('.sell-input-btn');
+  if (sellInputBtn) {
+    sellInputBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const inputField = document.querySelector('.input-sell-field');
+      if (!inputField) return;
+      const sellCount = parseInt(inputField.value, 10);
+      if (isNaN(sellCount) || sellCount <= 0) {
+        alert("판매할 개수를 올바르게 입력하세요!");
+        return;
+      }
+      
+      // 판매할 아이템이 플레이어 인벤토리에 몇 개 있는지 확인하고, 지정된 개수만큼 판매
+      let soldCount = 0;
+      const newInventory = [];
+      gameState.player.inventory.forEach(item => {
+        if (item === selectedSellItem && soldCount < sellCount) {
+          soldCount++;
+        } else {
+          newInventory.push(item);
+        }
+      });
+      
+      if (soldCount === 0) {
+        alert("판매할 아이템이 부족합니다!");
+      } else {
+        // 판매할 아이템의 가격 정보를 monsterData 내에서 가져오기
+        const lootInfo = getLootPriceInfo(selectedSellItem);
+        let saleValue = 0;
+        if (lootInfo) {
+          const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
+          saleValue = price * soldCount;
+        }
+        // 플레이어 돈에 판매 금액 추가
+        gameState.player.money += saleValue;
+        // 업데이트된 인벤토리 반영
+        gameState.player.inventory = newInventory;
+        // 결과 메시지 출력
+        const connoisseur = document.querySelector('.popup.shop .connoisseur');
+        if (connoisseur) {
+          connoisseur.textContent = `${selectedSellItem} ${soldCount}개를 판매하여 ${saleValue}원 획득했습니다.`;
+        }
+        // UI 업데이트 (인벤토리, 상점 등)
+        updateInventory();
+        updateShopInventory();
+        saveGameState();
+      }
+      
+      // 입력 필드 초기화, 선택 항목 초기화, 선택 표시 제거
+      inputField.value = "";
+      selectedSellItem = null;
+      shopInvBoxes.forEach(box => box.classList.remove('selected'));
+      
+      // 판매 입력 창 닫기
+      const inputSellWindow = document.querySelector('.input-sell');
+      if (inputSellWindow) {
+        inputSellWindow.style.display = 'none';
+      }
+    });
+  }
+  
+  // 4. .sell-input-close-btn 클릭 시 판매 입력 창 닫기
+  const sellInputCloseBtn = document.querySelector('.sell-input-close-btn');
+  if (sellInputCloseBtn) {
+    sellInputCloseBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const inputSellWindow = document.querySelector('.input-sell');
+      if (inputSellWindow) {
+        inputSellWindow.style.display = 'none';
+      }
+    });
+  }
+}
+
+// monsterData 내의 loot 정보를 순회하여 해당 아이템의 가격 정보를 반환하는 함수
+function getLootPriceInfo(itemName) {
+  for (const key in monsterData) {
+    if (monsterData.hasOwnProperty(key)) {
+      const lootArray = monsterData[key].loot;
+      for (let i = 0; i < lootArray.length; i++) {
+        if (lootArray[i].item === itemName) {
+          return lootArray[i];
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// DOMContentLoaded 시 Sell Select 기능 설정
+document.addEventListener('DOMContentLoaded', () => {
+  setupSellSelectFunctionality();
+});
 
 
 //인벤토리
