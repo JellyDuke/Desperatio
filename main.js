@@ -1333,13 +1333,56 @@ function addShopItemClickListeners() {
       const lootInfo = getLootPriceInfo(itemName);
       if (lootInfo) {
         const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
-        connoisseur.textContent = `${itemName}, 가격: ${price}`;
+        connoisseur.textContent = `감정: ${itemName}, 가격: ${price}`;
       } else {
-        connoisseur.textContent = `${itemName}`;
+        connoisseur.textContent = `감정: ${itemName}`;
       }
     });
   });
 }
+function sellAllItems() {
+  let totalSale = 0;
+  // 플레이어 인벤토리 배열 순회 (각 아이템은 문자열로 저장되어 있음)
+  gameState.player.inventory.forEach(item => {
+    // monsterData 내에서 해당 아이템의 가격 정보를 찾음
+    const lootInfo = getLootPriceInfo(item);
+    if (lootInfo) {
+      // 현재 게임 시간 기준 가격 계산
+      const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
+      totalSale += price;
+    }
+  });
+  
+  // 플레이어 돈에 판매 금액 추가
+  gameState.player.money += totalSale;
+  
+  // 판매 후 인벤토리 비우기
+  gameState.player.inventory = [];
+  
+  // 인벤토리 및 상점 UI 업데이트
+  updateInventory();
+  updateShopInventory();  // 상점 팝업 내 인벤토리 업데이트 (필요 시)
+  
+  // .connoisseur 영역에 판매 결과 메시지 출력 (상점 팝업 내에 있어야 함)
+  const connoisseur = document.querySelector('.popup.shop .connoisseur');
+  if (connoisseur) {
+    connoisseur.textContent = `모든 아이템을 팔아 ${totalSale}원이 획득되었습니다.`;
+  }
+  
+  // 게임 상태 저장
+  saveGameState();
+}
+
+// .sell-all-btn 버튼에 이벤트 등록
+document.addEventListener('DOMContentLoaded', () => {
+  const sellAllBtn = document.querySelector('.sell-all-btn');
+  if (sellAllBtn) {
+    sellAllBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sellAllItems();
+    });
+  }
+});
 
 
 //인벤토리
