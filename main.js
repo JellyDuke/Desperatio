@@ -3,6 +3,13 @@
  * 데이터 구조 & 게임 상태
  ********************************************************/
 //DB
+const itemClassMapping = {
+  "잎파리": "leaf",
+  "슬라임 젤리": "jelly",
+  "슬라임 코어": "jelly-core",
+  "오크의 투구": "helmet"
+};
+
 const monsterData = {
   plant: {
     name: "식물",
@@ -1285,14 +1292,6 @@ function updateShopInventory() {
     slots = slots.slice(0, shopInvBoxes.length);
   }
 
-  // 아이템명에 따른 CSS 클래스 매핑 (원하는 경우)
-  const itemClassMapping = {
-    "잎파리": "leaf",
-    "슬라임 젤리": "jelly",
-    "슬라임 코어": "jelly-core",
-    "오크의 투구": "helmet"
-  };
-
   shopInvBoxes.forEach((box, index) => {
     // 기존 클래스 초기화 (기본 클래스 'inventory-box' 유지)
     box.className = 'inventory-box';
@@ -1550,14 +1549,6 @@ function updateInventory() {
     slots = slots.slice(0, invBoxes.length);
     isFull = true;
   }
-
-  // 아이템명 -> 안전한 CSS 클래스명을 위한 매핑 객체
-  const itemClassMapping = {
-    "잎파리": "leaf",
-    "슬라임 젤리": "jelly",
-    "슬라임 코어": "jelly-core",
-    "오크의 투구": "helmet"
-  };
 
   // 각 인벤토리 슬롯 업데이트
   invBoxes.forEach((box, index) => {
