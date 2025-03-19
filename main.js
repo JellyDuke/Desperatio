@@ -1416,7 +1416,7 @@ function setupSellSelectFunctionality() {
       }
       const inputSellWindow = document.querySelector('.input-sell');
       if (inputSellWindow) {
-        inputSellWindow.style.display = 'block';
+        inputSellWindow.style.display = 'flex';
       }
     });
   }
