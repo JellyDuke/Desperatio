@@ -1122,7 +1122,6 @@ function getGameTimeSeed() {
     date.month.toString().padStart(2, '0') +
     date.day.toString().padStart(2, '0')
   );
-  console.log("Game Time Seed:", seed, gameState.currentDate);
   return seed;
 }
 
