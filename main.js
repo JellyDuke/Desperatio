@@ -682,16 +682,21 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function updateRankByLevel() {
   const level = gameState.player.level;
-  let newRank = "노예";  // 기본값
-  if (level >= 2 && level < 5) {
+  let newRank = "노예"; // 기본값
+
+  if (level >= 2 && level < 6) {
     newRank = "시민";
-  } else if (["이병", "상병", "병장"].includes(gameState.player.rank)) {
-    newRank = "private";
-  } else if (["간부", "장교"].includes(gameState.player.rank)) {
-    newRank = "old-solder";
-  } else if (level >= 15) {
-    newRank = "상병";
+  } else if (level >= 6 && level <= 20) {
+    if (level <= 10) {
+      newRank = "이병";
+    } else if (level <= 15) {
+      newRank = "상병";
+    } else { // level 16 ~ 20
+      newRank = "병장";
+    }
   }
+  
+  // 레벨 1은 기본 "노예" 유지, 레벨 21 이상은 별도 처리(예: "병장" 유지)로 설정할 수 있습니다.
   gameState.player.rank = newRank;
   console.log("새로운 계급:", newRank);
 }
