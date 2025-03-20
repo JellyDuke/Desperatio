@@ -3,12 +3,101 @@
  * 데이터 구조 & 게임 상태
  ********************************************************/
 //DB
+
 const itemClassMapping = {
   "잎파리": "leaf",
   "슬라임 젤리": "jelly",
   "슬라임 코어": "jelly-core",
   "오크의 투구": "helmet"
 };
+
+// 상점 스킬 DB (전투 시 스킬 효과 적용 방식 포함)
+const storeSkillDB = [
+  {
+    name: "강타",
+    description: "적에게 강력한 타격을 입혀 데미지를 증가시킵니다. (전투 중 랜덤 발동)",
+    effects: {
+      1: { damageBonus: 5 },
+      2: { damageBonus: 10 },
+      3: { damageBonus: 15 }
+    },
+    requiredLevel: 1,       // 최소 1레벨부터 구매/사용 가능
+    type: "damage",         // 데미지 관련 스킬
+    basePrice: 100,
+    variance: 20,           // 스킬 가격 변동은 여전히 적용 (원하는 경우 조정 가능)
+    appearanceChance: 0.5,  // 50% 확률로 상점에 등장
+    activation: "random",   // 전투 시 랜덤 발동
+    triggerChance: 0.3      // 약 30% 확률로 발동
+  },
+  {
+    name: "회복",
+    description: "전투 시 매 라운드 일정량의 체력을 회복합니다. (패시브 효과)",
+    effects: {
+      1: { healthBonus: 10 },
+      2: { healthBonus: 20 },
+      3: { healthBonus: 30 }
+    },
+    requiredLevel: 1,
+    type: "heal",           // 체력 회복 스킬
+    basePrice: 120,
+    variance: 30,
+    appearanceChance: 0.4,  // 40% 확률
+    activation: "passive"   // 별도 입력 없이 자동 적용 (예: 매 라운드 회복)
+  },
+  {
+    name: "출혈",
+    description: "적에게 출혈 효과를 부여하여 일정 시간 동안 추가 데미지를 줍니다. (전투 중 랜덤 발동)",
+    effects: {
+      1: { bleedDamage: 3 },
+      2: { bleedDamage: 6 },
+      3: { bleedDamage: 9 }
+    },
+    requiredLevel: 2,
+    type: "bleed",          // 출혈 효과 스킬
+    basePrice: 150,
+    variance: 25,
+    appearanceChance: 0.3,  // 30% 확률
+    activation: "random",   // 전투 시 랜덤 발동
+    triggerChance: 0.2      // 약 20% 확률로 발동
+  }
+];
+
+const storeItemDB = [
+  {
+    item: "잎파리",
+    className: "leaf",
+    description: "기본 식물성 재료입니다. 소지 시 특별한 효과는 없습니다.",
+    effect: null,  // 소지 효과 없음
+    basePrice: 5,
+    appearanceChance: 0.8
+  },
+  {
+    item: "슬라임 젤리",
+    className: "jelly",
+    description: "소지 시 체력 회복 효과를 제공합니다. 이 효과는 중복되지 않습니다.",
+    effect: { passiveEffect: { healBonus: 10 } },
+    stackable: false,  // 동일 효과 중복 적용 안됨
+    basePrice: 15,
+    appearanceChance: 0.7
+  },
+  {
+    item: "슬라임 코어",
+    className: "jelly-core",
+    description: "소지 시 자원 획득량 증가 효과를 부여합니다. 이 효과는 중복되지 않습니다.",
+    effect: { passiveEffect: { resourceBonus: true } },
+    stackable: false,  // 중복 효과 방지
+    basePrice: 25,
+    appearanceChance: 0.1
+  },
+  {
+    item: "오크의 투구",
+    className: "helmet",
+    description: "수집용 아이템입니다. 소지 시 별다른 효과는 없습니다.",
+    effect: null,
+    basePrice: 35,
+    appearanceChance: 0.6
+  }
+];
 
 const monsterData = {
   plant: {
