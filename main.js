@@ -1377,24 +1377,34 @@ function getLootPriceInfo(itemName) {
   return null; // 해당 아이템 정보를 찾지 못한 경우
 }
 
+//shop tap 버튼 기능
 document.addEventListener('DOMContentLoaded', () => {
-  // 버튼 요소들 선택
   const shopSellBtn = document.querySelector('.shop-sell-btn');
   const shopItemBtns = document.querySelectorAll('.shop-item-btn');
   const shopSkillBtn = document.querySelector('.shop-skill-btn');
+
+  // helper: 모든 관련 버튼에서 "on" 클래스를 제거합니다.
+  function removeActiveClass() {
+    if (shopSellBtn) shopSellBtn.classList.remove('on');
+    shopItemBtns.forEach(btn => btn.classList.remove('on'));
+    if (shopSkillBtn) shopSkillBtn.classList.remove('on');
+  }
 
   // .shop-sell-btn 클릭 시
   if (shopSellBtn) {
     shopSellBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      // 다른 flex된 요소 숨기기
+      // 다른 flex 영역 숨기기
       const hideEls = document.querySelectorAll('.kingdom-item-card, .kingdom-skill-shop-card');
       hideEls.forEach(el => el.style.display = 'none');
-      // .shop-inventory 보여주기
+      // .shop-inventory 영역 보이기
       const inventory = document.querySelector('.shop-inventory');
       if (inventory) {
         inventory.style.display = 'flex';
       }
+      // 버튼 활성화 표시 ("on" 클래스 추가)
+      removeActiveClass();
+      shopSellBtn.classList.add('on');
     });
   }
 
@@ -1402,14 +1412,17 @@ document.addEventListener('DOMContentLoaded', () => {
   shopItemBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      // 다른 flex된 요소 숨기기
+      // 다른 flex 영역 숨기기
       const hideEls = document.querySelectorAll('.shop-inventory, .kingdom-skill-shop-card');
       hideEls.forEach(el => el.style.display = 'none');
-      // .kingdom-item-card 보여주기
+      // .kingdom-item-card 영역 보이기
       const itemCard = document.querySelector('.kingdom-item-card');
       if (itemCard) {
         itemCard.style.display = 'flex';
       }
+      // 해당 버튼 활성화 ("on" 클래스 추가)
+      removeActiveClass();
+      btn.classList.add('on');
     });
   });
 
@@ -1417,17 +1430,33 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shopSkillBtn) {
     shopSkillBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      // 다른 flex된 요소 숨기기
+      // 다른 flex 영역 숨기기
       const hideEls = document.querySelectorAll('.shop-inventory, .kingdom-item-card');
       hideEls.forEach(el => el.style.display = 'none');
-      // .kingdom-skill-shop-card 보여주기
+      // .kingdom-skill-shop-card 영역 보이기
       const skillCard = document.querySelector('.kingdom-skill-shop-card');
       if (skillCard) {
         skillCard.style.display = 'flex';
       }
+      // 버튼 활성화 ("on" 클래스 추가)
+      removeActiveClass();
+      shopSkillBtn.classList.add('on');
     });
   }
+
+  // 초기 상태: .shop-inventory은 flex, 나머지 영역은 숨김, 그리고 .shop-sell-btn에 "on" 클래스 추가
+  const inventory = document.querySelector('.shop-inventory');
+  if (inventory) {
+    inventory.style.display = 'flex';
+  }
+  const hideEls = document.querySelectorAll('.kingdom-item-card, .kingdom-skill-shop-card');
+  hideEls.forEach(el => el.style.display = 'none');
+  removeActiveClass();
+  if (shopSellBtn) {
+    shopSellBtn.classList.add('on');
+  }
 });
+
 
 
 // 상점 인벤토리 업데이트 함수
