@@ -8,7 +8,12 @@ const itemClassMapping = {
   "잎파리": "leaf",
   "슬라임 젤리": "jelly",
   "슬라임 코어": "jelly-core",
-  "오크의 투구": "helmet"
+  "오크의 투구": "helmet",
+  "오팔": "opal",
+  "골드": "gold",
+  "실버": "silver",
+  "루비": "ruby",
+  "사파이어": "sapphire"
 };
 
 // 상점 스킬 DB (전투 시 스킬 효과 적용 방식 포함)
@@ -17,14 +22,14 @@ const storeSkillDB = [
     name: "강타",
     description: "적에게 강력한 타격을 입혀 데미지를 증가시킵니다. (전투 중 랜덤 발동)",
     effects: {
-      1: { damageBonus: 5 },
-      2: { damageBonus: 10 },
-      3: { damageBonus: 15 }
+      1: { damageBonus: 3 },
+      2: { damageBonus: 8 },
+      3: { damageBonus: 27 }
     },
     requiredLevel: 1,       // 최소 1레벨부터 구매/사용 가능
     type: "damage",         // 데미지 관련 스킬
-    basePrice: 100,
-    variance: 20,           // 스킬 가격 변동은 여전히 적용 (원하는 경우 조정 가능)
+    basePrice: 20000,
+    variance: 5000,           // 스킬 가격 변동은 여전히 적용 (원하는 경우 조정 가능)
     appearanceChance: 0.5,  // 50% 확률로 상점에 등장
     activation: "random",   // 전투 시 랜덤 발동
     triggerChance: 0.3      // 약 30% 확률로 발동
@@ -33,9 +38,9 @@ const storeSkillDB = [
     name: "회복",
     description: "전투 시 매 라운드 일정량의 체력을 회복합니다. (패시브 효과)",
     effects: {
-      1: { healthBonus: 10 },
-      2: { healthBonus: 20 },
-      3: { healthBonus: 30 }
+      1: { healthBonus: 5 },
+      2: { healthBonus: 8 },
+      3: { healthBonus: 15 }
     },
     requiredLevel: 1,
     type: "heal",           // 체력 회복 스킬
@@ -64,40 +69,47 @@ const storeSkillDB = [
 
 const storeItemDB = [
   {
-    item: "잎파리",
-    className: "leaf",
-    description: "기본 식물성 재료입니다. 소지 시 특별한 효과는 없습니다.",
-    effect: null,  // 소지 효과 없음
-    basePrice: 5,
-    appearanceChance: 0.8
+    item: "오팔",
+    description: "다채로운 색상이 반짝이는 보석으로, 소지 시 특별한 효과는 없지만 수집 가치가 있습니다.",
+    effect: null,  // 소지 시 효과 없음
+    basePrice: 2250,
+    appearanceChance: 0.8,
+    dailyFluctuationRate: 8  // 하루 8% 등락률
   },
   {
-    item: "슬라임 젤리",
-    className: "jelly",
-    description: "소지 시 체력 회복 효과를 제공합니다. 이 효과는 중복되지 않습니다.",
-    effect: { passiveEffect: { healBonus: 10 } },
-    stackable: false,  // 동일 효과 중복 적용 안됨
-    basePrice: 15,
-    appearanceChance: 0.7
-  },
-  {
-    item: "슬라임 코어",
-    className: "jelly-core",
-    description: "소지 시 자원 획득량 증가 효과를 부여합니다. 이 효과는 중복되지 않습니다.",
-    effect: { passiveEffect: { resourceBonus: true } },
-    stackable: false,  // 중복 효과 방지
-    basePrice: 25,
-    appearanceChance: 0.1
-  },
-  {
-    item: "오크의 투구",
-    className: "helmet",
-    description: "수집용 아이템입니다. 소지 시 별다른 효과는 없습니다.",
+    item: "골드",
+    description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
     effect: null,
-    basePrice: 35,
-    appearanceChance: 0.6
+    basePrice: 220024,
+    appearanceChance: 0.7,
+    dailyFluctuationRate: 4  // 하루 4% 등락률
+  },
+  {
+    item: "실버",
+    description: "은은한 광채를 내는 귀금속으로, 소지 시 별다른 효과는 없습니다.",
+    effect: null,  // 소지 시 효과 없음
+    basePrice: 225,
+    appearanceChance: 0.9,
+    dailyFluctuationRate: 5  // 하루 5% 등락률
+  },
+  {
+    item: "루비",
+    description: "깊은 붉은 빛을 발하는 보석으로, 수집용으로 인기가 있으나 소지 시 별다른 효과는 없습니다.",
+    effect: null,
+    basePrice: 45318,
+    appearanceChance: 0.6,
+    dailyFluctuationRate: 5  // 하루 5% 등락률
+  },
+  {
+    item: "사파이어",
+    description: "투명한 푸른빛이 매력적인 보석으로, 장식용 및 수집용으로 활용됩니다.",
+    effect: null,
+    basePrice: 646257,
+    appearanceChance: 0.5,
+    dailyFluctuationRate: 12  // 하루 5% 등락률
   }
 ];
+
 
 const monsterData = {
   plant: {
@@ -1364,6 +1376,60 @@ function getLootPriceInfo(itemName) {
   }
   return null; // 해당 아이템 정보를 찾지 못한 경우
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 버튼 요소들 선택
+  const shopSellBtn = document.querySelector('.shop-sell-btn');
+  const shopItemBtns = document.querySelectorAll('.shop-item-btn');
+  const shopSkillBtn = document.querySelector('.shop-skill-btn');
+
+  // .shop-sell-btn 클릭 시
+  if (shopSellBtn) {
+    shopSellBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // 다른 flex된 요소 숨기기
+      const hideEls = document.querySelectorAll('.kingdom-item-card, .kingdom-skill-shop-card');
+      hideEls.forEach(el => el.style.display = 'none');
+      // .shop-inventory 보여주기
+      const inventory = document.querySelector('.shop-inventory');
+      if (inventory) {
+        inventory.style.display = 'flex';
+      }
+    });
+  }
+
+  // .shop-item-btn 클릭 시
+  shopItemBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // 다른 flex된 요소 숨기기
+      const hideEls = document.querySelectorAll('.shop-inventory, .kingdom-skill-shop-card');
+      hideEls.forEach(el => el.style.display = 'none');
+      // .kingdom-item-card 보여주기
+      const itemCard = document.querySelector('.kingdom-item-card');
+      if (itemCard) {
+        itemCard.style.display = 'flex';
+      }
+    });
+  });
+
+  // .shop-skill-btn 클릭 시
+  if (shopSkillBtn) {
+    shopSkillBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // 다른 flex된 요소 숨기기
+      const hideEls = document.querySelectorAll('.shop-inventory, .kingdom-item-card');
+      hideEls.forEach(el => el.style.display = 'none');
+      // .kingdom-skill-shop-card 보여주기
+      const skillCard = document.querySelector('.kingdom-skill-shop-card');
+      if (skillCard) {
+        skillCard.style.display = 'flex';
+      }
+    });
+  }
+});
+
+
 // 상점 인벤토리 업데이트 함수
 function updateShopInventory() {
   // .popup.shop 내부의 모든 inventory-box 선택
