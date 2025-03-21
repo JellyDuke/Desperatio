@@ -488,7 +488,7 @@ function updateUserStatus() {
   }
   const moneyElem = statusContainer.querySelector('.money');
   if (moneyElem) {
-    moneyElem.textContent = gameState.player.money;
+    moneyElem.textContent = gameState.player.money.toLocaleString();
   }
   const healthElem = statusContainer.querySelector('.health');
   if (healthElem) {
@@ -1457,7 +1457,7 @@ function initShopItems() {
     // 아이템 가격
     const priceElem = document.createElement('div');
     priceElem.classList.add('item-price');
-    priceElem.textContent = `${itemData.basePrice} G`; 
+    priceElem.textContent = `${itemData.basePrice.toLocaleString()} G`; 
     // 실제로는 dailyFluctuationRate 등을 적용해 변동된 가격을 표시할 수 있습니다.
 
     // 구매 버튼 (shop-item-txt 밖)
