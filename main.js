@@ -1376,7 +1376,9 @@ function getLootPriceInfo(itemName) {
   }
   return null; // 해당 아이템 정보를 찾지 못한 경우
 }
-
+function getStoreItemInfo(itemName) {
+  return storeItemDB.find(item => item.item === itemName);
+}
 /**
  * 하루가 지날 때마다 상점 아이템을 갱신하는 함수
  * 1) dailyFluctuationRate를 바탕으로 가격 조정
@@ -1711,31 +1713,36 @@ function addShopItemClickListeners() {
 
 function sellAllItems() {
   let totalSale = 0;
-  // 플레이어 인벤토리 배열 순회 (각 아이템은 문자열로 저장되어 있음)
+  // 플레이어 인벤토리 순회 (각 아이템은 문자열로 저장)
   gameState.player.inventory.forEach(item => {
-    // monsterData 내에서 해당 아이템의 가격 정보를 찾음
+    let price = 0;
+    // 먼저 몬스터 전리품 정보에서 가격 정보를 찾습니다.
     const lootInfo = getLootPriceInfo(item);
     if (lootInfo) {
-      // 현재 게임 시간 기준 가격 계산
-      const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
-      totalSale += price;
+      price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
+    } else {
+      // 없다면, 상점 아이템 DB에서 정보를 찾습니다.
+      const storeInfo = getStoreItemInfo(item);
+      if (storeInfo) {
+        // 상점 시세(즉, 업데이트된 basePrice)를 그대로 사용
+        price = storeInfo.basePrice;
+      }
     }
+    totalSale += price;
   });
   
-  // 플레이어 돈에 판매 금액 추가
+  // 플레이어의 돈에 판매 금액을 추가
   gameState.player.money += totalSale;
   
-  // 판매 후 인벤토리 비우기
+  // 판매 후 인벤토리 비우기 (혹은 판매한 아이템만 제거)
   gameState.player.inventory = [];
   
-  // 인벤토리 및 상점 UI 업데이트
+  // UI 업데이트: 인벤토리, 상점 인벤토리, 유저 상태 등
   updateInventory();
-  updateShopInventory();  // 상점 팝업 내 인벤토리 업데이트 (필요 시)
-
-  // updateUserStatus 함수를 호출하여 돈 등의 UI를 즉시 갱신
+  updateShopInventory();  
   updateUserStatus();
 
-  // .connoisseur 영역에 판매 결과 메시지 출력 (상점 팝업 내에 있어야 함)
+  // 결과 메시지 표시
   const connoisseur = document.querySelector('.popup.shop .connoisseur');
   if (connoisseur) {
     connoisseur.textContent = `모든 아이템을 팔아 ${totalSale}원을 획득했습니다.`;
@@ -1743,7 +1750,14 @@ function sellAllItems() {
   
   // 게임 상태 저장
   saveGameState();
+  
+  // 즉시 소지금 UI 업데이트
+  const moneyElem = document.querySelector('.money');
+  if (moneyElem) {
+    moneyElem.textContent = gameState.player.money;
+  }
 }
+
  // .money 요소를 바로 찾아 업데이트 (즉시 갱신)
   const moneyElem = document.querySelector('.money');
   if (moneyElem) {
