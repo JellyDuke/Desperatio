@@ -1376,9 +1376,11 @@ function getLootPriceInfo(itemName) {
   return null;
 }
 
+// 상점 아이템 정보를 반환하는 헬퍼 함수
 function getStoreItemInfo(itemName) {
   return storeItemDB.find(item => item.item === itemName);
 }
+
 /**
  * 하루가 지날 때마다 상점 아이템을 갱신하는 함수
  * 1) dailyFluctuationRate를 바탕으로 가격 조정
@@ -1678,10 +1680,6 @@ function updateShopInventory() {
   addShopItemClickListeners();
 }
 
-// 상점 아이템 정보를 반환하는 헬퍼 함수
-function getStoreItemInfo(itemName) {
-  return storeItemDB.find(item => item.item === itemName);
-}
 
 // 기존 getLootPriceInfo 함수는 그대로 사용
 function getLootPriceInfo(itemName) {
