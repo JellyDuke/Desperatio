@@ -508,7 +508,7 @@ function updateUserStatus() {
   }
   const moneyElem = statusContainer.querySelector('.money');
   if (moneyElem) {
-    moneyElem.textContent = gameState.player.money.toLocaleString();
+    moneyElem.textContent = Number(gameState.player.money).toLocaleString('ko-KR');
   }
   const healthElem = statusContainer.querySelector('.health');
   if (healthElem) {
@@ -735,12 +735,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const mappings = [
     { menu: '.menu.my-info',    popup: '.popup.my-info' },
     { menu: '.menu.combat',     popup: '.popup.combat' },
-    { menu: '.menu.training',   popup: '.popup.training' },
+    { menu: '.menu.enforce',    popup: '.popup.enforce' },
     { menu: '.menu.inventory',  popup: '.popup.inventory' },
     { menu: '.menu.skill',      popup: '.popup.skill' },
     { menu: '.menu.move',       popup: '.popup.move' },
     { menu: '.button-map',      popup: '.popup.map-info' },
-    { menu: '.menu.shop',      popup: '.popup.shop' }
+    { menu: '.menu.shop',       popup: '.popup.shop' }
   ];
   
   mappings.forEach(mapping => {
@@ -1505,54 +1505,56 @@ function getStoreItemInfo(itemName) {
 function refreshShopItemsForNewDay() {
   const { year, month, day } = gameState.currentDate;
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  
-  // 만약 이미 오늘의 상점 데이터가 저장되어 있다면 삭제하지 않고 그대로 사용
-  // localStorage에서 해당 데이터가 존재하는지 확인
-  if (!localStorage.getItem('shopItems_' + todayStr)) {
-    // 없다면, 각 아이템 가격 업데이트 로직 실행
-    storeItemDB.forEach(item => {
-      const oldPrice = item.basePrice;
-      
-      if (typeof item.fairPrice === 'undefined') {
-        item.fairPrice = oldPrice;
-      }
-      
-      let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
-      const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
-      let meanReversion = -distanceFromFair * 0.02;  // 1% 회귀 효과
-      let noise = Math.random() * 0.2 - 0.01;
-      let shock = 0;
-      if (Math.random() < 0.05) {
-        shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
-      }
-      if (item.item === '루비') {
-        noise = Math.random() * 0.2 - 0.1;
-        if (shock !== 0) {
-          shock *= 1.5;
-        }
-      }
-      
-      let changePercent = momentumFactor + meanReversion + noise + shock;
-      const maxChange = item.dailyFluctuationRate / 100;
-      if (changePercent > maxChange) {
-        changePercent = maxChange;
-      } else if (changePercent < -maxChange) {
-        changePercent = -maxChange;
-      }
-      
-      const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
-      
-      // 이벤트 후 dailyChangePercent 재계산
-      item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
-      item.basePrice = newPrice;
-    });
-  
-    // 새로 계산된 가격 정보로 상점 아이템 목록 생성 후 저장
-    initShopItems();
-  } else {
-    // 이미 저장된 데이터가 있으면 initShopItems()를 호출해 UI를 갱신
-    initShopItems();
-  }
+
+  // 1) storeItemDB의 각 아이템 가격을 갱신
+  storeItemDB.forEach(item => {
+    const oldPrice = item.basePrice;
+
+    if (typeof item.fairPrice === 'undefined') {
+      item.fairPrice = oldPrice;
+    }
+
+    // 전날 모멘텀, 평균 회귀, 노이즈, 쇼크 이벤트 등을 적용
+    // (기존 로직과 동일)
+    let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
+    const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
+    let meanReversion = -distanceFromFair * 0.02;
+    let noise = Math.random() * 0.2 - 0.1;
+    let shock = 0;
+    if (Math.random() < 0.05) {
+      shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
+    }
+    if (item.item === '루비') {
+      // 루비 특수 처리
+      noise = Math.random() * 0.2 - 0.1;
+      if (shock !== 0) shock *= 1.5;
+    }
+
+    let changePercent = momentumFactor + meanReversion + noise + shock;
+    const maxChange = item.dailyFluctuationRate / 100;
+    if (changePercent > maxChange) {
+      changePercent = maxChange;
+    } else if (changePercent < -maxChange) {
+      changePercent = -maxChange;
+    }
+
+    const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
+    item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
+    item.basePrice = newPrice;
+  });
+
+  // 2) "오늘"의 상점 목록을 생성
+  //    (예: appearanceChance로 필터링)
+  const todaysItems = storeItemDB.filter(item => {
+    const chance = Math.min(item.appearanceChance + 0.05, 1);
+    return Math.random() < chance;
+  });
+
+  // 3) 이 목록을 localStorage에 저장 (게임 내 날짜 키 사용)
+  localStorage.setItem('shopItems_' + todayStr, JSON.stringify(todaysItems));
+
+  // 4) initShopItems()를 호출하여 화면에 즉시 반영
+  initShopItems();
 }
 
 
@@ -1574,41 +1576,34 @@ function initShopItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  // ===============================
-  // 1) "게임 내 날짜"를 문자열로 만들어 localStorage 키로 사용
-  // ===============================
+  // 게임 내 날짜를 키로 사용: 예: "24-04-13"
   const { year, month, day } = gameState.currentDate;
-  // 예: "24-04-13" 형태로
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-  // localStorage에서 오늘(게임 날짜)의 상점 데이터가 있는지 확인
-  const storedShopData = localStorage.getItem('shopItems_' + todayStr);
+  // localStorage에서 오늘 날짜의 상점 데이터를 읽어옴
+  let storedShopData = localStorage.getItem('shopItems_' + todayStr);
   let todaysItems;
-
   if (storedShopData) {
-    // 저장된 데이터를 사용 (JSON.parse)
     todaysItems = JSON.parse(storedShopData);
   } else {
-    // 오늘 등장할 아이템 목록을 랜덤으로 생성
-    // appearanceChance에 0.05 오프셋을 더해 조금 더 높은 확률로 등장하게끔 예시
+    // 없다면, storeItemDB에서 appearanceChance에 0.05 오프셋을 더해
+    // 랜덤으로 오늘 등장할 아이템 목록을 생성하고 저장
     todaysItems = storeItemDB.filter(item => {
       const chance = Math.min(item.appearanceChance + 0.05, 1);
       return Math.random() < chance;
     });
-
-    // 생성된 목록을 localStorage에 저장 (게임 날짜를 키로 사용)
     localStorage.setItem('shopItems_' + todayStr, JSON.stringify(todaysItems));
   }
 
-  // 재고가 없으면 메시지 표시 후 종료
-  if (todaysItems.length === 0) {
+  // 만약 생성된 목록이 없으면 "재고가 없습니다." 메시지 출력 후 종료
+  if (!todaysItems || todaysItems.length === 0) {
     container.textContent = "재고가 없습니다.";
     return;
   }
 
   // 오늘의 아이템 목록을 기반으로 DOM 요소 생성
   todaysItems.forEach(itemData => {
-    // .item-sell-box 래퍼
+    // .item-sell-box 생성
     const itemBox = document.createElement('div');
     itemBox.classList.add('item-sell-box');
 
@@ -1642,47 +1637,44 @@ function initShopItems() {
     priceElem.classList.add('item-price');
     priceElem.textContent = `${itemData.basePrice.toLocaleString()}원`;
 
-    // 변동률 텍스트/아이콘
+    // 변동률 텍스트 및 아이콘
     const itemRateTxt = document.createElement('div');
     itemRateTxt.classList.add('item-rate-txt');
     const itemRate = document.createElement('div');
     itemRate.classList.add('item-rate');
 
-    // 전일 대비 변동률(dailyChangePercent) 반영 (없으면 0%)
     const difference = Math.round(itemData.dailyChangePercent || 0);
     if (difference > 0) {
       itemRateTxt.textContent = `+${difference}%`;
       itemRateTxt.classList.add('up');
       itemRate.classList.add('up');
     } else if (difference < 0) {
-      itemRateTxt.textContent = `${difference}%`; // 이미 음수 부호 포함
+      itemRateTxt.textContent = `${difference}%`; // 음수 기호 포함
       itemRateTxt.classList.add('down');
       itemRate.classList.add('down');
     } else {
       itemRateTxt.textContent = `0%`;
     }
 
-    // itemRateBox에 가격, 변동률 요소 추가
     itemRateBox.appendChild(priceElem);
     itemRateBox.appendChild(itemRateTxt);
     itemRateBox.appendChild(itemRate);
 
-    // 구매 버튼
+    // 구매 버튼 (shop-item-txt 밖)
     const buyBtn = document.createElement('button');
     buyBtn.classList.add('item-buy-btn');
     buyBtn.textContent = "구매";
     buyBtn.addEventListener('click', () => {
-      // 구매 팝업을 열기 위해 선택 아이템 저장
       selectedItemForPurchase = itemData;
       showBuyPopup();
     });
 
-    // shopItemTxt에 이름, 설명, itemRateBox 조립
+    // shopItemTxt에 이름, 설명, 가격/변동률 박스 조립
     shopItemTxt.appendChild(nameElem);
     shopItemTxt.appendChild(descElem);
     shopItemTxt.appendChild(itemRateBox);
 
-    // itemBox에 shopItem, shopItemTxt, 구매 버튼 추가
+    // itemBox에 아이콘, 텍스트 영역, 구매 버튼 추가
     itemBox.appendChild(shopItem);
     itemBox.appendChild(shopItemTxt);
     itemBox.appendChild(buyBtn);
@@ -1690,6 +1682,7 @@ function initShopItems() {
     container.appendChild(itemBox);
   });
 }
+
 
 
 /**
@@ -2373,6 +2366,13 @@ function updateGameDate() {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
+
+    refreshShopItemsForNewDay();
+    // 다양한 이벤트들을 호출
+    applyBulkRobberyEvent();
+    applySpecialDiscountEvent();
+    applyDemandSurgeEvent();
+    applyOverstockEvent();
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
@@ -2388,12 +2388,6 @@ function updateGameDate() {
     }
     dateTextDisplayed = true;
 
-    refreshShopItemsForNewDay();
-    // 다양한 이벤트들을 호출
-    applyBulkRobberyEvent();
-    applySpecialDiscountEvent();
-    applyDemandSurgeEvent();
-    applyOverstockEvent();
   }
 
   // 날짜 정보 영역 (.date-info) 매번 갱신 (누적되지 않음)
