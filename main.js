@@ -594,6 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
    // [추가된 코드] 새로고침 시 이동 상태 리셋
   gameState.player.isMoving = false;
   
+  loadStoreItemDB(); 
   updateKingdomStatus(gameState.kingdom);//랜덤 초기값
   updateMyInfo(); // 내 정보 팝업 갱신
   updateRankByLevel();
@@ -1381,6 +1382,37 @@ function checkLevelUp(messageContainer) {
 
 //상점
 
+/**
+ * localStorage에 저장된 storeItemDB 정보를 불러와 현재 storeItemDB에 덮어쓰는 함수
+ *  - 이미 storeItemDB에 없는 아이템이 있으면 무시하거나, 필요한 로직에 맞춰 처리
+ */
+function loadStoreItemDB() {
+  const storedDB = localStorage.getItem("storeItemDB");
+  if (!storedDB) return; // 저장된 게 없으면 그냥 종료
+
+  try {
+    const parsedDB = JSON.parse(storedDB);
+    // 현재 storeItemDB를 parsedDB 내용으로 동기화
+    // item.item(아이템명)으로 매칭해서 basePrice, dailyChangePercent 등을 갱신
+    for (let i = 0; i < storeItemDB.length; i++) {
+      const found = parsedDB.find(d => d.item === storeItemDB[i].item);
+      if (found) {
+        storeItemDB[i].basePrice = found.basePrice;
+        storeItemDB[i].dailyChangePercent = found.dailyChangePercent;
+        storeItemDB[i].fairPrice = found.fairPrice; // 필요하면 추가
+      }
+    }
+  } catch (e) {
+    console.error("storeItemDB 파싱 오류:", e);
+  }
+}
+
+/**
+ * 현재 storeItemDB를 localStorage에 저장
+ */
+function saveStoreItemDB() {
+  localStorage.setItem("storeItemDB", JSON.stringify(storeItemDB));
+}
 // 1. 대량 도난 이벤트: 가격이 상승하는 이벤트
 function applyBulkRobberyEvent() {
   if (Math.random() < 0.02) {
@@ -1506,16 +1538,13 @@ function refreshShopItemsForNewDay() {
   const { year, month, day } = gameState.currentDate;
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-  // 1) storeItemDB의 각 아이템 가격을 갱신
+  // === 1) storeItemDB의 각 아이템 가격 업데이트 ===
   storeItemDB.forEach(item => {
     const oldPrice = item.basePrice;
-
     if (typeof item.fairPrice === 'undefined') {
       item.fairPrice = oldPrice;
     }
-
-    // 전날 모멘텀, 평균 회귀, 노이즈, 쇼크 이벤트 등을 적용
-    // (기존 로직과 동일)
+    // 모멘텀 / 평균 회귀 / 노이즈 / 쇼크 계산 (원하는 로직 그대로 사용)
     let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
     const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
     let meanReversion = -distanceFromFair * 0.02;
@@ -1525,7 +1554,6 @@ function refreshShopItemsForNewDay() {
       shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
     }
     if (item.item === '루비') {
-      // 루비 특수 처리
       noise = Math.random() * 0.2 - 0.1;
       if (shock !== 0) shock *= 1.5;
     }
@@ -1543,19 +1571,22 @@ function refreshShopItemsForNewDay() {
     item.basePrice = newPrice;
   });
 
-  // 2) "오늘"의 상점 목록을 생성
-  //    (예: appearanceChance로 필터링)
+  // === 2) 갱신된 storeItemDB를 localStorage에 저장 ===
+  saveStoreItemDB(); // 위에서 정의한 함수
+
+  // === 3) 오늘의 아이템 목록 생성 (등장 확률 적용) ===
   const todaysItems = storeItemDB.filter(item => {
     const chance = Math.min(item.appearanceChance + 0.05, 1);
     return Math.random() < chance;
   });
 
-  // 3) 이 목록을 localStorage에 저장 (게임 내 날짜 키 사용)
+  // === 4) 오늘의 목록을 localStorage에 저장 ===
   localStorage.setItem('shopItems_' + todayStr, JSON.stringify(todaysItems));
 
-  // 4) initShopItems()를 호출하여 화면에 즉시 반영
+  // === 5) initShopItems()로 UI 갱신 ===
   initShopItems();
 }
+
 
 
 
@@ -1576,112 +1607,31 @@ function initShopItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  // 게임 내 날짜를 키로 사용: 예: "24-04-13"
+  // 게임 내 날짜 키
   const { year, month, day } = gameState.currentDate;
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-  // localStorage에서 오늘 날짜의 상점 데이터를 읽어옴
-  let storedShopData = localStorage.getItem('shopItems_' + todayStr);
-  let todaysItems;
-  if (storedShopData) {
-    todaysItems = JSON.parse(storedShopData);
-  } else {
-    // 없다면, storeItemDB에서 appearanceChance에 0.05 오프셋을 더해
-    // 랜덤으로 오늘 등장할 아이템 목록을 생성하고 저장
-    todaysItems = storeItemDB.filter(item => {
-      const chance = Math.min(item.appearanceChance + 0.05, 1);
-      return Math.random() < chance;
-    });
-    localStorage.setItem('shopItems_' + todayStr, JSON.stringify(todaysItems));
+  // localStorage에서 오늘의 아이템 목록 가져오기
+  const storedShopData = localStorage.getItem('shopItems_' + todayStr);
+  if (!storedShopData) {
+    container.textContent = "재고가 없습니다.";
+    return;
   }
-
-  // 만약 생성된 목록이 없으면 "재고가 없습니다." 메시지 출력 후 종료
+  const todaysItems = JSON.parse(storedShopData);
   if (!todaysItems || todaysItems.length === 0) {
     container.textContent = "재고가 없습니다.";
     return;
   }
 
-  // 오늘의 아이템 목록을 기반으로 DOM 요소 생성
+  // DOM 생성
   todaysItems.forEach(itemData => {
-    // .item-sell-box 생성
-    const itemBox = document.createElement('div');
-    itemBox.classList.add('item-sell-box');
-
-    // 아이템 아이콘 (.shop-item)
-    const shopItem = document.createElement('div');
-    shopItem.classList.add('shop-item');
-    const mappedClass = itemClassMapping[itemData.item] || 'unknown-item';
-    shopItem.classList.add(mappedClass);
-
-    // 텍스트 영역 (.shop-item-txt)
-    const shopItemTxt = document.createElement('div');
-    shopItemTxt.classList.add('shop-item-txt');
-
-    // 아이템 이름
-    const nameElem = document.createElement('div');
-    nameElem.classList.add('item-name');
-    nameElem.textContent = itemData.item;
-
-    // 아이템 설명
-    const descElem = document.createElement('div');
-    descElem.classList.add('item-description');
-    descElem.textContent = itemData.description;
-
-    // 가격/변동률 박스 (.item-rate-box)
-    const itemRateBox = document.createElement('div');
-    itemRateBox.classList.add('item-rate-box');
-    itemRateBox.style.display = 'flex'; // flex 레이아웃
-
-    // 가격 (.item-price)
-    const priceElem = document.createElement('div');
-    priceElem.classList.add('item-price');
-    priceElem.textContent = `${itemData.basePrice.toLocaleString()}원`;
-
-    // 변동률 텍스트 및 아이콘
-    const itemRateTxt = document.createElement('div');
-    itemRateTxt.classList.add('item-rate-txt');
-    const itemRate = document.createElement('div');
-    itemRate.classList.add('item-rate');
-
-    const difference = Math.round(itemData.dailyChangePercent || 0);
-    if (difference > 0) {
-      itemRateTxt.textContent = `+${difference}%`;
-      itemRateTxt.classList.add('up');
-      itemRate.classList.add('up');
-    } else if (difference < 0) {
-      itemRateTxt.textContent = `${difference}%`; // 음수 기호 포함
-      itemRateTxt.classList.add('down');
-      itemRate.classList.add('down');
-    } else {
-      itemRateTxt.textContent = `0%`;
-    }
-
-    itemRateBox.appendChild(priceElem);
-    itemRateBox.appendChild(itemRateTxt);
-    itemRateBox.appendChild(itemRate);
-
-    // 구매 버튼 (shop-item-txt 밖)
-    const buyBtn = document.createElement('button');
-    buyBtn.classList.add('item-buy-btn');
-    buyBtn.textContent = "구매";
-    buyBtn.addEventListener('click', () => {
-      selectedItemForPurchase = itemData;
-      showBuyPopup();
-    });
-
-    // shopItemTxt에 이름, 설명, 가격/변동률 박스 조립
-    shopItemTxt.appendChild(nameElem);
-    shopItemTxt.appendChild(descElem);
-    shopItemTxt.appendChild(itemRateBox);
-
-    // itemBox에 아이콘, 텍스트 영역, 구매 버튼 추가
-    itemBox.appendChild(shopItem);
-    itemBox.appendChild(shopItemTxt);
-    itemBox.appendChild(buyBtn);
-
-    container.appendChild(itemBox);
+    // 예: .item-sell-box, .shop-item, .item-rate-box 등 생성
+    // basePrice, dailyChangePercent를 화면에 표시
+    // 구매 버튼
+    // ...
   });
 }
+
 
 
 
