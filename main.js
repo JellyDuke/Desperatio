@@ -1539,56 +1539,52 @@ function refreshShopItemsForNewDay() {
   const { year, month, day } = gameState.currentDate;
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-  // 1) storeItemDB의 각 아이템 가격을 갱신
+  // 1) storeItemDB의 각 아이템 가격 업데이트
   storeItemDB.forEach(item => {
     const oldPrice = item.basePrice;
-
     if (typeof item.fairPrice === 'undefined') {
       item.fairPrice = oldPrice;
     }
-
-    // 전날 모멘텀, 평균 회귀, 노이즈, 쇼크 이벤트 등을 적용
-    // (기존 로직과 동일)
+    // 모멘텀 / 평균 회귀 / 노이즈 / 쇼크 등 기존 로직
     let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
     const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
-    let meanReversion = -distanceFromFair * 0.02;
+    let meanReversion = -distanceFromFair * 0.02; 
     let noise = Math.random() * 0.2 - 0.1;
     let shock = 0;
     if (Math.random() < 0.05) {
       shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
     }
     if (item.item === '루비') {
-      // 루비 특수 처리
       noise = Math.random() * 0.2 - 0.1;
       if (shock !== 0) shock *= 1.5;
     }
 
     let changePercent = momentumFactor + meanReversion + noise + shock;
     const maxChange = item.dailyFluctuationRate / 100;
-    if (changePercent > maxChange) {
-      changePercent = maxChange;
-    } else if (changePercent < -maxChange) {
-      changePercent = -maxChange;
-    }
+    if (changePercent > maxChange) changePercent = maxChange;
+    else if (changePercent < -maxChange) changePercent = -maxChange;
 
     const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
     item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
     item.basePrice = newPrice;
   });
 
-  // 2) "오늘"의 상점 목록을 생성
-  //    (예: appearanceChance로 필터링)
+  // 2) 갱신된 storeItemDB를 저장
+  saveStoreItemDB();
+
+  // 3) 오늘 등장할 아이템 목록 생성
   const todaysItems = storeItemDB.filter(item => {
     const chance = Math.min(item.appearanceChance + 0.05, 1);
     return Math.random() < chance;
   });
 
-  // 3) 이 목록을 localStorage에 저장 (게임 내 날짜 키 사용)
+  // 4) localStorage에 오늘 목록 저장
   localStorage.setItem('shopItems_' + todayStr, JSON.stringify(todaysItems));
 
-  // 4) initShopItems()를 호출하여 화면에 즉시 반영
+  // 5) initShopItems()로 UI 갱신
   initShopItems();
 }
+
 
 
 
@@ -1609,40 +1605,32 @@ function initShopItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  // 게임 내 날짜를 키로 사용 (예: "24-04-13")
+  // 오늘 날짜 키
   const { year, month, day } = gameState.currentDate;
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-  // localStorage에서 오늘 날짜 키의 상점 데이터를 읽음
+  // localStorage에서 오늘의 아이템 목록 가져오기
   const storedShopData = localStorage.getItem('shopItems_' + todayStr);
-
-  // 만약 저장된 데이터가 없으면 "재고가 없습니다." 표시
   if (!storedShopData) {
     container.textContent = "재고가 없습니다.";
     return;
   }
-
-  // 오늘의 아이템 목록 파싱
   const todaysItems = JSON.parse(storedShopData);
   if (!todaysItems || todaysItems.length === 0) {
     container.textContent = "재고가 없습니다.";
     return;
   }
 
-  // === DOM에 아이템 목록 표시 ===
+  // DOM 생성
   todaysItems.forEach(itemData => {
-    // .item-sell-box (아이템 박스)
     const itemBox = document.createElement('div');
     itemBox.classList.add('item-sell-box');
 
-    // 아이템 아이콘 영역 (.shop-item)
     const shopItem = document.createElement('div');
     shopItem.classList.add('shop-item');
-    // itemClassMapping을 통해 아이콘 이미지 / CSS를 표시
     const mappedClass = itemClassMapping[itemData.item] || 'unknown-item';
     shopItem.classList.add(mappedClass);
 
-    // 텍스트 영역 (.shop-item-txt)
     const shopItemTxt = document.createElement('div');
     shopItemTxt.classList.add('shop-item-txt');
 
@@ -1654,33 +1642,28 @@ function initShopItems() {
     // 아이템 설명
     const descElem = document.createElement('div');
     descElem.classList.add('item-description');
-    descElem.textContent = itemData.description || "";
+    descElem.textContent = itemData.description;
 
-    // 가격/변동률 박스 (.item-rate-box)
+    // 가격/변동률
     const itemRateBox = document.createElement('div');
     itemRateBox.classList.add('item-rate-box');
-    itemRateBox.style.display = 'flex'; // flex 레이아웃
+    itemRateBox.style.display = 'flex';
 
-    // 가격 (.item-price)
     const priceElem = document.createElement('div');
     priceElem.classList.add('item-price');
-    // 이미 storeItemDB에서 업데이트된 basePrice가 itemData.basePrice에 들어 있다고 가정
-    priceElem.textContent = `${(itemData.basePrice || 0).toLocaleString()}원`;
+    priceElem.textContent = `${itemData.basePrice.toLocaleString()}원`;
 
-    // 변동률 (.item-rate-txt, .item-rate)
     const itemRateTxt = document.createElement('div');
     itemRateTxt.classList.add('item-rate-txt');
     const itemRate = document.createElement('div');
     itemRate.classList.add('item-rate');
 
-    // dailyChangePercent가 없으면 0% 처리
     const difference = Math.round(itemData.dailyChangePercent || 0);
     if (difference > 0) {
       itemRateTxt.textContent = `+${difference}%`;
       itemRateTxt.classList.add('up');
       itemRate.classList.add('up');
     } else if (difference < 0) {
-      // difference가 이미 음수이면 그대로 표시
       itemRateTxt.textContent = `${difference}%`;
       itemRateTxt.classList.add('down');
       itemRate.classList.add('down');
@@ -1688,7 +1671,6 @@ function initShopItems() {
       itemRateTxt.textContent = `0%`;
     }
 
-    // 박스에 가격/변동률 요소 추가
     itemRateBox.appendChild(priceElem);
     itemRateBox.appendChild(itemRateTxt);
     itemRateBox.appendChild(itemRate);
@@ -1698,22 +1680,18 @@ function initShopItems() {
     buyBtn.classList.add('item-buy-btn');
     buyBtn.textContent = "구매";
     buyBtn.addEventListener('click', () => {
-      // 구매 팝업 오픈을 위해 전역 변수에 선택된 아이템 저장
       selectedItemForPurchase = itemData;
       showBuyPopup();
     });
 
-    // shopItemTxt에 이름, 설명, 가격/변동률 박스 조립
     shopItemTxt.appendChild(nameElem);
     shopItemTxt.appendChild(descElem);
     shopItemTxt.appendChild(itemRateBox);
 
-    // itemBox에 아이콘, 텍스트, 구매 버튼 조립
     itemBox.appendChild(shopItem);
     itemBox.appendChild(shopItemTxt);
     itemBox.appendChild(buyBtn);
 
-    // 최종적으로 container에 추가
     container.appendChild(itemBox);
   });
 }
