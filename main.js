@@ -1745,39 +1745,49 @@ function updateShopInventory() {
 
 // 수정된 감정 함수 (아이템 클릭 시)
 function addShopItemClickListeners() {
+  // .popup.shop 내의 모든 inventory-box 요소 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   shopInvBoxes.forEach(box => {
     box.addEventListener('click', function(e) {
       e.preventDefault();
-      // 모든 박스 선택 표시 초기화
-      shopInvBoxes.forEach(b => b.style.border = "");
+      
+      // 다른 박스 클릭 시 기존 선택 표시 제거
+      shopInvBoxes.forEach(b => {
+        b.style.border = ""; // 초기 상태로 복구
+      });
       this.style.border = "2px solid white";
       
+      // data-item 속성에서 아이템 이름 가져오기
       const itemName = this.dataset.item;
       if (!itemName) return;
+      
+      // 플레이어 인벤토리에서 해당 아이템 개수 계산
+      const itemCount = gameState.player.inventory.filter(item => item === itemName).length;
       
       const connoisseur = document.querySelector('.popup.shop .connoisseur');
       if (!connoisseur) return;
       
-      let price;
-      // 먼저 몬스터 전리품 정보에서 가격 정보를 찾기
+      // 우선, 몬스터 전리품 정보에서 가격 조회, 없으면 상점 DB에서 조회
+      let price = 0;
       const lootInfo = getLootPriceInfo(itemName);
       if (lootInfo) {
         price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
       } else {
-        // 없다면, 상점 아이템 DB에서 정보를 찾기
         const storeInfo = getStoreItemInfo(itemName);
         if (storeInfo) {
-          // 여기서는 동적 가격 산출 로직이 없으므로 basePrice를 그대로 사용
           price = storeInfo.basePrice;
-        } else {
-          price = 0;
         }
       }
-      connoisseur.textContent = `감정: ${itemName}, 가격: ${price}원`;
+      
+      // 총가격: 단가 * 개수
+      const totalPrice = price * itemCount;
+      
+      // toLocaleString()을 사용해 가독성 있게 숫자 표시
+      connoisseur.textContent = `감정: ${itemName}, 가격: ${price.toLocaleString()}원, 총가격: ${totalPrice.toLocaleString()}원`;
     });
   });
 }
+
 
 
 function sellAllItems() {
