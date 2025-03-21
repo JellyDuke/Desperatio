@@ -1505,50 +1505,56 @@ function getStoreItemInfo(itemName) {
 function refreshShopItemsForNewDay() {
   const { year, month, day } = gameState.currentDate;
   const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-  // 게임 날짜에 해당하는 기존 상점 데이터 삭제
-  localStorage.removeItem('shopItems_' + todayStr);
-
-  // 각 아이템 가격 업데이트 (기존 로직)
-  storeItemDB.forEach(item => {
-    const oldPrice = item.basePrice;
-    
-    if (typeof item.fairPrice === 'undefined') {
-      item.fairPrice = oldPrice;
-    }
-    
-    let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
-    const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
-    let meanReversion = -distanceFromFair * 0.02;  // 1% 회귀 효과
-    let noise = Math.random() * 0.2 - 0.01;         // 노이즈: -1% ~ +19%? (여기서는 -1% ~ +19%인데, 조정 가능)
-    let shock = 0;
-    if (Math.random() < 0.05) {
-      shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
-    }
-    if (item.item === '루비') {
-      noise = Math.random() * 0.2 - 0.1;
-      if (shock !== 0) {
-        shock *= 1.5;
-      }
-    }
-    
-    let changePercent = momentumFactor + meanReversion + noise + shock;
-    const maxChange = item.dailyFluctuationRate / 100;
-    if (changePercent > maxChange) {
-      changePercent = maxChange;
-    } else if (changePercent < -maxChange) {
-      changePercent = -maxChange;
-    }
-    
-    const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
-    // 이벤트 발생 후 dailyChangePercent 재계산
-    item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
-    item.basePrice = newPrice;
-  });
   
-  // 새로 계산된 가격 정보를 반영하여 상점 아이템 목록 재생성
-  initShopItems();
+  // 만약 이미 오늘의 상점 데이터가 저장되어 있다면 삭제하지 않고 그대로 사용
+  // localStorage에서 해당 데이터가 존재하는지 확인
+  if (!localStorage.getItem('shopItems_' + todayStr)) {
+    // 없다면, 각 아이템 가격 업데이트 로직 실행
+    storeItemDB.forEach(item => {
+      const oldPrice = item.basePrice;
+      
+      if (typeof item.fairPrice === 'undefined') {
+        item.fairPrice = oldPrice;
+      }
+      
+      let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
+      const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
+      let meanReversion = -distanceFromFair * 0.02;  // 1% 회귀 효과
+      let noise = Math.random() * 0.2 - 0.01;
+      let shock = 0;
+      if (Math.random() < 0.05) {
+        shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
+      }
+      if (item.item === '루비') {
+        noise = Math.random() * 0.2 - 0.1;
+        if (shock !== 0) {
+          shock *= 1.5;
+        }
+      }
+      
+      let changePercent = momentumFactor + meanReversion + noise + shock;
+      const maxChange = item.dailyFluctuationRate / 100;
+      if (changePercent > maxChange) {
+        changePercent = maxChange;
+      } else if (changePercent < -maxChange) {
+        changePercent = -maxChange;
+      }
+      
+      const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
+      
+      // 이벤트 후 dailyChangePercent 재계산
+      item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
+      item.basePrice = newPrice;
+    });
+  
+    // 새로 계산된 가격 정보로 상점 아이템 목록 생성 후 저장
+    initShopItems();
+  } else {
+    // 이미 저장된 데이터가 있으면 initShopItems()를 호출해 UI를 갱신
+    initShopItems();
+  }
 }
+
 
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
