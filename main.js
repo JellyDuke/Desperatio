@@ -1377,35 +1377,6 @@ function getLootPriceInfo(itemName) {
   return null; // 해당 아이템 정보를 찾지 못한 경우
 }
 
-buyConfirmBtn.addEventListener('click', () => {
-  const quantity = parseInt(inputField.value, 10);
-  if (isNaN(quantity) || quantity <= 0) {
-    alert("구매할 개수를 올바르게 입력하세요.");
-    return;
-  }
-
-  // 총 구매 금액 계산 (basePrice에 daily 변동 적용이 없으면 그대로 사용)
-  const totalCost = selectedItemForPurchase.basePrice * quantity;
-
-  if (gameState.player.money >= totalCost) {
-    // 소지금 차감
-    gameState.player.money -= totalCost;
-    // 구매한 개수만큼 인벤토리에 추가 (아이템 이름을 추가)
-    for (let i = 0; i < quantity; i++) {
-      gameState.player.inventory.push(selectedItemForPurchase.item);
-    }
-    alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
-    // UI 업데이트: 인벤토리, 상점 인벤토리, 유저 상태
-    updateInventory();
-    updateShopInventory();
-    updateUserStatus();
-    saveGameState();
-  } else {
-    alert("소지금이 부족합니다!");
-  }
-  hideBuyPopup();
-});
-
 /**
  * 하루가 지날 때마다 상점 아이템을 갱신하는 함수
  * 1) dailyFluctuationRate를 바탕으로 가격 조정
@@ -1526,17 +1497,24 @@ function initBuyPopup() {
       return;
     }
 
-    // 여기서 실제 구매 로직(돈 차감, 인벤토리에 아이템 추가 등)을 구현
-    // 예시:
-    // const totalCost = selectedItemForPurchase.basePrice * quantity;
-    // if (gameState.player.money >= totalCost) {
-    //   gameState.player.money -= totalCost;
-    //   // 인벤토리 추가 로직
-    //   alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
-    // } else {
-    //   alert("소지금이 부족합니다!");
-    // }
+    // 총 구매 금액 계산
+    const totalCost = selectedItemForPurchase.basePrice * quantity;
 
+    if (gameState.player.money >= totalCost) {
+      // 소지금 차감
+      gameState.player.money -= totalCost;
+      // 인벤토리에 아이템 추가
+      for (let i = 0; i < quantity; i++) {
+        gameState.player.inventory.push(selectedItemForPurchase.item);
+      }
+      alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
+      updateInventory();
+      updateShopInventory();
+      updateUserStatus();
+      saveGameState();
+    } else {
+      alert("소지금이 부족합니다!");
+    }
     // 구매 후 팝업 닫기
     hideBuyPopup();
   });
