@@ -1377,6 +1377,149 @@ function getLootPriceInfo(itemName) {
   return null; // 해당 아이템 정보를 찾지 못한 경우
 }
 
+// 구매하려는 아이템 정보를 임시 저장할 변수
+let selectedItemForPurchase = null;
+
+// 페이지 로드 후 상점 초기화
+document.addEventListener('DOMContentLoaded', () => {
+  initShopItems();
+  initBuyPopup();
+});
+
+/**
+ * 상점 아이템을 확률적으로 뽑아서 .shop-item-sell-list 안에 생성
+ */
+function initShopItems() {
+  const container = document.querySelector('.shop-item-sell-list');
+  if (!container) return;
+
+  // 컨테이너 초기화
+  container.innerHTML = '';
+
+  // storeItemDB에서 appearanceChance에 따라 아이템을 뽑는다
+  const todaysItems = storeItemDB.filter(item => {
+    return Math.random() < item.appearanceChance;
+  });
+
+  // 뽑힌 아이템을 순회하며 DOM 생성
+  todaysItems.forEach(itemData => {
+    // .item-sell-box 래퍼 생성
+    const itemBox = document.createElement('div');
+    itemBox.classList.add('item-sell-box');
+
+    // .shop-item (아이템 아이콘용)
+    const shopItem = document.createElement('div');
+    shopItem.classList.add('shop-item');
+    const mappedClass = itemClassMapping[itemData.item] || 'unknown-item';
+    shopItem.classList.add(mappedClass);
+
+    // .shop-item-txt (이름, 설명, 가격)
+    const shopItemTxt = document.createElement('div');
+    shopItemTxt.classList.add('shop-item-txt');
+
+    // 아이템 이름
+    const nameElem = document.createElement('div');
+    nameElem.classList.add('item-name');
+    nameElem.textContent = itemData.item;
+
+    // 아이템 설명
+    const descElem = document.createElement('div');
+    descElem.classList.add('item-description');
+    descElem.textContent = itemData.description;
+
+    // 아이템 가격
+    const priceElem = document.createElement('div');
+    priceElem.classList.add('item-price');
+    priceElem.textContent = `${itemData.basePrice} G`; 
+    // 실제로는 dailyFluctuationRate 등을 적용해 변동된 가격을 표시할 수 있습니다.
+
+    // 구매 버튼 (shop-item-txt 밖)
+    const buyBtn = document.createElement('button');
+    buyBtn.classList.add('item-buy-btn');
+    buyBtn.textContent = "구매";
+    buyBtn.addEventListener('click', () => {
+      selectedItemForPurchase = itemData;
+      showBuyPopup();
+    });
+
+    // 요소 조립
+    shopItemTxt.appendChild(nameElem);
+    shopItemTxt.appendChild(descElem);
+    shopItemTxt.appendChild(priceElem);
+
+    // itemBox에 순서대로 삽입: shopItem, shopItemTxt, buyBtn
+    itemBox.appendChild(shopItem);
+    itemBox.appendChild(shopItemTxt);
+    itemBox.appendChild(buyBtn);
+
+    container.appendChild(itemBox);
+  });
+}
+
+/**
+ * 구매 팝업(.input-buy) 관련 초기화
+ */
+function initBuyPopup() {
+  const inputBuy = document.querySelector('.input-buy');
+  const inputField = document.querySelector('.input-buy-field');
+  const buyConfirmBtn = document.querySelector('.buy-input-btn');
+  const buyCloseBtn = document.querySelector('.buy-input-close-btn');
+
+  if (!inputBuy || !inputField || !buyConfirmBtn || !buyCloseBtn) return;
+
+  // 구매 확정 버튼
+  buyConfirmBtn.addEventListener('click', () => {
+    const quantity = parseInt(inputField.value, 10);
+    if (isNaN(quantity) || quantity <= 0) {
+      alert("구매 개수를 올바르게 입력하세요.");
+      return;
+    }
+
+    // 여기서 실제 구매 로직(돈 차감, 인벤토리에 아이템 추가 등)을 구현
+    // 예시:
+    // const totalCost = selectedItemForPurchase.basePrice * quantity;
+    // if (gameState.player.money >= totalCost) {
+    //   gameState.player.money -= totalCost;
+    //   // 인벤토리 추가 로직
+    //   alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
+    // } else {
+    //   alert("소지금이 부족합니다!");
+    // }
+
+    // 구매 후 팝업 닫기
+    hideBuyPopup();
+  });
+
+  // 닫기 버튼
+  buyCloseBtn.addEventListener('click', () => {
+    hideBuyPopup();
+  });
+}
+
+/**
+ * 구매 팝업 열기
+ */
+function showBuyPopup() {
+  const inputBuy = document.querySelector('.input-buy');
+  const inputField = document.querySelector('.input-buy-field');
+  if (!inputBuy || !inputField) return;
+
+  inputField.value = "1";        // 기본값 1
+  inputBuy.style.display = 'flex';
+}
+
+/**
+ * 구매 팝업 닫기
+ */
+function hideBuyPopup() {
+  const inputBuy = document.querySelector('.input-buy');
+  if (!inputBuy) return;
+
+  inputBuy.style.display = 'none';
+  // 구매 아이템 초기화
+  selectedItemForPurchase = null;
+}
+
 //shop tap 버튼 기능
 document.addEventListener('DOMContentLoaded', () => {
   const shopSellBtn = document.querySelector('.shop-sell-btn');
