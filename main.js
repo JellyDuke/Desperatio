@@ -2083,6 +2083,8 @@ function updateGameDate() {
       scrollToBottom(kingdomMsgElem);
     }
     dateTextDisplayed = true;
+
+    refreshShopItemsForNewDay();
   }
 
   // 날짜 정보 영역 (.date-info) 매번 갱신 (누적되지 않음)
@@ -2094,7 +2096,7 @@ function updateGameDate() {
   // 여기에 gameState.currentDate를 업데이트하는 부분 추가
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
 	
-  refreshShopItemsForNewDay();
+  
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
