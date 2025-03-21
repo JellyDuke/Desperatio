@@ -1545,6 +1545,26 @@ function initShopItems() {
 /**
  * 구매 팝업(.input-buy) 관련 초기화
  */
+
+function canAddItemToInventory(itemName, quantity) {
+  // 현재 인벤토리의 각 아이템 개수를 계산합니다.
+  const counts = {};
+  gameState.player.inventory.forEach(item => {
+    counts[item] = (counts[item] || 0) + 1;
+  });
+  // 구매하려는 아이템을 추가합니다.
+  counts[itemName] = (counts[itemName] || 0) + quantity;
+  
+  // 각 아이템은 한 슬롯에 최대 99개까지 들어갑니다.
+  // 각 항목에 대해 필요한 슬롯 수를 계산한 후 합산합니다.
+  let totalSlots = 0;
+  for (let key in counts) {
+    totalSlots += Math.ceil(counts[key] / 99);
+  }
+  // 총 슬롯 수가 28개 이하인지 확인합니다.
+  return totalSlots <= 28;
+}
+
 function initBuyPopup() {
   const inputBuy = document.querySelector('.input-buy');
   const inputField = document.querySelector('.input-buy-field');
@@ -1557,31 +1577,42 @@ function initBuyPopup() {
   buyConfirmBtn.addEventListener('click', () => {
     const quantity = parseInt(inputField.value, 10);
     if (isNaN(quantity) || quantity <= 0) {
-      alert("구매 개수를 올바르게 입력하세요.");
+      alert("구매할 개수를 올바르게 입력하세요.");
       return;
     }
-
+  
     // 총 구매 금액 계산
     const totalCost = selectedItemForPurchase.basePrice * quantity;
-
-    if (gameState.player.money >= totalCost) {
-      // 소지금 차감
-      gameState.player.money -= totalCost;
-      // 인벤토리에 아이템 추가
-      for (let i = 0; i < quantity; i++) {
-        gameState.player.inventory.push(selectedItemForPurchase.item);
-      }
-      alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
-      updateInventory();
-      updateShopInventory();
-      updateUserStatus();
-      saveGameState();
-    } else {
+  
+    // 소지금 확인
+    if (gameState.player.money < totalCost) {
       alert("소지금이 부족합니다!");
+      return;
     }
-    // 구매 후 팝업 닫기
+    
+    // 인벤토리 슬롯 체크: 구매 후 슬롯이 28개를 초과하면 구매 불가
+    if (!canAddItemToInventory(selectedItemForPurchase.item, quantity)) {
+      alert("인벤토리 슬롯이 부족하여 구매할 수 없습니다!");
+      return;
+    }
+    
+    // 구매 진행: 돈 차감 및 인벤토리에 아이템 추가
+    gameState.player.money -= totalCost;
+    for (let i = 0; i < quantity; i++) {
+      gameState.player.inventory.push(selectedItemForPurchase.item);
+    }
+    
+    alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
+  
+    // UI 및 상태 업데이트
+    updateInventory();
+    updateShopInventory();
+    updateUserStatus();
+    saveGameState();
+    
     hideBuyPopup();
   });
+  
 
   // 닫기 버튼
   buyCloseBtn.addEventListener('click', () => {
@@ -1995,29 +2026,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // [수정/추가된 코드]
 // [수정된 코드] updateInventory 함수 수정
 function updateInventory() {
-  // 인벤토리 박스 요소를 찾습니다.
-  const invBoxes = document.querySelectorAll('.inventory-box'); // 총 28개 슬롯
+  // 인벤토리 박스(슬롯) 요소를 찾습니다. (예: 총 28개 슬롯)
+  const invBoxes = document.querySelectorAll('.inventory-box');
 
-  // 게임 상태의 인벤토리를 아이템별로 그룹화 (예: { "잎파리": 10, "슬라임 젤리": 3, ... })
+  // 플레이어 인벤토리를 아이템별로 그룹화 (예: { "아이템명": 개수, ... })
   const inventoryCounts = {};
   gameState.player.inventory.forEach(item => {
     inventoryCounts[item] = (inventoryCounts[item] || 0) + 1;
   });
 
-  // inventoryCounts 객체를 슬롯 배열로 변환 (각 슬롯은 { item, count } 객체)
-  let slots = Object.keys(inventoryCounts).map(item => {
-    return {
-      item: item,
-      // 각 슬롯 당 최대 99개로 제한
-      count: Math.min(inventoryCounts[item], 99)
-    };
-  });
+  // 각 아이템의 수량이 99개를 초과하면 여러 슬롯으로 분리하여 slots 배열 생성
+  let slots = [];
+  for (const item in inventoryCounts) {
+    let count = inventoryCounts[item];
+    while (count > 0) {
+      const slotCount = count > 99 ? 99 : count;
+      slots.push({ item: item, count: slotCount });
+      count -= slotCount;
+    }
+  }
 
-  // 슬롯 종류가 28개를 초과하면 28개까지만 사용하고, 가득 참 상태로 표시
-  let isFull = false;
+  // 슬롯이 인벤토리 박스 수보다 많으면 초과 슬롯은 잘라냅니다.
   if (slots.length > invBoxes.length) {
     slots = slots.slice(0, invBoxes.length);
-    isFull = true;
   }
 
   // 각 인벤토리 슬롯 업데이트
@@ -2026,29 +2057,32 @@ function updateInventory() {
     box.className = 'inventory-box';
     if (index < slots.length) {
       const slot = slots[index];
-      // 슬롯에 해당하는 아이템 수량 텍스트 적용
+      // 슬롯에 해당하는 아이템 수량 표시
       box.textContent = slot.count.toString();
-      // 아이템명에 대응하는 CSS 클래스명을 추가
-      let className = itemClassMapping[slot.item] || slot.item.replace(/\s+/g, '-').toLowerCase();
+      // data-item 속성에 아이템 이름 저장 (클릭 시 사용)
+      box.dataset.item = slot.item;
+      // itemClassMapping을 통해 CSS 클래스 추가
+      const className = itemClassMapping[slot.item] || slot.item.replace(/\s+/g, '-').toLowerCase();
       box.classList.add(className);
     } else {
       box.textContent = '';
+      delete box.dataset.item;
     }
   });
 
-  // [수정된 부분]
-  // 만약 슬롯 종류가 28개를 초과하면, 최근 활동 영역에 "최근 활동에 인벤토리가 꽉찼습니다!" 메시지 노란색으로 추가
-  if (isFull) {
+  // 만약 슬롯 수가 인벤토리 박스 수를 초과했다면, 인벤토리가 꽉 찼음을 메시지로 표시
+  if (slots.length > invBoxes.length) {
     const recentActivityContainer = document.querySelector('.kingdom-message-combat');
     if (recentActivityContainer) {
       const fullMsg = document.createElement('div');
-      fullMsg.textContent = "인벤토리가 꽉찼습니다!";
+      fullMsg.textContent = "인벤토리가 꽉 찼습니다!";
       fullMsg.style.color = "yellow";
       recentActivityContainer.appendChild(fullMsg);
       recentActivityContainer.scrollTop = recentActivityContainer.scrollHeight;
     }
   }
 }
+
 
 //사망시
 function resetGameExceptSkills() {
