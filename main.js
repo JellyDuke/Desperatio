@@ -1786,6 +1786,55 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 let selectedSellItem = null; // 현재 판매할 아이템을 저장할 전역 변수
 
+
+function sellSelectedItem(quantity) {
+  if (!selectedSellItem) {
+    alert("판매할 아이템을 먼저 선택하세요!");
+    return;
+  }
+  
+  // 현재 인벤토리에서 선택된 아이템의 수량 계산
+  let currentCount = gameState.player.inventory.filter(item => item === selectedSellItem).length;
+  if (quantity > currentCount) {
+    alert("판매할 수 있는 수량이 부족합니다!");
+    return;
+  }
+  
+  // 판매 가격 산출: 먼저 전리품 정보(loot)를 확인하고, 없으면 상점 아이템 DB에서 조회
+  let price = 0;
+  const lootInfo = getLootPriceInfo(selectedSellItem);
+  if (lootInfo) {
+    price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
+  } else {
+    const storeInfo = getStoreItemInfo(selectedSellItem);
+    if (storeInfo) {
+      price = storeInfo.basePrice;
+    }
+  }
+  
+  const totalSale = price * quantity;
+  
+  // 인벤토리에서 판매한 개수만큼 제거
+  let soldCount = 0;
+  gameState.player.inventory = gameState.player.inventory.filter(item => {
+    if (item === selectedSellItem && soldCount < quantity) {
+      soldCount++;
+      return false; // 제거
+    }
+    return true;
+  });
+  
+  // 판매 금액을 유저 소지금에 추가
+  gameState.player.money += totalSale;
+  
+  alert(`${selectedSellItem}을(를) ${quantity}개 팔아 ${totalSale}원을 획득했습니다.`);
+  
+  // UI 업데이트 및 게임 상태 저장
+  updateInventory();
+  updateShopInventory();
+  updateUserStatus();
+  saveGameState();
+}
 function setupSellSelectFunctionality() {
   // 1. 인벤토리 아이템 클릭 시 판매할 아이템 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
@@ -1870,7 +1919,7 @@ function setupSellSelectFunctionality() {
         updateInventory();
         updateShopInventory();
         saveGameState();
-	updateUserStatus();
+	      updateUserStatus();
 
       }
       
@@ -1902,7 +1951,7 @@ function setupSellSelectFunctionality() {
 
 // DOMContentLoaded 시 Sell Select 기능 설정
 document.addEventListener('DOMContentLoaded', () => {
-  setupSellSelectFunctionality();
+  sellSelectedItem();
 });
 
 
