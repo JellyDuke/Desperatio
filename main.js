@@ -1925,7 +1925,7 @@ function sellSelectedItem(quantity) {
   gameState.player.inventory = gameState.player.inventory.filter(item => {
     if (item === selectedSellItem && soldCount < quantity) {
       soldCount++;
-      return false; // 제거
+      return false; // 해당 항목 제거
     }
     return true;
   });
@@ -1933,14 +1933,22 @@ function sellSelectedItem(quantity) {
   // 판매 금액을 유저 소지금에 추가
   gameState.player.money += totalSale;
   
-  alert(`${selectedSellItem}을(를) ${quantity}개 팔아 ${totalSale}원을 획득했습니다.`);
-  
   // UI 업데이트 및 게임 상태 저장
   updateInventory();
   updateShopInventory();
   updateUserStatus();
   saveGameState();
+  
+  // connoisseur 업데이트: 판매 완료 후 결과 메시지 표시
+  const connoisseur = document.querySelector('.popup.shop .connoisseur');
+  if (connoisseur) {
+    connoisseur.textContent = `${selectedSellItem} ${quantity}개 판매 완료. 총 ${totalSale.toLocaleString()}원을 획득했습니다.`;
+  }
+  
+  alert(`${selectedSellItem}을(를) ${quantity}개 팔아 ${totalSale.toLocaleString()}원을 획득했습니다.`);
 }
+
+
 function setupSellSelectFunctionality() {
   // 1. 인벤토리 아이템 클릭 시 판매할 아이템 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
