@@ -1362,6 +1362,7 @@ function checkLevelUp(messageContainer) {
 }
 
 //상점
+// 기존 getLootPriceInfo 함수는 그대로 사용
 function getLootPriceInfo(itemName) {
   for (const key in monsterData) {
     if (monsterData.hasOwnProperty(key)) {
@@ -1681,20 +1682,7 @@ function updateShopInventory() {
 }
 
 
-// 기존 getLootPriceInfo 함수는 그대로 사용
-function getLootPriceInfo(itemName) {
-  for (const key in monsterData) {
-    if (monsterData.hasOwnProperty(key)) {
-      const lootArray = monsterData[key].loot;
-      for (let i = 0; i < lootArray.length; i++) {
-        if (lootArray[i].item === itemName) {
-          return lootArray[i]; // { item, basePrice, variance, dropChance }
-        }
-      }
-    }
-  }
-  return null;
-}
+
 
 // 수정된 감정 함수 (아이템 클릭 시)
 function addShopItemClickListeners() {
