@@ -1363,7 +1363,6 @@ function checkLevelUp(messageContainer) {
 
 //상점
 function getLootPriceInfo(itemName) {
-  // monsterData의 각 몬스터에서 loot 배열을 검사
   for (const key in monsterData) {
     if (monsterData.hasOwnProperty(key)) {
       const lootArray = monsterData[key].loot;
@@ -1374,8 +1373,9 @@ function getLootPriceInfo(itemName) {
       }
     }
   }
-  return null; // 해당 아이템 정보를 찾지 못한 경우
+  return null;
 }
+
 function getStoreItemInfo(itemName) {
   return storeItemDB.find(item => item.item === itemName);
 }
@@ -1678,38 +1678,62 @@ function updateShopInventory() {
   addShopItemClickListeners();
 }
 
+// 상점 아이템 정보를 반환하는 헬퍼 함수
+function getStoreItemInfo(itemName) {
+  return storeItemDB.find(item => item.item === itemName);
+}
+
+// 기존 getLootPriceInfo 함수는 그대로 사용
+function getLootPriceInfo(itemName) {
+  for (const key in monsterData) {
+    if (monsterData.hasOwnProperty(key)) {
+      const lootArray = monsterData[key].loot;
+      for (let i = 0; i < lootArray.length; i++) {
+        if (lootArray[i].item === itemName) {
+          return lootArray[i]; // { item, basePrice, variance, dropChance }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// 수정된 감정 함수 (아이템 클릭 시)
 function addShopItemClickListeners() {
-  // .popup.shop 내의 모든 inventory-box 요소 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   shopInvBoxes.forEach(box => {
     box.addEventListener('click', function(e) {
       e.preventDefault();
-      
-      // 다른 박스를 클릭하면 기존에 선택된 박스의 border 초기화
-      shopInvBoxes.forEach(b => {
-        b.style.border = ""; // 초기 상태로 복구
-      });
-      // 현재 클릭한 박스에 border 적용
+      // 모든 박스 선택 표시 초기화
+      shopInvBoxes.forEach(b => b.style.border = "");
       this.style.border = "2px solid white";
       
-      // data-item 속성에서 아이템 이름 가져오기
       const itemName = this.dataset.item;
       if (!itemName) return;
       
       const connoisseur = document.querySelector('.popup.shop .connoisseur');
       if (!connoisseur) return;
       
-      // monsterData 내의 loot 정보를 통해 가격 정보 가져오기
+      let price;
+      // 먼저 몬스터 전리품 정보에서 가격 정보를 찾기
       const lootInfo = getLootPriceInfo(itemName);
       if (lootInfo) {
-        const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
-        connoisseur.textContent = `감정: ${itemName}, 가격: ${price}`;
+        price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
       } else {
-        connoisseur.textContent = `감정: ${itemName}`;
+        // 없다면, 상점 아이템 DB에서 정보를 찾기
+        const storeInfo = getStoreItemInfo(itemName);
+        if (storeInfo) {
+          // 여기서는 동적 가격 산출 로직이 없으므로 basePrice를 그대로 사용
+          price = storeInfo.basePrice;
+        } else {
+          price = 0;
+        }
       }
+      connoisseur.textContent = `감정: ${itemName}, 가격: ${price}원`;
     });
   });
 }
+
 
 function sellAllItems() {
   let totalSale = 0;
