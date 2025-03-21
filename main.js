@@ -1487,7 +1487,7 @@ function initShopItems() {
     const priceElem = document.createElement('div');
     priceElem.classList.add('item-price');
     // toLocaleString()으로 콤마 표시
-    priceElem.textContent = `${itemData.basePrice.toLocaleString()} G`;
+    priceElem.textContent = `${itemData.basePrice.toLocaleString()}원`;
 
     // 2) 변동률 텍스트 (.item-rate-txt)
     const itemRateTxt = document.createElement('div');
