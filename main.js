@@ -1447,23 +1447,28 @@ function initShopItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  // 오늘 등장할 아이템 목록
-  const todaysItems = storeItemDB.filter(item => {
-    return Math.random() < item.appearanceChance;
-  });
+  // storeItemDB에서 appearanceChance에 따라 오늘 등장할 아이템 목록 필터링
+  const todaysItems = storeItemDB.filter(item => Math.random() < item.appearanceChance);
 
+  // 재고가 없으면 텍스트 메시지 출력 후 종료
+  if (todaysItems.length === 0) {
+    container.textContent = "재고가 없습니다.";
+    return;
+  }
+
+  // 뽑힌 아이템을 순회하며 DOM 생성
   todaysItems.forEach(itemData => {
-    // .item-sell-box 생성
+    // .item-sell-box 래퍼 생성
     const itemBox = document.createElement('div');
     itemBox.classList.add('item-sell-box');
 
-    // .shop-item (아이콘)
+    // .shop-item (아이템 아이콘용)
     const shopItem = document.createElement('div');
     shopItem.classList.add('shop-item');
     const mappedClass = itemClassMapping[itemData.item] || 'unknown-item';
     shopItem.classList.add(mappedClass);
 
-    // .shop-item-txt (이름, 설명 등 텍스트)
+    // .shop-item-txt (이름, 설명, 가격 등 텍스트)
     const shopItemTxt = document.createElement('div');
     shopItemTxt.classList.add('shop-item-txt');
 
@@ -1477,47 +1482,35 @@ function initShopItems() {
     descElem.classList.add('item-description');
     descElem.textContent = itemData.description;
 
-    // ★ .item-rate-box (가격, 변동률 표시) ★
+    // .item-rate-box (가격, 변동률 표시)
     const itemRateBox = document.createElement('div');
     itemRateBox.classList.add('item-rate-box');
-
-    // 1) 가격 표시 (.item-price)
+    // 가격 표시
     const priceElem = document.createElement('div');
     priceElem.classList.add('item-price');
-    // toLocaleString()으로 콤마 표시
     priceElem.textContent = `${itemData.basePrice.toLocaleString()}원`;
-
-    // 2) 변동률 텍스트 (.item-rate-txt)
+    // 변동률 텍스트 표시
     const itemRateTxt = document.createElement('div');
     itemRateTxt.classList.add('item-rate-txt');
-
-    // 3) 변동률 아이콘/영역 (.item-rate)
     const itemRate = document.createElement('div');
     itemRate.classList.add('item-rate');
-
-    // 전일 대비 변동 퍼센트 (소수점 반올림)
     const difference = Math.round(itemData.dailyChangePercent);
-    // +, - 기호 포함하여 표시
     if (difference > 0) {
       itemRateTxt.textContent = `+${difference}%`;
-      // 상승이면 .up 클래스 부여
       itemRateTxt.classList.add('up');
       itemRate.classList.add('up');
     } else if (difference < 0) {
-      itemRateTxt.textContent = `${difference}%`; // 이미 -가 포함됨
-      // 하락이면 .down 클래스 부여
+      itemRateTxt.textContent = `${difference}%`;
       itemRateTxt.classList.add('down');
       itemRate.classList.add('down');
     } else {
       itemRateTxt.textContent = `0%`;
     }
-
-    // itemRateBox에 요소 추가
     itemRateBox.appendChild(priceElem);
     itemRateBox.appendChild(itemRateTxt);
     itemRateBox.appendChild(itemRate);
 
-    // 구매 버튼
+    // 구매 버튼 (shop-item-txt 밖)
     const buyBtn = document.createElement('button');
     buyBtn.classList.add('item-buy-btn');
     buyBtn.textContent = "구매";
@@ -1526,12 +1519,12 @@ function initShopItems() {
       showBuyPopup();
     });
 
-    // shopItemTxt에 기본 텍스트(이름, 설명)와 itemRateBox 추가
+    // shopItemTxt에 이름, 설명, itemRateBox 추가
     shopItemTxt.appendChild(nameElem);
     shopItemTxt.appendChild(descElem);
     shopItemTxt.appendChild(itemRateBox);
 
-    // itemBox에 순서대로 shopItem, shopItemTxt, buyBtn 삽입
+    // itemBox에 shopItem, shopItemTxt, 그리고 buyBtn 추가
     itemBox.appendChild(shopItem);
     itemBox.appendChild(shopItemTxt);
     itemBox.appendChild(buyBtn);
