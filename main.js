@@ -1408,21 +1408,29 @@ function getStoreItemInfo(itemName) {
  * 2) 오늘 등장할 아이템 목록을 재구성하고 DOM 갱신
  */
 function refreshShopItemsForNewDay() {
-  // 1) storeItemDB를 순회하면서 가격을 조정
   storeItemDB.forEach(item => {
-    // 최대 dailyFluctuationRate 값(예: 8% → 0.08)까지 임의의 비율을 산출
+    const oldPrice = item.basePrice;  // 어제(이전) 가격
+    // 최대 dailyFluctuationRate% 범위 안에서 0 ~ dailyFluctuationRate 사이 임의 비율
     const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
-    // 상승 또는 하락 방향 선택
+    // 상승 or 하락 방향
     const direction = Math.random() < 0.5 ? 1 : -1;
-    // 변동량 계산: basePrice의 randomRate 만큼 변화 (양수 또는 음수)
-    const fluctuation = item.basePrice * randomRate * direction;
-    // basePrice 업데이트 (최소 1 이상으로 제한)
-    item.basePrice = Math.max(1, Math.floor(item.basePrice + fluctuation));
+    // 변동값 계산
+    const fluctuation = Math.floor(oldPrice * randomRate * direction);
+    // 새로운 가격
+    const newPrice = Math.max(1, oldPrice + fluctuation);
+
+    // 아이템에 갱신된 가격과 전일 대비 변동 퍼센트를 저장
+    item.basePrice = newPrice;
+
+    // (newPrice - oldPrice) / oldPrice * 100 → 전일 대비 증감 퍼센트
+    const difference = ((newPrice - oldPrice) / oldPrice) * 100;
+    item.dailyChangePercent = difference; 
   });
 
-  // 2) 오늘 등장할 아이템 목록 다시 뽑고, 상점 UI 갱신
+  // 아이템 리스트 다시 뽑기
   initShopItems();
 }
+
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
 let selectedItemForPurchase = null;
@@ -1439,28 +1447,25 @@ document.addEventListener('DOMContentLoaded', () => {
 function initShopItems() {
   const container = document.querySelector('.shop-item-sell-list');
   if (!container) return;
-
-  // 컨테이너 초기화
   container.innerHTML = '';
 
-  // storeItemDB에서 appearanceChance에 따라 아이템을 뽑는다
+  // 오늘 등장할 아이템 목록
   const todaysItems = storeItemDB.filter(item => {
     return Math.random() < item.appearanceChance;
   });
 
-  // 뽑힌 아이템을 순회하며 DOM 생성
   todaysItems.forEach(itemData => {
-    // .item-sell-box 래퍼 생성
+    // .item-sell-box 생성
     const itemBox = document.createElement('div');
     itemBox.classList.add('item-sell-box');
 
-    // .shop-item (아이템 아이콘용)
+    // .shop-item (아이콘)
     const shopItem = document.createElement('div');
     shopItem.classList.add('shop-item');
     const mappedClass = itemClassMapping[itemData.item] || 'unknown-item';
     shopItem.classList.add(mappedClass);
 
-    // .shop-item-txt (이름, 설명, 가격)
+    // .shop-item-txt (이름, 설명 등 텍스트)
     const shopItemTxt = document.createElement('div');
     shopItemTxt.classList.add('shop-item-txt');
 
@@ -1474,13 +1479,47 @@ function initShopItems() {
     descElem.classList.add('item-description');
     descElem.textContent = itemData.description;
 
-    // 아이템 가격
+    // ★ .item-rate-box (가격, 변동률 표시) ★
+    const itemRateBox = document.createElement('div');
+    itemRateBox.classList.add('item-rate-box');
+
+    // 1) 가격 표시 (.item-price)
     const priceElem = document.createElement('div');
     priceElem.classList.add('item-price');
-    priceElem.textContent = `${itemData.basePrice.toLocaleString()} G`; 
-    // 실제로는 dailyFluctuationRate 등을 적용해 변동된 가격을 표시할 수 있습니다.
+    // toLocaleString()으로 콤마 표시
+    priceElem.textContent = `${itemData.basePrice.toLocaleString()} G`;
 
-    // 구매 버튼 (shop-item-txt 밖)
+    // 2) 변동률 텍스트 (.item-rate-txt)
+    const itemRateTxt = document.createElement('div');
+    itemRateTxt.classList.add('item-rate-txt');
+
+    // 3) 변동률 아이콘/영역 (.item-rate)
+    const itemRate = document.createElement('div');
+    itemRate.classList.add('item-rate');
+
+    // 전일 대비 변동 퍼센트 (소수점 반올림)
+    const difference = Math.round(itemData.dailyChangePercent);
+    // +, - 기호 포함하여 표시
+    if (difference > 0) {
+      itemRateTxt.textContent = `+${difference}%`;
+      // 상승이면 .up 클래스 부여
+      itemRateTxt.classList.add('up');
+      itemRate.classList.add('up');
+    } else if (difference < 0) {
+      itemRateTxt.textContent = `${difference}%`; // 이미 -가 포함됨
+      // 하락이면 .down 클래스 부여
+      itemRateTxt.classList.add('down');
+      itemRate.classList.add('down');
+    } else {
+      itemRateTxt.textContent = `0%`;
+    }
+
+    // itemRateBox에 요소 추가
+    itemRateBox.appendChild(priceElem);
+    itemRateBox.appendChild(itemRateTxt);
+    itemRateBox.appendChild(itemRate);
+
+    // 구매 버튼
     const buyBtn = document.createElement('button');
     buyBtn.classList.add('item-buy-btn');
     buyBtn.textContent = "구매";
@@ -1489,12 +1528,12 @@ function initShopItems() {
       showBuyPopup();
     });
 
-    // 요소 조립
+    // shopItemTxt에 기본 텍스트(이름, 설명)와 itemRateBox 추가
     shopItemTxt.appendChild(nameElem);
     shopItemTxt.appendChild(descElem);
-    shopItemTxt.appendChild(priceElem);
+    shopItemTxt.appendChild(itemRateBox);
 
-    // itemBox에 순서대로 삽입: shopItem, shopItemTxt, buyBtn
+    // itemBox에 순서대로 shopItem, shopItemTxt, buyBtn 삽입
     itemBox.appendChild(shopItem);
     itemBox.appendChild(shopItemTxt);
     itemBox.appendChild(buyBtn);
