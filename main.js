@@ -1872,7 +1872,7 @@ function setupSellSelectFunctionality() {
     });
   }
   
-  // 3. .sell-input-btn 클릭 시 입력된 개수만큼 판매 처리
+  // 3. .sell-input-btn 클릭 시 입력된 개수만큼 판매 처리 (sellSelectedItem 함수 호출)
   const sellInputBtn = document.querySelector('.sell-input-btn');
   if (sellInputBtn) {
     sellInputBtn.addEventListener('click', function(e) {
@@ -1885,43 +1885,8 @@ function setupSellSelectFunctionality() {
         return;
       }
       
-      // 판매할 아이템이 플레이어 인벤토리에 몇 개 있는지 확인하고, 지정된 개수만큼 판매
-      let soldCount = 0;
-      const newInventory = [];
-      gameState.player.inventory.forEach(item => {
-        if (item === selectedSellItem && soldCount < sellCount) {
-          soldCount++;
-        } else {
-          newInventory.push(item);
-        }
-      });
-      
-      if (soldCount === 0) {
-        alert("판매할 아이템이 부족합니다!");
-      } else {
-        // 판매할 아이템의 가격 정보를 monsterData 내에서 가져오기
-        const lootInfo = getLootPriceInfo(selectedSellItem);
-        let saleValue = 0;
-        if (lootInfo) {
-          const price = getDailyRandomPrice(lootInfo.basePrice, lootInfo.variance);
-          saleValue = price * soldCount;
-        }
-        // 플레이어 돈에 판매 금액 추가
-        gameState.player.money += saleValue;
-        // 업데이트된 인벤토리 반영
-        gameState.player.inventory = newInventory;
-        // 결과 메시지 출력
-        const connoisseur = document.querySelector('.popup.shop .connoisseur');
-        if (connoisseur) {
-          connoisseur.textContent = `${selectedSellItem} ${soldCount}개를 판매하여 ${saleValue}원 획득했습니다.`;
-        }
-        // UI 업데이트 (인벤토리, 상점 등)
-        updateInventory();
-        updateShopInventory();
-        saveGameState();
-	      updateUserStatus();
-
-      }
+      // 입력된 개수를 인자로 전달하여 판매 처리
+      sellSelectedItem(sellCount);
       
       // 입력 필드 초기화, 선택 항목 초기화, 선택 표시 제거
       inputField.value = "";
@@ -1949,9 +1914,10 @@ function setupSellSelectFunctionality() {
   }
 }
 
+
 // DOMContentLoaded 시 Sell Select 기능 설정
 document.addEventListener('DOMContentLoaded', () => {
-  sellSelectedItem();
+  setupSellSelectFunctionality();
 });
 
 
