@@ -1503,44 +1503,36 @@ function getStoreItemInfo(itemName) {
  * 2) 오늘 등장할 아이템 목록을 재구성하고 DOM 갱신
  */
 function refreshShopItemsForNewDay() {
+  const { year, month, day } = gameState.currentDate;
+  const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  // 게임 날짜에 해당하는 기존 상점 데이터 삭제
+  localStorage.removeItem('shopItems_' + todayStr);
+
+  // 각 아이템 가격 업데이트 (기존 로직)
   storeItemDB.forEach(item => {
     const oldPrice = item.basePrice;
     
-    // 공정 가격(fairPrice): 아이템의 기준 가격. 최초에 설정되지 않았다면 현재 가격을 기준으로 설정.
     if (typeof item.fairPrice === 'undefined') {
       item.fairPrice = oldPrice;
     }
     
-    // 1. 모멘텀 효과: 전일 변화율의 일부를 반영 (예, 전일 변화율의 50%)
     let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
-    
-    // 2. 평균 회귀 효과: 현재 가격이 공정가격(fairPrice)에서 벗어난 정도에 따라 반대 방향으로 회귀
     const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
-    let meanReversion = -distanceFromFair * 0.02;  // 1% 회귀 계수
-    
-    // 3. 무작위 노이즈: -5% ~ +5% 범위의 임의 변화
-    let noise = Math.random() * 0.2 - 0.01;
-    
-    // 4. 쇼크 이벤트: 5% 확률로 강한 가격 변동 (약 ±10~15% 정도)
+    let meanReversion = -distanceFromFair * 0.02;  // 1% 회귀 효과
+    let noise = Math.random() * 0.2 - 0.01;         // 노이즈: -1% ~ +19%? (여기서는 -1% ~ +19%인데, 조정 가능)
     let shock = 0;
     if (Math.random() < 0.05) {
       shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
     }
-
-    // 루비인 경우, 노이즈와 쇼크 효과를 더 확대
     if (item.item === '루비') {
-      // 예를 들어, 노이즈 범위를 두 배로
       noise = Math.random() * 0.2 - 0.1;
-      // 쇼크 이벤트 효과를 1.5배로 확대
       if (shock !== 0) {
         shock *= 1.5;
       }
     }
     
-    // 모든 요소를 합산하여 전체 변화율(소수점)을 결정
     let changePercent = momentumFactor + meanReversion + noise + shock;
-    
-    // 최대 dailyFluctuationRate (예: 8%라면 0.08) 범위 내로 제한
     const maxChange = item.dailyFluctuationRate / 100;
     if (changePercent > maxChange) {
       changePercent = maxChange;
@@ -1548,19 +1540,15 @@ function refreshShopItemsForNewDay() {
       changePercent = -maxChange;
     }
     
-    // 새 가격 계산 (1원 이하로 내려가지 않도록)
     const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
-    
-    // 저장: 전일 대비 변화율과 새 가격 업데이트
+    // 이벤트 발생 후 dailyChangePercent 재계산
     item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
     item.basePrice = newPrice;
   });
   
-  // 변경된 가격 정보로 상점 아이템 목록 갱신
+  // 새로 계산된 가격 정보를 반영하여 상점 아이템 목록 재생성
   initShopItems();
 }
-
-
 
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
