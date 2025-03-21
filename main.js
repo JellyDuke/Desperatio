@@ -1727,38 +1727,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 상점 인벤토리 업데이트 함수
 function updateShopInventory() {
-  // .popup.shop 내부의 모든 inventory-box 선택
+  // .popup.shop 내의 모든 인벤토리 슬롯(28칸이라고 가정)
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   if (!shopInvBoxes.length) return;
-
-  // 플레이어 인벤토리를 아이템별로 그룹화 (예: { "잎파리": 10, "슬라임 젤리": 3, ... })
+  
+  // 플레이어 인벤토리를 아이템별로 그룹화: { "아이템명": 개수, ... }
   const inventoryCounts = {};
   gameState.player.inventory.forEach(item => {
     inventoryCounts[item] = (inventoryCounts[item] || 0) + 1;
   });
-
-  // 그룹화된 데이터를 슬롯 배열로 변환 (각 슬롯: { item, count })
-  let slots = Object.keys(inventoryCounts).map(item => ({
-    item: item,
-    count: Math.min(inventoryCounts[item], 99)
-  }));
-
-  // 슬롯 수가 inventory-box 개수를 초과하면 초과 슬롯은 무시
+  
+  // 각 아이템의 총 개수를 99개씩 분리하여 slots 배열 생성
+  let slots = [];
+  for (const item in inventoryCounts) {
+    let count = inventoryCounts[item];
+    while (count > 0) {
+      const slotCount = count >= 99 ? 99 : count;
+      slots.push({ item: item, count: slotCount });
+      count -= slotCount;
+    }
+  }
+  
+  // 슬롯이 인벤토리 박스 수(예: 28)보다 많으면 초과 슬롯은 무시
   if (slots.length > shopInvBoxes.length) {
     slots = slots.slice(0, shopInvBoxes.length);
   }
-
+  
+  // 각 상점 인벤토리 슬롯 업데이트
   shopInvBoxes.forEach((box, index) => {
     // 기존 클래스 초기화 (기본 클래스 'inventory-box' 유지)
     box.className = 'inventory-box';
     if (index < slots.length) {
       const slot = slots[index];
-      // 슬롯에 아이템 개수를 텍스트로 표시
+      // 슬롯에 아이템 개수를 표시
       box.textContent = slot.count.toString();
-      // data-item 속성에 아이템 이름 저장 (클릭 시 사용)
+      // data-item 속성에 아이템 이름 저장 (예: "오팔")
       box.dataset.item = slot.item;
-      // 아이템에 대응하는 CSS 클래스 추가
-      let className = itemClassMapping[slot.item] || slot.item.replace(/\s+/g, '-').toLowerCase();
+      // 전역 itemClassMapping을 사용하여 CSS 클래스 추가 (예: .opal)
+      const className = itemClassMapping[slot.item] || slot.item.replace(/\s+/g, '-').toLowerCase();
       box.classList.add(className);
     } else {
       box.textContent = '';
@@ -1766,9 +1772,10 @@ function updateShopInventory() {
     }
   });
   
-  // 아이템 클릭 이벤트 등록
+  // 상점 인벤토리 클릭 이벤트 등록 (감정 등)
   addShopItemClickListeners();
 }
+
 
 
 
