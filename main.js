@@ -2341,6 +2341,11 @@ function updateGameDate() {
     dateTextDisplayed = true;
 
     refreshShopItemsForNewDay();
+    // 다양한 이벤트들을 호출
+    applyBulkRobberyEvent();
+    applySpecialDiscountEvent();
+    applyDemandSurgeEvent();
+    applyOverstockEvent();
   }
 
   // 날짜 정보 영역 (.date-info) 매번 갱신 (누적되지 않음)
