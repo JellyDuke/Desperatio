@@ -1,4 +1,24 @@
- 
+document.addEventListener('DOMContentLoaded', () => {
+  const adminMoneyBtn = document.querySelector('.admin-money-btn');
+  if (adminMoneyBtn) {
+    adminMoneyBtn.addEventListener('click', () => {
+      // 임시로 유저에게 10,000원 지급
+      gameState.player.money += 10000;
+      // UI 업데이트: 유저 소지금 표시를 toLocaleString()으로 가독성 있게 갱신
+      const moneyElem = document.querySelector('.money');
+      if (moneyElem) {
+        moneyElem.textContent = gameState.player.money.toLocaleString();
+      }
+      // 유저 상태 업데이트 및 저장
+      updateUserStatus();
+      saveGameState();
+      alert("10,000원이 지급되었습니다!");
+    });
+  }
+});
+
+
+
 /*********************************************************
  * 데이터 구조 & 게임 상태
  ********************************************************/
