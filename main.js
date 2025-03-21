@@ -118,7 +118,7 @@ const storeItemDB = [
     effect: null,
     basePrice: 45318,
     appearanceChance: 0.6,
-    dailyFluctuationRate: 5  
+    dailyFluctuationRate: 30  
   },
   {
     item: "사파이어",
