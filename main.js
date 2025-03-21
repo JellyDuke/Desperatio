@@ -1377,6 +1377,28 @@ function getLootPriceInfo(itemName) {
   return null; // 해당 아이템 정보를 찾지 못한 경우
 }
 
+/**
+ * 하루가 지날 때마다 상점 아이템을 갱신하는 함수
+ * 1) dailyFluctuationRate를 바탕으로 가격 조정
+ * 2) 오늘 등장할 아이템 목록을 재구성하고 DOM 갱신
+ */
+function refreshShopItemsForNewDay() {
+  // 1) storeItemDB를 순회하면서 가격을 조정
+  storeItemDB.forEach(item => {
+    // 등락률(%) 예: dailyFluctuationRate = 5 → 5%
+    const rate = item.dailyFluctuationRate / 100;
+    // 등락 방향 (50% 확률로 오르거나 내림)
+    const direction = Math.random() < 0.5 ? 1 : -1;
+    // 변동량 계산
+    const fluctuation = item.basePrice * rate * direction;
+    // basePrice 업데이트 (최소 1 이상으로 제한)
+    item.basePrice = Math.max(1, Math.floor(item.basePrice + fluctuation));
+  });
+
+  // 2) 오늘 등장할 아이템 목록 다시 뽑고, 상점 UI 갱신
+  initShopItems();
+}
+
 // 구매하려는 아이템 정보를 임시 저장할 변수
 let selectedItemForPurchase = null;
 
@@ -2072,6 +2094,7 @@ function updateGameDate() {
   // 여기에 gameState.currentDate를 업데이트하는 부분 추가
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
 	
+  refreshShopItemsForNewDay();
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
