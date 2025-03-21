@@ -102,7 +102,7 @@ const storeItemDB = [
     effect: null,
     basePrice: 220024,
     appearanceChance: 0.7,
-    dailyFluctuationRate: 4  // 하루 4% 등락률
+    dailyFluctuationRate: 4  
   },
   {
     item: "실버",
@@ -110,7 +110,7 @@ const storeItemDB = [
     effect: null,  // 소지 시 효과 없음
     basePrice: 225,
     appearanceChance: 0.9,
-    dailyFluctuationRate: 5  // 하루 5% 등락률
+    dailyFluctuationRate: 3  
   },
   {
     item: "루비",
@@ -118,15 +118,15 @@ const storeItemDB = [
     effect: null,
     basePrice: 45318,
     appearanceChance: 0.6,
-    dailyFluctuationRate: 5  // 하루 5% 등락률
+    dailyFluctuationRate: 5  
   },
   {
     item: "사파이어",
     description: "투명한 푸른빛이 매력적인 보석으로, 장식용 및 수집용으로 활용됩니다.",
     effect: null,
     basePrice: 646257,
-    appearanceChance: 0.5,
-    dailyFluctuationRate: 12  // 하루 5% 등락률
+    appearanceChance: 0.2,
+    dailyFluctuationRate: 12 
   }
 ];
 
@@ -1410,12 +1410,12 @@ function getStoreItemInfo(itemName) {
 function refreshShopItemsForNewDay() {
   // 1) storeItemDB를 순회하면서 가격을 조정
   storeItemDB.forEach(item => {
-    // 등락률(%) 예: dailyFluctuationRate = 5 → 5%
-    const rate = item.dailyFluctuationRate / 100;
-    // 등락 방향 (50% 확률로 오르거나 내림)
+    // 최대 dailyFluctuationRate 값(예: 8% → 0.08)까지 임의의 비율을 산출
+    const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
+    // 상승 또는 하락 방향 선택
     const direction = Math.random() < 0.5 ? 1 : -1;
-    // 변동량 계산
-    const fluctuation = item.basePrice * rate * direction;
+    // 변동량 계산: basePrice의 randomRate 만큼 변화 (양수 또는 음수)
+    const fluctuation = item.basePrice * randomRate * direction;
     // basePrice 업데이트 (최소 1 이상으로 제한)
     item.basePrice = Math.max(1, Math.floor(item.basePrice + fluctuation));
   });
