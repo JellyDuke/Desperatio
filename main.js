@@ -1380,6 +1380,91 @@ function checkLevelUp(messageContainer) {
 }
 
 //상점
+
+// 1. 대량 도난 이벤트: 가격이 상승하는 이벤트
+function applyBulkRobberyEvent() {
+  if (Math.random() < 0.02) {
+    const randomIndex = Math.floor(Math.random() * storeItemDB.length);
+    const item = storeItemDB[randomIndex];
+    const increasePercent = Math.random() * 0.39 + 0.01; // 1% ~ 40%
+    const oldPrice = item.basePrice;
+    const newPrice = Math.floor(oldPrice * (1 + increasePercent));
+    item.basePrice = newPrice;
+    
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const eventMsg = document.createElement('div');
+      eventMsg.textContent = `${item.item} 상인이 운반 중 대량 도난 당했습니다! 가격이 ${Math.round(increasePercent * 100)}% 상승했습니다.`;
+      eventMsg.style.color = "red";
+      kingdomMsgElem.appendChild(eventMsg);
+      kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+    }
+  }
+}
+
+// 2. 특별 할인 이벤트: 가격이 하락하는 이벤트
+function applySpecialDiscountEvent() {
+  if (Math.random() < 0.02) {
+    const randomIndex = Math.floor(Math.random() * storeItemDB.length);
+    const item = storeItemDB[randomIndex];
+    const decreasePercent = Math.random() * 0.39 + 0.01; // 1% ~ 40%
+    const oldPrice = item.basePrice;
+    const newPrice = Math.floor(oldPrice * (1 - decreasePercent));
+    item.basePrice = Math.max(1, newPrice);
+    
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const eventMsg = document.createElement('div');
+      eventMsg.textContent = `${item.item} 상인이 특별 할인 판매를 시작했습니다! 가격이 ${Math.round(decreasePercent * 100)}% 인하되었습니다.`;
+      eventMsg.style.color = "blue";
+      kingdomMsgElem.appendChild(eventMsg);
+      kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+    }
+  }
+}
+
+// 3. 수요 급증 이벤트: 시장 수요로 인해 가격이 상승하는 이벤트
+function applyDemandSurgeEvent() {
+  if (Math.random() < 0.02) {
+    const randomIndex = Math.floor(Math.random() * storeItemDB.length);
+    const item = storeItemDB[randomIndex];
+    const increasePercent = Math.random() * 0.39 + 0.01; // 1% ~ 40%
+    const oldPrice = item.basePrice;
+    const newPrice = Math.floor(oldPrice * (1 + increasePercent));
+    item.basePrice = newPrice;
+    
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const eventMsg = document.createElement('div');
+      eventMsg.textContent = `시장 수요 급증! ${item.item}의 가격이 ${Math.round(increasePercent * 100)}% 상승했습니다.`;
+      eventMsg.style.color = "orange";
+      kingdomMsgElem.appendChild(eventMsg);
+      kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+    }
+  }
+}
+
+// 4. 재고 과잉 이벤트: 재고 과잉으로 가격이 하락하는 이벤트
+function applyOverstockEvent() {
+  if (Math.random() < 0.02) {
+    const randomIndex = Math.floor(Math.random() * storeItemDB.length);
+    const item = storeItemDB[randomIndex];
+    const decreasePercent = Math.random() * 0.39 + 0.01; // 1% ~ 40%
+    const oldPrice = item.basePrice;
+    const newPrice = Math.floor(oldPrice * (1 - decreasePercent));
+    item.basePrice = Math.max(1, newPrice);
+    
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const eventMsg = document.createElement('div');
+      eventMsg.textContent = `재고 과잉! ${item.item}의 가격이 ${Math.round(decreasePercent * 100)}% 인하되었습니다.`;
+      eventMsg.style.color = "green";
+      kingdomMsgElem.appendChild(eventMsg);
+      kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+    }
+  }
+}
+
 // 기존 getLootPriceInfo 함수는 그대로 사용
 function getLootPriceInfo(itemName) {
   for (const key in monsterData) {
@@ -1407,27 +1492,53 @@ function getStoreItemInfo(itemName) {
  */
 function refreshShopItemsForNewDay() {
   storeItemDB.forEach(item => {
-    const oldPrice = item.basePrice;  // 어제(이전) 가격
-    // 최대 dailyFluctuationRate% 범위 안에서 0 ~ dailyFluctuationRate 사이 임의 비율
-    const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
-    // 상승 or 하락 방향
-    const direction = Math.random() < 0.5 ? 1 : -1;
-    // 변동값 계산
-    const fluctuation = Math.floor(oldPrice * randomRate * direction);
-    // 새로운 가격
-    const newPrice = Math.max(1, oldPrice + fluctuation);
-
-    // 아이템에 갱신된 가격과 전일 대비 변동 퍼센트를 저장
+    const oldPrice = item.basePrice;
+    
+    // 공정 가격(fairPrice): 아이템의 기준 가격. 최초에 설정되지 않았다면 현재 가격을 기준으로 설정.
+    if (typeof item.fairPrice === 'undefined') {
+      item.fairPrice = oldPrice;
+    }
+    
+    // 1. 모멘텀 효과: 전일 변화율의 일부를 반영 (예, 전일 변화율의 50%)
+    let momentumFactor = item.dailyChangePercent ? (item.dailyChangePercent / 100) * 0.5 : 0;
+    
+    // 2. 평균 회귀 효과: 현재 가격이 공정가격(fairPrice)에서 벗어난 정도에 따라 반대 방향으로 회귀
+    const distanceFromFair = (oldPrice - item.fairPrice) / item.fairPrice;
+    let meanReversion = -distanceFromFair * 0.1;  // 10% 회귀 계수
+    
+    // 3. 무작위 노이즈: -5% ~ +5% 범위의 임의 변화
+    let noise = Math.random() * 0.1 - 0.05;
+    
+    // 4. 쇼크 이벤트: 5% 확률로 강한 가격 변동 (약 ±10~15% 정도)
+    let shock = 0;
+    if (Math.random() < 0.05) {
+      shock = (Math.random() * 0.05 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
+    }
+    
+    // 모든 요소를 합산하여 전체 변화율(소수점)을 결정
+    let changePercent = momentumFactor + meanReversion + noise + shock;
+    
+    // 최대 dailyFluctuationRate (예: 8%라면 0.08) 범위 내로 제한
+    const maxChange = item.dailyFluctuationRate / 100;
+    if (changePercent > maxChange) {
+      changePercent = maxChange;
+    } else if (changePercent < -maxChange) {
+      changePercent = -maxChange;
+    }
+    
+    // 새 가격 계산 (1원 이하로 내려가지 않도록)
+    const newPrice = Math.max(1, Math.floor(oldPrice * (1 + changePercent)));
+    
+    // 저장: 전일 대비 변화율과 새 가격 업데이트
+    item.dailyChangePercent = ((newPrice - oldPrice) / oldPrice) * 100;
     item.basePrice = newPrice;
-
-    // (newPrice - oldPrice) / oldPrice * 100 → 전일 대비 증감 퍼센트
-    const difference = ((newPrice - oldPrice) / oldPrice) * 100;
-    item.dailyChangePercent = difference; 
   });
-
-  // 아이템 리스트 다시 뽑기
+  
+  // 변경된 가격 정보로 상점 아이템 목록 갱신
   initShopItems();
 }
+
+
 
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
