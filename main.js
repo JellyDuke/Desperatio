@@ -2174,7 +2174,6 @@ let lastDateStr = localStorage.getItem("lastDateStr") || "";
 
 // 날짜 업데이트 함수 (1분 = 1일 가정)
 function updateGameDate() {
-  console.log("updateGameDate 호출됨", new Date());
   const baseTime = Number(localStorage.getItem("baseRealTime") || Date.now());
   const currentMinutes = Math.floor((Date.now() - baseTime) / (1000 * 60)); // 1분 = 1일
 
