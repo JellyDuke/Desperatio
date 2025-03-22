@@ -2174,6 +2174,7 @@ let lastDateStr = localStorage.getItem("lastDateStr") || "";
 
 // 날짜 업데이트 함수 (1분 = 1일 가정)
 function updateGameDate() {
+  console.log("updateGameDate 호출됨", new Date());
   const baseTime = Number(localStorage.getItem("baseRealTime") || Date.now());
   const currentMinutes = Math.floor((Date.now() - baseTime) / (1000 * 60)); // 1분 = 1일
 
@@ -2208,11 +2209,8 @@ function updateGameDate() {
   }
 
   const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
-  console.log("updateGameDate 호출됨");
-  console.log("currentDateString:", currentDateString, "lastDateStr:", lastDateStr);
   // 날짜가 바뀌었으면, dateTextDisplayed를 false로 재설정
   if (currentDateString !== lastDateStr) {
-    console.log("날짜가 바뀌었습니다!");
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
