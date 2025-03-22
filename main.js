@@ -2374,7 +2374,7 @@ function updateGameDate() {
   }
 
   // baseDate 불러오기 (없으면 기본값 설정)
-  let baseDate = localStorage.getItem("baseDate");
+  let baseDate = JSON.parse(localStorage.getItem("baseDate") || "null");
   if (!baseDate) {
     baseDate = { year: 24, month: 4, day: 12 };
     localStorage.setItem("baseDate", JSON.stringify(baseDate));
@@ -2406,6 +2406,8 @@ function updateGameDate() {
     localStorage.setItem("lastDateStr", lastDateStr);
     checkAndRefreshShopItemsIfNeeded();
     initShopItems();
+
+    localStorage.setItem("baseDate", JSON.stringify({ year: newYear, month: newMonth, day: newDay }));
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
