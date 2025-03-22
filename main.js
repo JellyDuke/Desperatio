@@ -595,16 +595,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedDateRaw = localStorage.getItem('baseDate');
     let savedDate = null;
     if (savedDateRaw) {
-      try {
-        savedDate = JSON.parse(savedDateRaw);
-      } catch (e) {
-        console.warn('Invalid baseDate in storage:', savedDateRaw);
-        localStorage.removeItem('baseDate');
-      }
-    }
-    if (savedDate) {
-      gameState.currentDate = savedDate;
-    }
+  try {
+    savedDate = JSON.parse(savedDateRaw);
+  } catch (e) {
+    console.warn('Invalid baseDate in storage:', savedDateRaw);
+    localStorage.removeItem('baseDate');
+  }
+}
+if (savedDate) {
+  gameState.currentDate = savedDate;
+}
     if (savedDate) gameState.currentDate = savedDate;
   }
   // [추가된 코드] 새로고침 시 이동 상태 리셋
@@ -2394,7 +2394,9 @@ function updateGameDate() {
   if (!baseDate) {
     baseDate = { year: 24, month: 4, day: 12 };
     localStorage.setItem("baseDate", JSON.stringify(baseDate));
-  } 
+  } else {
+    baseDate = JSON.parse(baseDate);
+  }
 
   // 기준 날짜에서 currentMinutes만큼 일수를 증가
   let newDay = baseDate.day + currentMinutes;
