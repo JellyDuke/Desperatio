@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mappings = [
     { menu: '.menu.my-info',    popup: '.popup.my-info' },
     { menu: '.menu.combat',     popup: '.popup.combat' },
-    { menu: '.menu.training',   popup: '.popup.training' },
+    { menu: '.menu.enforce',   popup: '.popup.enforce' },
     { menu: '.menu.inventory',  popup: '.popup.inventory' },
     { menu: '.menu.skill',      popup: '.popup.skill' },
     { menu: '.menu.move',       popup: '.popup.move' },
