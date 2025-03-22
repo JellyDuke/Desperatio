@@ -1445,7 +1445,6 @@ function refreshShopItemsForNewDay() {
       console.log(`[${item.item}] 이전 가격: ${oldPrice}, 새 가격: ${item.basePrice}, 변화율: ${item.dailyChangePercent}%`);
     });
     saveShopDB();
-    //localStorage.setItem('lastShopDate', today);
   }
 }
 
@@ -1467,9 +1466,6 @@ function initShopItems() {
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2, '0')}-${String(gameState.currentDate.day).padStart(2, '0')}`;
   let todaysItems = [];
   const lastShopDate = localStorage.getItem('lastShopDate') || '';
-
-  console.log("initShopItems - today:", today);
-  console.log("initShopItems - lastShopDate:", lastShopDate);
 
   if (today !== lastShopDate) {
     // 새로운 날이면 가격 갱신 후 오늘의 아이템 결정
