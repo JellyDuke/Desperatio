@@ -294,6 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       resetGameCompletely();
+      // reset 후 .popup 내부의 .new 요소들을 모두 숨깁니다.
+      document.querySelectorAll('.popup .new').forEach(element => {
+        element.style.display = 'none';
+      });
     });
   }
 });
