@@ -346,14 +346,14 @@ function resetGameCompletely() {
   saveGameState();
   console.log("게임이 완전히 초기화되었습니다.");
 }
-//리셋
+//리셋 버튼
 document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = document.querySelector('.reset-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       resetGameCompletely();
-      // reset 후 .popup 내부의 .new 요소들을 모두 숨깁니다.
-      document.querySelectorAll('.popup .new').forEach(element => {
+      // reset 후 .popup와 .new 클래스를 동시에 가진 요소를 숨깁니다.
+      document.querySelectorAll('.popup.new').forEach(element => {
         element.style.display = 'none';
       });
     });
@@ -451,7 +451,7 @@ function resetGameExceptSkills() {
   };
 
   localStorage.setItem('gameState', JSON.stringify(gameState));
-  
+
   updateMyInfo();
   saveGameState();
   updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
