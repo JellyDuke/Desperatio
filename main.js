@@ -580,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 저장된 gameState가 있다면 불러와서 gameState에 반영
   const savedState = localStorage.getItem('gameState');
+
   if (savedState) {
     const parsedState = JSON.parse(savedState);
     // 필수 속성이 누락된 경우 기본값 설정
@@ -590,6 +591,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.assign(gameState, JSON.parse(savedState));
     // 만약 게임 진행 상황 전체를 교체하고 싶다면:
     // gameState = JSON.parse(savedState);
+    // [추가] 이전에 저장된 게임 내 날짜(baseDate)가 있으면 gameState.currentDate에 덮어쓰기
+    const savedDate = JSON.parse(localStorage.getItem('baseDate') || 'null');
+    if (savedDate) gameState.currentDate = savedDate;
   }
   // [추가된 코드] 새로고침 시 이동 상태 리셋
   gameState.player.isMoving = false;
