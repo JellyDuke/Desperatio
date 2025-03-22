@@ -245,7 +245,8 @@ const regionMonsters = {
     progress: {
       currentCycle: 1,        
       monsterInvasions: [],
-      resourcesInitialized: false // [추가] 처음에만 랜덤 세팅을 위한 플래그
+      resourcesInitialized: false, // [추가] 처음에만 랜덤 세팅을 위한 플래그
+      roundCount: 0               // 초기 회차: 아직 죽은 적 없음
     }
   };
   
@@ -267,7 +268,7 @@ function updateKingdomStatus(data) {
     // [수정] 시민 수를 1,000,000 ~ 3,000,000 사이의 랜덤 값으로 설정
     data.population = Math.floor(Math.random() * (3000000 - 1000000 + 1)) + 1000000;
     // [수정] 병사수는 시민 수의 1/3
-    data.soldiercount = Math.floor(data.citizen / 3);
+    data.soldiercount = Math.floor(data.population / 3);
     // 자원값을 resources 객체 내부에 저장
     data.resources = {
       food: Math.floor(Math.random() * 2000) + 4000,       // 4000 ~ 5999
@@ -2213,6 +2214,8 @@ function updateGameDate() {
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
+    refreshShopItemsForNewDay();
+    
     localStorage.setItem("lastDateStr", lastDateStr);
   }
 
@@ -2229,7 +2232,7 @@ function updateGameDate() {
     }
     dateTextDisplayed = true;
 
-    refreshShopItemsForNewDay();
+
   }
 
   // 날짜 정보 영역 (.date-info) 매번 갱신 (누적되지 않음)
