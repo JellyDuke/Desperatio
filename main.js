@@ -1437,20 +1437,20 @@ function refreshShopItemsForNewDay() {
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
   const lastDate = localStorage.getItem('lastShopDate');
 
-  if (today === lastDate) return;
+  if (today !== lastDate) {
+    storeItemDB.forEach(item => {
+      item.previousPrice = item.basePrice;
+      const oldPrice = item.basePrice;
+      const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
+      const direction = Math.random() < 0.5 ? 1 : -1;
+      item.basePrice = Math.max(1, oldPrice + Math.floor(oldPrice * randomRate * direction));
+      item.dailyChangePercent = Math.round(((item.basePrice - oldPrice) / oldPrice) * 100);
+      item.isUp = item.basePrice > oldPrice;
+    }); 
 
-  storeItemDB.forEach(item => {
-    item.previousPrice = item.basePrice;
-    const oldPrice = item.basePrice;
-    const rate = Math.random() * (item.dailyFluctuationRate / 100);
-    const dir = Math.random() < 0.5 ? 1 : -1;
-    item.basePrice = Math.max(1, oldPrice + Math.floor(oldPrice * rate * dir));
-    item.dailyChangePercent = Math.round(((item.basePrice - oldPrice) / oldPrice) * 100);
-    item.isUp = item.basePrice > oldPrice;
-  });
-
-  saveShopDB();
+  localStorage.setItem('shopDB', JSON.stringify(storeItemDB));
   localStorage.setItem('lastShopDate', today);
+  }
 }
 
 
@@ -1461,7 +1461,6 @@ let selectedItemForPurchase = null;
 document.addEventListener('DOMContentLoaded', () => {
   initShopItems();
   initBuyPopup();
-  refreshShopItemsForNewDay();
   loadShopDB();
 });
 
@@ -1469,75 +1468,61 @@ document.addEventListener('DOMContentLoaded', () => {
  * 상점 아이템을 확률적으로 뽑아서 .shop-item-sell-list 안에 생성
  */
 function initShopItems() {
+  // 오늘 날짜 문자열 (YYYY-MM-DD)
+  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
+  const lastShopDate = localStorage.getItem('lastShopDate') || '';
+  let todaysItems;
+
+  if (today !== lastShopDate) {
+    refreshShopItemsForNewDay();
+    todaysItems = storeItemDB.filter(item => Math.random() < item.appearanceChance);
+    localStorage.setItem('todayShopItems', JSON.stringify(todaysItems));
+    localStorage.setItem('lastShopDate', today);
+  } else {
+    todaysItems = JSON.parse(localStorage.getItem('todayShopItems')) || [];
+  }
 
   const container = document.querySelector('.shop-item-sell-list');
   if (!container) return;
   container.innerHTML = '';
 
-  // storeItemDB에서 appearanceChance에 따라 오늘 등장할 아이템 목록 필터링
-  const todaysItems = storeItemDB.filter(item => Math.random() < item.appearanceChance);
-
-  // 재고가 없으면 텍스트 메시지 출력 후 종료
   if (todaysItems.length === 0) {
     container.textContent = "재고가 없습니다.";
     return;
   }
 
-  // 뽑힌 아이템을 순회하며 DOM 생성
   todaysItems.forEach(itemData => {
-    // .item-sell-box 래퍼 생성
     const itemBox = document.createElement('div');
     itemBox.classList.add('item-sell-box');
 
-    // .shop-item (아이템 아이콘용)
     const shopItem = document.createElement('div');
-    shopItem.classList.add('shop-item');
-    const mappedClass = itemClassMapping[itemData.item] || 'unknown-item';
-    shopItem.classList.add(mappedClass);
+    shopItem.classList.add('shop-item', itemClassMapping[itemData.item] || '');
 
-    // .shop-item-txt (이름, 설명, 가격 등 텍스트)
     const shopItemTxt = document.createElement('div');
     shopItemTxt.classList.add('shop-item-txt');
 
-    // 아이템 이름
     const nameElem = document.createElement('div');
     nameElem.classList.add('item-name');
     nameElem.textContent = itemData.item;
 
-    // 아이템 설명
     const descElem = document.createElement('div');
     descElem.classList.add('item-description');
     descElem.textContent = itemData.description;
 
-    // .item-rate-box (가격, 변동률 표시)
     const itemRateBox = document.createElement('div');
     itemRateBox.classList.add('item-rate-box');
-    // 가격 표시
+
     const priceElem = document.createElement('div');
     priceElem.classList.add('item-price');
     priceElem.textContent = `${itemData.basePrice.toLocaleString()}원`;
-    // 변동률 텍스트 표시
-    const itemRateTxt = document.createElement('div');
-    itemRateTxt.classList.add('item-rate-txt');
-    const itemRate = document.createElement('div');
-    itemRate.classList.add('item-rate');
-    const difference = Math.round(itemData.dailyChangePercent);
-    if (difference > 0) {
-      itemRateTxt.textContent = `+${difference}%`;
-      itemRateTxt.classList.add('up');
-      itemRate.classList.add('up');
-    } else if (difference < 0) {
-      itemRateTxt.textContent = `${difference}%`;
-      itemRateTxt.classList.add('down');
-      itemRate.classList.add('down');
-    } else {
-      itemRateTxt.textContent = `0%`;
-    }
-    itemRateBox.appendChild(priceElem);
-    itemRateBox.appendChild(itemRateTxt);
-    itemRateBox.appendChild(itemRate);
 
-    // 구매 버튼 (shop-item-txt 밖)
+    const rateElem = document.createElement('div');
+    rateElem.classList.add('item-rate-txt', itemData.isUp ? 'up' : 'down');
+    rateElem.textContent = `${itemData.isUp ? '▲' : '▼'}${Math.abs(itemData.dailyChangePercent)}%`;
+
+    itemRateBox.append(priceElem, rateElem);
+    shopItemTxt.append(nameElem, descElem, itemRateBox);
+
     const buyBtn = document.createElement('button');
     buyBtn.classList.add('item-buy-btn');
     buyBtn.textContent = "구매";
@@ -1546,16 +1531,7 @@ function initShopItems() {
       showBuyPopup();
     });
 
-    // shopItemTxt에 이름, 설명, itemRateBox 추가
-    shopItemTxt.appendChild(nameElem);
-    shopItemTxt.appendChild(descElem);
-    shopItemTxt.appendChild(itemRateBox);
-
-    // itemBox에 shopItem, shopItemTxt, 그리고 buyBtn 추가
-    itemBox.appendChild(shopItem);
-    itemBox.appendChild(shopItemTxt);
-    itemBox.appendChild(buyBtn);
-
+    itemBox.append(shopItem, shopItemTxt, buyBtn);
     container.appendChild(itemBox);
   });
 }
@@ -2253,6 +2229,7 @@ function updateGameDate() {
       newTxtDiv.textContent = `오늘은 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일입니다.`;
       kingdomMsgElem.appendChild(newTxtDiv);
       scrollToBottom(kingdomMsgElem);
+      refreshShopItemsForNewDay();
     }
     dateTextDisplayed = true;
 
