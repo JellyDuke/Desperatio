@@ -2217,8 +2217,6 @@ function updateGameDate() {
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
 
-    // baseDate를 현재 날짜로 업데이트 (다음 업데이트 계산을 위해)
-    localStorage.setItem("baseDate", JSON.stringify({ year: newYear, month: newMonth, day: newDay }));
   }
 
   // 날짜가 바뀌었거나 페이지가 처음 로드되었을 때, 상점 목록을 갱신하여 즉시 UI에 반영
