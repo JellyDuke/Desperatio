@@ -285,7 +285,7 @@ function updateKingdomStatus(data) {
     // [수정] 시민 수를 1,000,000 ~ 3,000,000 사이의 랜덤 값으로 설정
     data.population = Math.floor(Math.random() * (3000000 - 1000000 + 1)) + 1000000;
     // [수정] 병사수는 시민 수의 1/3
-    data.soldiercount = Math.floor(data.citizen / 3);
+    data.soldiercount = Math.floor(data.population / 3);
     // 자원값을 resources 객체 내부에 저장
     data.resources = {
       food: Math.floor(Math.random() * 2000) + 4000,       // 4000 ~ 5999
