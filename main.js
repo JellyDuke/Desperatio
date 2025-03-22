@@ -1481,7 +1481,6 @@ function initShopItems() {
     if (storedItems) {
       try {
         todaysItems = JSON.parse(storedItems);
-        console.log("저장된 오늘의 상점 아이템:", todaysItems);
       } catch (error) {
         console.error("todayShopItems 파싱 에러:", error);
         todaysItems = [];
@@ -2219,7 +2218,7 @@ function updateGameDate() {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
-    
+
     refreshShopItemsForNewDay();
     initShopItems();
     updateShopInventory();
