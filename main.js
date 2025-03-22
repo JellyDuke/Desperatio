@@ -1461,9 +1461,9 @@ let selectedItemForPurchase = null;
 
 // 페이지 로드 후 상점 초기화
 document.addEventListener('DOMContentLoaded', () => {
+  loadShopDB();
   initShopItems();
   initBuyPopup();
-  loadShopDB();
 });
 
 /**
@@ -2186,8 +2186,6 @@ function updateGameDate() {
   if (diffDays > 0) {
     for (let i = 0; i < diffDays; i++) {
       dailyResourceChange();
-      baseDate.day++; 
-      console.log(`1일 경과 → ${baseDate.year}-${baseDate.month}-${baseDate.day}`);
     }
     lastMinutes = currentMinutes;
     localStorage.setItem("lastMinutes", lastMinutes);
