@@ -1871,7 +1871,7 @@ function sellAllItems() {
   // 즉시 소지금 UI 업데이트
   const moneyElem = document.querySelector('.money');
   if (moneyElem) {
-    moneyElem.textContent = gameState.player.money;
+    moneyElem.textContent = gameState.player.money.toLocaleString('ko-KR');
   }
 }
 
