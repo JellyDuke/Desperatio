@@ -2217,6 +2217,12 @@ function updateGameDate() {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
+    
+     // 가격·변동 갱신
+    refreshShopItemsForNewDay();  
+    // UI 목록 재생성
+    initShopItems();
+    updateShopInventory();
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
