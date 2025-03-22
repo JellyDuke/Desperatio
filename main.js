@@ -1436,8 +1436,6 @@ function refreshShopItemsForNewDay() {
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
-  console.log("refreshShopItemsForNewDay - today:", today, "lastShopDate:", lastDate);
-
   if (today !== lastDate) {
     storeItemDB.forEach(item => {
       item.previousPrice = item.basePrice;
@@ -1479,10 +1477,9 @@ function initShopItems() {
     todaysItems = storeItemDB.filter(item => Math.random() < item.appearanceChance);
     localStorage.setItem('todayShopItems', JSON.stringify(todaysItems));
     localStorage.setItem('lastShopDate', today);
-    console.log("New shop items generated for today:", todaysItems);
   } else {
     todaysItems = JSON.parse(localStorage.getItem('todayShopItems')) || [];
-    console.log("Loaded shop items from storage:", todaysItems);
+
   }
 
   const container = document.querySelector('.shop-item-sell-list');
@@ -2211,10 +2208,11 @@ function updateGameDate() {
   }
 
   const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
+  console.log("updateGameDate 호출됨");
   console.log("currentDateString:", currentDateString, "lastDateStr:", lastDateStr);
-
   // 날짜가 바뀌었으면, dateTextDisplayed를 false로 재설정
   if (currentDateString !== lastDateStr) {
+    console.log("날짜가 바뀌었습니다!");
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
