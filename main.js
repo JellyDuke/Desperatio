@@ -1453,6 +1453,7 @@ function applyBulkRobberyEvent() {
       eventMsg.style.color = "red";
       kingdomMsgElem.appendChild(eventMsg);
       kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+      initShopItems();
     }
   }
 }
@@ -1477,6 +1478,7 @@ function applySpecialDiscountEvent() {
       eventMsg.style.color = "blue";
       kingdomMsgElem.appendChild(eventMsg);
       kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+      initShopItems();
     }
   }
 }
@@ -1501,6 +1503,7 @@ function applyDemandSurgeEvent() {
       eventMsg.style.color = "orange";
       kingdomMsgElem.appendChild(eventMsg);
       kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+      initShopItems();
     }
   }
 }
@@ -1525,6 +1528,7 @@ function applyOverstockEvent() {
       eventMsg.style.color = "green";
       kingdomMsgElem.appendChild(eventMsg);
       kingdomMsgElem.scrollTop = kingdomMsgElem.scrollHeight;
+      initShopItems();
     }
   }
 }
@@ -2399,9 +2403,7 @@ function updateGameDate() {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
-
     checkAndRefreshShopItemsIfNeeded();
-
     initShopItems();
   }
 
