@@ -1401,18 +1401,34 @@ function getStoreItemInfo(itemName) {
  */
 // ——— Shop DB Persistence ———
 function loadShopDB() {
-  const saved = JSON.parse(localStorage.getItem('shopDB'));
-  if (saved) {
-    storeItemDB.splice(0, storeItemDB.length, ...saved);
+  try {
+    const saved = localStorage.getItem('shopDB');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        // 기존 배열 참조를 유지하며 내용을 전부 교체합니다.
+        storeItemDB.splice(0, storeItemDB.length, ...parsed);
+        console.log("Shop DB loaded:", storeItemDB);
+      } else {
+        console.warn("저장된 shopDB 데이터 형식이 올바르지 않습니다.");
+      }
+    }
+  } catch (error) {
+    console.error("shopDB 로딩 에러:", error);
   }
 }
 
 function saveShopDB() {
-  localStorage.setItem('shopDB', JSON.stringify(storeItemDB));
+  try {
+    localStorage.setItem('shopDB', JSON.stringify(storeItemDB));
+    console.log("Shop DB saved.");
+  } catch (error) {
+    console.error("shopDB 저장 에러:", error);
+  }
 }
 
 function refreshShopItemsForNewDay() {
-  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
+  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2, '0')}-${String(gameState.currentDate.day).padStart(2, '0')}`;
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
   if (today !== lastDate) {
@@ -1421,13 +1437,15 @@ function refreshShopItemsForNewDay() {
       const oldPrice = item.basePrice;
       const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
       const direction = Math.random() < 0.5 ? 1 : -1;
+      // 가격이 1보다 작아지지 않도록 Math.max 사용
       item.basePrice = Math.max(1, oldPrice + Math.floor(oldPrice * randomRate * direction));
       item.dailyChangePercent = Math.round(((item.basePrice - oldPrice) / oldPrice) * 100);
       item.isUp = item.basePrice > oldPrice;
-    }); 
 
-  localStorage.setItem('shopDB', JSON.stringify(storeItemDB));
-  localStorage.setItem('lastShopDate', today);
+      console.log(`[${item.item}] 이전 가격: ${oldPrice}, 새 가격: ${item.basePrice}, 변화율: ${item.dailyChangePercent}%`);
+    });
+    saveShopDB();
+    localStorage.setItem('lastShopDate', today);
   }
 }
 
@@ -1446,19 +1464,29 @@ document.addEventListener('DOMContentLoaded', () => {
  * 상점 아이템을 확률적으로 뽑아서 .shop-item-sell-list 안에 생성
  */
 function initShopItems() {
-  // 오늘 날짜 문자열 (YYYY-MM-DD)
-  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
+  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2, '0')}-${String(gameState.currentDate.day).padStart(2, '0')}`;
+  let todaysItems = [];
   const lastShopDate = localStorage.getItem('lastShopDate') || '';
-  let todaysItems;
-  
+
   if (today !== lastShopDate) {
+    // 새로운 날이면 가격 갱신 후 오늘의 아이템 결정
     refreshShopItemsForNewDay();
     todaysItems = storeItemDB.filter(item => Math.random() < item.appearanceChance);
     localStorage.setItem('todayShopItems', JSON.stringify(todaysItems));
     localStorage.setItem('lastShopDate', today);
+    console.log("새로운 날, 오늘의 상점 아이템:", todaysItems);
   } else {
-    todaysItems = JSON.parse(localStorage.getItem('todayShopItems')) || [];
-
+    // 같은 날이면 저장된 오늘의 아이템을 불러옵니다.
+    const storedItems = localStorage.getItem('todayShopItems');
+    if (storedItems) {
+      try {
+        todaysItems = JSON.parse(storedItems);
+        console.log("저장된 오늘의 상점 아이템:", todaysItems);
+      } catch (error) {
+        console.error("todayShopItems 파싱 에러:", error);
+        todaysItems = [];
+      }
+    }
   }
 
   const container = document.querySelector('.shop-item-sell-list');
@@ -1513,7 +1541,6 @@ function initShopItems() {
     itemBox.append(shopItem, shopItemTxt, buyBtn);
     container.appendChild(itemBox);
   });
-
 }
 
 /**
