@@ -248,6 +248,8 @@ const gameState = {
     resourcesInitialized: false // [추가] 처음에만 랜덤 세팅을 위한 플래그
   }
 };
+let = baseRealTime;
+
 // 페이지 로드 시: baseRealTime과 lastMinutes가 이미 있으면 사용, 없으면 한 번만 설정
 document.addEventListener('DOMContentLoaded', () => {
   let storedBaseRealTime = localStorage.getItem("baseRealTime");
