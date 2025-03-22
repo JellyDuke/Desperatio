@@ -2180,7 +2180,7 @@ function updateGameDate() {
   const baseTime = Number(localStorage.getItem("baseRealTime") || Date.now());
   const currentMinutes = Math.floor((Date.now() - baseTime) / (1000 * 60)); // 1분 = 1일
 
-  // [추가된 부분] 지난 '일수(분)' 차이를 계산해서 자원 변화 적용 (페이지가 떠있지 않아도 경과한 만큼 반영)
+  // 지난 '일수(분)' 차이를 계산해서 자원 변화 적용
   const diffDays = currentMinutes - lastMinutes;
   if (diffDays > 0) {
     for (let i = 0; i < diffDays; i++) {
@@ -2190,7 +2190,6 @@ function updateGameDate() {
     localStorage.setItem("lastMinutes", lastMinutes);
   }
 
-  // baseDate 불러오기 (없으면 기본값 설정)
   let baseDate = localStorage.getItem("baseDate");
   if (!baseDate) {
     baseDate = { year: 24, month: 4, day: 12 };
@@ -2199,12 +2198,9 @@ function updateGameDate() {
     baseDate = JSON.parse(baseDate);
   }
 
-  // 기준 날짜에서 currentMinutes만큼 일수를 증가
   let newDay = baseDate.day + currentMinutes;
   let newMonth = baseDate.month;
   let newYear = baseDate.year;
-
-  // 한 달을 30일로 가정하여 계산
   while (newDay > 30) {
     newDay -= 30;
     newMonth++;
@@ -2215,17 +2211,19 @@ function updateGameDate() {
   }
 
   const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
-  
-  
-  // 날짜가 바뀌었으면 자원 변화 처리 및 날짜 텍스트 플래그 재설정
+  console.log("currentDateString:", currentDateString, "lastDateStr:", lastDateStr);
+
+  // 날짜가 바뀌었으면, dateTextDisplayed를 false로 재설정
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
-    console.log("currentDateString:", currentDateString, "lastDateStr:", lastDateStr);
+
+    // baseDate를 현재 날짜로 업데이트 (다음 업데이트 계산을 위해)
+    localStorage.setItem("baseDate", JSON.stringify({ year: newYear, month: newMonth, day: newDay }));
   }
 
-  // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
+  // 날짜가 바뀌었거나 페이지가 처음 로드되었을 때, 상점 목록을 갱신하여 즉시 UI에 반영
   if (!dateTextDisplayed) {
     const kingdomMsgElem = document.querySelector('.kingdom-message-news');
     if (kingdomMsgElem) {
@@ -2237,27 +2235,23 @@ function updateGameDate() {
       scrollToBottom(kingdomMsgElem);
     }
 
-    // 상점 갱신 로직
-    refreshShopItemsForNewDay();  
+    refreshShopItemsForNewDay();
     initShopItems();
     updateShopInventory();
     
     dateTextDisplayed = true;
-
-    
   }
 
-  // 날짜 정보 영역 (.date-info) 매번 갱신 (누적되지 않음)
   const dateInfoElem = document.querySelector('.date-info');
   if (dateInfoElem) {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
 
-  // 여기에 gameState.currentDate를 업데이트하는 부분 추가
-  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };  
+  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
+
 
 // 1초마다 updateGameDate 호출 (매일 감각)
 setInterval(updateGameDate, 1000);
