@@ -288,6 +288,15 @@ function resetGameCompletely() {
   saveGameState();
   console.log("게임이 완전히 초기화되었습니다.");
 }
+//리셋
+document.addEventListener('DOMContentLoaded', () => {
+  const resetBtn = document.querySelector('.reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      resetGameCompletely();
+    });
+  }
+});
 
 //사망시
 function resetGameExceptSkills() {
