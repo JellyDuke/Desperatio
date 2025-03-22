@@ -645,7 +645,7 @@ function initGameStart() {
 
   gameStartBtn.addEventListener('click', () => {
     // 기존 게임 데이터 초기화 (예: 'gameData' 키 삭제)
-    localStorage.removeItem('gameData');
+    localStorage.removeItem('gameState');
 
     // 화면 전환: .page.game-fisrt 숨기고 .page.game-main 보이게
     gameFirst.style.display = 'none';
@@ -654,12 +654,8 @@ function initGameStart() {
     // 새 게임 시작 플래그 저장
     localStorage.setItem('gameStarted', 'true');
 
-    // 새 게임 데이터를 초기화하는 로직 추가 (예시)
-    const newGameData = {
-      score: 0,
-      level: 1,
-      // ... 추가 데이터
-    };
+    // 강제 새로고침 → 글로벌 gameState가 초기 선언값으로 리셋됩니다
++   window.location.reload();
 
     console.log('새 게임이 시작되었습니다.', newGameData);
   });
