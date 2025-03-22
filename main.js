@@ -2219,7 +2219,10 @@ function updateGameDate() {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
-
+    
+    refreshShopItemsForNewDay();
+    initShopItems();
+    updateShopInventory();
   }
 
   // 날짜가 바뀌었거나 페이지가 처음 로드되었을 때, 상점 목록을 갱신하여 즉시 UI에 반영
@@ -2233,13 +2236,12 @@ function updateGameDate() {
       kingdomMsgElem.appendChild(newTxtDiv);
       scrollToBottom(kingdomMsgElem);
     }
-
+    dateTextDisplayed = true;
+  }
+   
     refreshShopItemsForNewDay();
     initShopItems();
     updateShopInventory();
-    
-    dateTextDisplayed = true;
-  }
 
   const dateInfoElem = document.querySelector('.date-info');
   if (dateInfoElem) {
