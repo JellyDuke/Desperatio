@@ -772,6 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         popupElem.style.display = 'flex';
         // 상점 팝업 열릴 때 인벤토리 정보를 업데이트
         updateShopInventory();
+        initShopItems(); 
       });
     } else {
       // 그 외의 메뉴 버튼은 기존대로 작동
