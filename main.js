@@ -1861,7 +1861,7 @@ function sellAllItems() {
 
   // 결과 메시지 표시
   const connoisseur = document.querySelector('.popup.shop .connoisseur');
-  if (connoisseur) {
+  if (connoisseur) { 
     connoisseur.textContent = `모든 아이템을 팔아 ${totalSale}원을 획득했습니다.`;
   }
   
