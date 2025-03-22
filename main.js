@@ -1386,6 +1386,28 @@ function checkLevelUp(messageContainer) {
  * localStorage에 저장된 storeItemDB 정보를 불러와 현재 storeItemDB에 덮어쓰는 함수
  *  - 이미 storeItemDB에 없는 아이템이 있으면 무시하거나, 필요한 로직에 맞춰 처리
  */
+
+function checkAndRefreshShopItemsIfNeeded() {
+  const { year, month, day } = gameState.currentDate;
+  const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const lastShopDate = localStorage.getItem('lastShopDate');
+
+  if (!lastShopDate || lastShopDate !== todayStr) {
+    // 상점 갱신
+    refreshShopItemsForNewDay();
+    // 이벤트들도 여기서
+    applyBulkRobberyEvent();
+    applySpecialDiscountEvent();
+    applyDemandSurgeEvent();
+    applyOverstockEvent();
+
+    localStorage.setItem('lastShopDate', todayStr);
+  } else {
+    // 오늘 이미 갱신됨
+    initShopItems();
+  }
+}
+
 function loadStoreItemDB() {
   const storedDB = localStorage.getItem("storeItemDB");
   if (!storedDB) return; // 저장된 게 없으면 그냥 종료
@@ -2380,12 +2402,7 @@ function updateGameDate() {
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
 
-    refreshShopItemsForNewDay();
-    // 다양한 이벤트들을 호출
-    applyBulkRobberyEvent();
-    applySpecialDiscountEvent();
-    applyDemandSurgeEvent();
-    applyOverstockEvent();
++   checkAndRefreshShopItemsIfNeeded(); 
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
