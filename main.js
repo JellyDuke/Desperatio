@@ -1445,7 +1445,7 @@ function refreshShopItemsForNewDay() {
       console.log(`[${item.item}] 이전 가격: ${oldPrice}, 새 가격: ${item.basePrice}, 변화율: ${item.dailyChangePercent}%`);
     });
     saveShopDB();
-    localStorage.setItem('lastShopDate', today);
+    //localStorage.setItem('lastShopDate', today);
   }
 }
 
