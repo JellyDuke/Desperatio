@@ -1425,9 +1425,6 @@ function refreshShopItemsForNewDay() {
     const difference = ((newPrice - oldPrice) / oldPrice) * 100;
     item.dailyChangePercent = difference; 
   });
-
-  // 아이템 리스트 다시 뽑기
-  initShopItems();
 }
 
 
@@ -1444,6 +1441,16 @@ document.addEventListener('DOMContentLoaded', () => {
  * 상점 아이템을 확률적으로 뽑아서 .shop-item-sell-list 안에 생성
  */
 function initShopItems() {
+
+  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
+  const lastShopDate = localStorage.getItem('lastShopDate') || '';
+
+  // 날짜가 변경된 경우에만 가격·재고 갱신
+  if (today !== lastShopDate) {
+    refreshShopItemsForNewDay();
+    localStorage.setItem('lastShopDate', today);
+  }
+  
   const container = document.querySelector('.shop-item-sell-list');
   if (!container) return;
   container.innerHTML = '';
@@ -2214,8 +2221,6 @@ function updateGameDate() {
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
-    refreshShopItemsForNewDay();
-    
     localStorage.setItem("lastDateStr", lastDateStr);
   }
 
@@ -2232,7 +2237,7 @@ function updateGameDate() {
     }
     dateTextDisplayed = true;
 
-
+    
   }
 
   // 날짜 정보 영역 (.date-info) 매번 갱신 (누적되지 않음)
