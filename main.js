@@ -1435,7 +1435,7 @@ function saveShopDB() {
 
 function refreshShopItemsForNewDay() {
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
-  const lastDate = localStorage.getItem('lastShopDate');
+  const lastShopDate = localStorage.getItem('lastShopDate') || '';
 
   console.log("refreshShopItemsForNewDay - today:", today, "lastShopDate:", lastShopDate);
 
@@ -2217,7 +2217,7 @@ function updateGameDate() {
 
   const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
   console.log("updateGameDate - currentDateString:", currentDateString);
-  
+
   // 날짜가 바뀌었으면 자원 변화 처리 및 날짜 텍스트 플래그 재설정
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
