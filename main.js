@@ -2216,13 +2216,6 @@ function updateGameDate() {
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
-
-    // 가격·변동 갱신
-    refreshShopItemsForNewDay();  
-    // UI 목록 재생성
-    initShopItems();
-    updateShopInventory();
-
     localStorage.setItem("lastDateStr", lastDateStr);
   }
 
@@ -2236,8 +2229,14 @@ function updateGameDate() {
       newTxtDiv.textContent = `오늘은 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일입니다.`;
       kingdomMsgElem.appendChild(newTxtDiv);
       scrollToBottom(kingdomMsgElem);
-      refreshShopItemsForNewDay();
     }
+
+    // 가격·변동 갱신
+    refreshShopItemsForNewDay();  
+    // UI 목록 재생성
+    initShopItems();
+    updateShopInventory();
+    
     dateTextDisplayed = true;
 
     
