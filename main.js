@@ -586,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 페이지 로드 시 gameStarted 플래그 확인하여 화면 초기 상태 설정
   if (localStorage.getItem('gameStarted') === 'true') {
-    const gameFirst = document.querySelector('.page.game-fisrt');
+    const gameFirst = document.querySelector('.page.game-first');
     const gameMain = document.querySelector('.page.game-main');
     if (gameFirst && gameMain) {
       gameFirst.style.display = 'none';
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initGameStart() {
   const gameStartBtn = document.querySelector('.game-start-btn');
-  const gameFirst = document.querySelector('.page.game-fisrt');
+  const gameFirst = document.querySelector('.page.game-first');
   const gameMain = document.querySelector('.page.game-main');
 
   if (!gameStartBtn || !gameFirst || !gameMain) return;
@@ -643,7 +643,6 @@ function initGameStart() {
     // 기존 게임 데이터 초기화 (예: 'gameData' 키 삭제)
     localStorage.removeItem('gameData');
 
-    // 화면 전환: .page.game-fisrt 숨기고 .page.game-main 보이게
     gameFirst.style.display = 'none';
     gameMain.style.display = 'flex';
 
@@ -2216,13 +2215,14 @@ function updateGameDate() {
   }
 
   const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
-  console.log("updateGameDate - currentDateString:", currentDateString);
+  
   
   // 날짜가 바뀌었으면 자원 변화 처리 및 날짜 텍스트 플래그 재설정
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
+    console.log("currentDateString:", currentDateString, "lastDateStr:", lastDateStr);
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
@@ -2237,9 +2237,8 @@ function updateGameDate() {
       scrollToBottom(kingdomMsgElem);
     }
 
-    // 가격·변동 갱신
+    // 상점 갱신 로직
     refreshShopItemsForNewDay();  
-    // UI 목록 재생성
     initShopItems();
     updateShopInventory();
     
@@ -2255,9 +2254,7 @@ function updateGameDate() {
   }
 
   // 여기에 gameState.currentDate를 업데이트하는 부분 추가
-  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
-	
-  
+  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };  
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
