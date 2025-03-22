@@ -2394,9 +2394,7 @@ function updateGameDate() {
   if (!baseDate) {
     baseDate = { year: 24, month: 4, day: 12 };
     localStorage.setItem("baseDate", JSON.stringify(baseDate));
-  } else {
-    baseDate = JSON.parse(baseDate);
-  }
+  } 
 
   // 기준 날짜에서 currentMinutes만큼 일수를 증가
   let newDay = baseDate.day + currentMinutes;
