@@ -1631,6 +1631,7 @@ let selectedItemForPurchase = null;
 
 // 페이지 로드 후 상점 초기화
 document.addEventListener('DOMContentLoaded', () => {
+  checkAndRefreshShopItemsIfNeeded();
   initShopItems();
   initBuyPopup();
 });
@@ -2418,7 +2419,7 @@ function updateGameDate() {
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
 
-    +   checkAndRefreshShopItemsIfNeeded();
+    checkAndRefreshShopItemsIfNeeded();
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
