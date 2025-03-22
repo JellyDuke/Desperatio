@@ -89,14 +89,6 @@ const storeSkillDB = [
 
 const storeItemDB = [
   {
-    item: "오팔",
-    description: "다채로운 색상이 반짝이는 보석으로, 소지 시 특별한 효과는 없지만 수집 가치가 있습니다.",
-    effect: null,  // 소지 시 효과 없음
-    basePrice: 2250,
-    appearanceChance: 0.8,
-    dailyFluctuationRate: 8  // 하루 8% 등락률
-  },
-  {
     item: "골드",
     description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
     effect: null,
@@ -111,6 +103,14 @@ const storeItemDB = [
     basePrice: 225,
     appearanceChance: 0.9,
     dailyFluctuationRate: 3  
+  },
+  {
+    item: "오팔",
+    description: "다채로운 색상이 반짝이는 보석으로, 소지 시 특별한 효과는 없지만 수집 가치가 있습니다.",
+    effect: null,  // 소지 시 효과 없음
+    basePrice: 2250,
+    appearanceChance: 0.8,
+    dailyFluctuationRate: 8  // 하루 8% 등락률
   },
   {
     item: "루비",
