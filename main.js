@@ -1468,6 +1468,9 @@ function initShopItems() {
   let todaysItems = [];
   const lastShopDate = localStorage.getItem('lastShopDate') || '';
 
+  console.log("initShopItems - today:", today);
+  console.log("initShopItems - lastShopDate:", lastShopDate);
+
   if (today !== lastShopDate) {
     // 새로운 날이면 가격 갱신 후 오늘의 아이템 결정
     refreshShopItemsForNewDay();
