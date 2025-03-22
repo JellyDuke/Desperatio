@@ -592,7 +592,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // 만약 게임 진행 상황 전체를 교체하고 싶다면:
     // gameState = JSON.parse(savedState);
     // [추가] 이전에 저장된 게임 내 날짜(baseDate)가 있으면 gameState.currentDate에 덮어쓰기
-    const savedDate = JSON.parse(localStorage.getItem('baseDate') || 'null');
+    const savedDateRaw = localStorage.getItem('baseDate');
+    let savedDate = null;
+    if (savedDateRaw) {
+      try {
+        savedDate = JSON.parse(savedDateRaw);
+      } catch (e) {
+        console.warn('Invalid baseDate in storage:', savedDateRaw);
+        localStorage.removeItem('baseDate');
+      }
+    }
+    if (savedDate) {
+      gameState.currentDate = savedDate;
+    }
     if (savedDate) gameState.currentDate = savedDate;
   }
   // [추가된 코드] 새로고침 시 이동 상태 리셋
