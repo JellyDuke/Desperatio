@@ -1602,7 +1602,7 @@ function refreshShopItemsForNewDay() {
 
   // 4) localStorage에 오늘 목록 저장
   localStorage.setItem('shopItems_' + todayStr, JSON.stringify(todaysItems));
-
+  console.log('shopItems_' + todayStr, JSON.stringify(todaysItems));
   // 5) initShopItems()로 UI 갱신
   initShopItems();
 }
@@ -2427,8 +2427,8 @@ function updateGameDate() {
   }
 
   // 여기에 gameState.currentDate를 업데이트하는 부분 추가
-  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
-	
+  // gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
+	gameState.currentDate = { year: 24, month: 4, day: 12 };
   
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
