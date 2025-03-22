@@ -76,7 +76,7 @@ const storeItemDB = [
     basePrice: 220024,
     isUp: null,
     appearanceChance: 0.7,
-    dailyFluctuationRate: 4  
+    dailyFluctuationRate: 4
   },
   {
     item: "실버",
@@ -87,7 +87,7 @@ const storeItemDB = [
     basePrice: 225,
     isUp: null,
     appearanceChance: 0.9,
-    dailyFluctuationRate: 3  
+    dailyFluctuationRate: 3
   },
   {
     item: "오팔",
@@ -98,7 +98,7 @@ const storeItemDB = [
     basePrice: 2250,
     isUp: null,
     appearanceChance: 0.8,
-    dailyFluctuationRate: 8  
+    dailyFluctuationRate: 8
   },
   {
     item: "루비",
@@ -109,7 +109,7 @@ const storeItemDB = [
     basePrice: 45318,
     isUp: null,
     appearanceChance: 0.6,
-    dailyFluctuationRate: 30  
+    dailyFluctuationRate: 30
   },
   {
     item: "사파이어",
@@ -120,7 +120,7 @@ const storeItemDB = [
     basePrice: 646257,
     isUp: null,
     appearanceChance: 0.2,
-    dailyFluctuationRate: 12 
+    dailyFluctuationRate: 12
   }
 ];
 
@@ -135,7 +135,7 @@ const monsterData = {
     victoryMessage: "전투에서 승리했습니다!",
     militaryLevel: 1,
     loot: [
-	{ item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.8 },
+      { item: "잎파리", basePrice: 5, variance: 6, dropChance: 0.8 },
     ],
     experience: 10,
     narrativeSteps: [
@@ -177,7 +177,7 @@ const monsterData = {
     victoryMessage: "오크를 무찔렀습니다!",
     militaryLevel: 4,
     loot: [
-	{ item: "오크의 투구", basePrice: 35, variance: 20, dropChance: 0.6 },
+      { item: "오크의 투구", basePrice: 35, variance: 20, dropChance: 0.6 },
     ],
     experience: 50,
     narrativeSteps: [
@@ -193,64 +193,147 @@ const monsterData = {
 
 // [추가된 코드] 각 지역별 몬스터 목록 (중앙 지역은 삭제)
 const regionMonsters = {
-  "왕국 서부": [ "plant", "slime"],
-  "왕국 동부": [ "orc", "slime"],
+  "왕국 서부": ["plant", "slime"],
+  "왕국 동부": ["orc", "slime"],
 };
 
-  const gameState = {
-    // 플레이어 정보
-    player: {
-      rank: "노예",           
-      experience: 0,          
-      level: 1,               
-      militaryLevel: 1,       
-      charismaLevel: 1,       
-      governance: 1,          
-      skills: [],             
-      inventory: [],
-      location: "왕국 서부",     // 현재 위치 (초기값: "중앙")
-      isMoving: false,       // 이동 중 여부
-      health: 50, // 초기 체력
-      bonusHealth: 0, //스킬로 인해 추가 체력
-      money: 0  
-    },
+const gameState = {
+  // 플레이어 정보
+  player: {
+    rank: "노예",
+    experience: 0,
+    level: 1,
+    militaryLevel: 1,
+    charismaLevel: 1,
+    governance: 1,
+    skills: [],
+    inventory: [],
+    location: "왕국 서부",     // 현재 위치 (초기값: "중앙")
+    isMoving: false,       // 이동 중 여부
+    health: 50, // 초기 체력
+    bonusHealth: 0, //스킬로 인해 추가 체력
+    money: 0
+  },
 
-    // 왕국 상태 및 자원 정보
-    kingdom: {
-      status: "위기",         
-      citizenanxiety: 0,     
-      soldiercount: 0,     
-      population: 100000,       
-      resources: {
-        gold: 0,             
-        wood: 0,             
-        ore: 0,              
-        magicstone: 0,       
-        food: 0              
-      }
-    },
-		 // 날짜 정보 추가
-    currentDate: {
-      year: 24,
-      month: 4,
-      day: 12
-    },
-    // 게임 진행 상황 및 이벤트 기록
-    progress: {
-      currentCycle: 1,        
-      monsterInvasions: [],
-      resourcesInitialized: false, // [추가] 처음에만 랜덤 세팅을 위한 플래그
-      roundCount: 0               // 초기 회차: 아직 죽은 적 없음
+  // 왕국 상태 및 자원 정보
+  kingdom: {
+    status: "위기",
+    citizenanxiety: 0,
+    soldiercount: 0,
+    population: 100000,
+    resources: {
+      gold: 0,
+      wood: 0,
+      ore: 0,
+      magicstone: 0,
+      food: 0
     }
+  },
+  // 날짜 정보 추가
+  currentDate: {
+    year: 24,
+    month: 4,
+    day: 12
+  },
+  // 게임 진행 상황 및 이벤트 기록
+  progress: {
+    currentCycle: 1,
+    monsterInvasions: [],
+    resourcesInitialized: false, // [추가] 처음에만 랜덤 세팅을 위한 플래그
+    roundCount: 0               // 초기 회차: 아직 죽은 적 없음
+  }
+};
+
+function resetGameCompletely() {
+  // localStorage 전체 삭제
+  localStorage.clear();
+
+  // gameState를 기본 상태로 재설정
+  gameState.player = {
+    rank: "노예",
+    experience: 0,
+    level: 1,
+    militaryLevel: 1,
+    charismaLevel: 1,
+    governance: 1,
+    skills: [],         // 스킬도 초기화
+    inventory: [],
+    location: "왕국 서부", // 초기 위치
+    isMoving: false,
+    health: 50,
+    bonusHealth: 0,
+    money: 0
   };
-  
-  // 이후 gameState를 이용하는 로직을 추가합니다.
-  // [추가된 코드]
+
+  gameState.currentDate = {
+    year: 24,
+    month: 4,
+    day: 12
+  };
+
+  gameState.progress = {
+    currentCycle: 1,
+    monsterInvasions: [],
+    roundCount: 1,
+    resourcesInitialized: false
+  };
+
+  // 초기 상태를 localStorage에 저장
+  localStorage.setItem('gameState', JSON.stringify(gameState));
+
+  // UI 업데이트 (예: 내 정보, 왕국 상태, 인벤토리 등)
+  updateMyInfo();
+  updateKingdomStatus(gameState.kingdom);
+  updateInventory();
+  saveGameState();
+  console.log("게임이 완전히 초기화되었습니다.");
+}
+
+//사망시
+function resetGameExceptSkills() {
+  const savedSkills = gameState?.player?.skills ? [...gameState.player.skills] : [];
+  localStorage.clear();
+  let oldRoundCount = gameState.progress.roundCount || 1;
+  gameState.player = {
+    rank: "노예",
+    experience: 0,
+    level: 1,
+    militaryLevel: 1,
+    charismaLevel: 1,
+    governance: 1,
+    skills: savedSkills,
+    inventory: [],
+    location: "왕국 서부",    // [추가] 위치 초기화
+    isMoving: false,     // [추가] 이동 상태 초기화
+    health: 50,
+    money: 0
+  };
+  gameState.currentDate = {
+    year: 24,
+    month: 4,
+    day: 12
+  };
+  gameState.progress = {
+    currentCycle: 1,
+    monsterInvasions: [],
+    roundCount: oldRoundCount + 1,
+    resourcesInitialized: false
+  };
+  localStorage.setItem('gameState', JSON.stringify(gameState));
+  updateMyInfo();
+  saveGameState();
+  updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
+  updateInventory();
+}
+
+
+// 이후 gameState를 이용하는 로직을 추가합니다.
+// [추가된 코드]
 /**
  * 왕국 현황을 업데이트하는 함수
  * @param {Object} data - 예: { status: '위기', citizenAnxiety: 78, soldiercount: 2544, ... }
  */
- 
+
 // -- updateKingdomStatus 함수 (중복 정의 제거 및 일관성 유지)
 // [수정/추가] : 한 개의 updateKingdomStatus 함수만 사용하며, gameState.kingdom의 키와 일치하도록 소문자로 통일합니다.
 // -- updateKingdomStatus 함수 (수정/추가)
@@ -324,9 +407,9 @@ function updateKingdomStatus(data) {
 
   // gameState에 반영
   gameState.kingdom.citizenanxiety = data.citizenanxiety;
-  gameState.kingdom.soldiercount   = data.soldiercount;
-  gameState.kingdom.population     = data.population ;
-  gameState.kingdom.resources      = data.resources;
+  gameState.kingdom.soldiercount = data.soldiercount;
+  gameState.kingdom.population = data.population;
+  gameState.kingdom.resources = data.resources;
 
   saveGameState();
 }
@@ -342,7 +425,7 @@ function dailyResourceChange() {
   const anxiety = gameState.kingdom.citizenanxiety; // 불안도
   let pop = gameState.kingdom.population;          // 현재 시민 수
   const month = gameState.currentDate.month;
-  
+
   // ================================
   // [수정/추가] 인구수 변화 로직:
   // 매일 인구수는 20~100 증가하거나, 1~60 감소 (감소는 절반 적용)
@@ -362,7 +445,7 @@ function dailyResourceChange() {
   } else if (pop >= 100000) {
     popMultiplier += 0.05;
   }
-  
+
   popChange = Math.round(popChange * popMultiplier);
   if (popChange < 0) {
     popChange = Math.floor(popChange * 0.5); // 감소는 절반만 적용
@@ -370,8 +453,8 @@ function dailyResourceChange() {
   pop += popChange;
   if (pop < 0) pop = 0;
   gameState.kingdom.population = pop;
-  
-  
+
+
 
   // ================================
   // [수정/추가] 군인(병사수) 변화 로직:
@@ -496,7 +579,7 @@ function updateMyInfo() {
 function updateUserStatus() {
   const statusContainer = document.querySelector('.user-status');
   if (!statusContainer) return;
-  
+
   const levelElem = statusContainer.querySelector('.level');
   if (levelElem) {
     levelElem.textContent = gameState.player.level;
@@ -509,17 +592,17 @@ function updateUserStatus() {
   if (healthElem) {
     healthElem.textContent = gameState.player.health;
   }
-   // 계급에 따라 .user 요소의 클래스를 업데이트
+  // 계급에 따라 .user 요소의 클래스를 업데이트
   updateUserClass();
 }
 //계급별 프로필
 function updateUserClass() {
   const userElem = document.querySelector('.user');
   if (!userElem) return;
-  
+
   const rank = gameState.player.rank;
   let newRoleClass = "";
-  
+
   if (rank === "노예") {
     newRoleClass = "slave";
   } else if (rank === "시민") {
@@ -527,7 +610,7 @@ function updateUserClass() {
   } else {
     newRoleClass = "private";
   }
-  
+
   // 이미 추가되어 있지 않다면 새로운 역할 클래스를 추가 (기존 .user 클래스는 유지)
   if (!userElem.classList.contains(newRoleClass)) {
     userElem.classList.add(newRoleClass);
@@ -546,13 +629,13 @@ function getMaxHealth() {
 function updateHealthBar() {
   const healthBar = document.querySelector('.health-bar');
   if (!healthBar) return;
-  
+
   const maxHealth = getMaxHealth();
   const currentHealth = gameState.player.health;
-  
+
   let percentage = (currentHealth / maxHealth) * 100;
   if (percentage < 0) percentage = 0;
-  
+
   healthBar.style.width = percentage + '%';
 }
 
@@ -577,18 +660,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedState = localStorage.getItem('gameState');
   if (savedState) {
     const parsedState = JSON.parse(savedState);
-      // 필수 속성이 누락된 경우 기본값 설정
-      if (!parsedState.currentDate) {
-        parsedState.currentDate = { year: 24, month: 4, day: 12 };
-      }
+    // 필수 속성이 누락된 경우 기본값 설정
+    if (!parsedState.currentDate) {
+      parsedState.currentDate = { year: 24, month: 4, day: 12 };
+    }
     // 저장된 데이터를 파싱해서 gameState에 할당 (필요한 경우 deep copy)
     Object.assign(gameState, JSON.parse(savedState));
     // 만약 게임 진행 상황 전체를 교체하고 싶다면:
     // gameState = JSON.parse(savedState);
   }
-   // [추가된 코드] 새로고침 시 이동 상태 리셋
+  // [추가된 코드] 새로고침 시 이동 상태 리셋
   gameState.player.isMoving = false;
-  
+
   updateKingdomStatus(gameState.kingdom);//랜덤 초기값
   updateMyInfo(); // 내 정보 팝업 갱신
   updateRankByLevel();
@@ -706,17 +789,17 @@ function exportSaveData(saveData) {
 // [수정된 코드]
 function showMessageGuideOnHover() {
   const buttonBoxes = document.querySelectorAll('.button-box');
-  
+
   buttonBoxes.forEach(box => {
     // [추가된 부분] 각 .button-box 내부의 .message-guide 요소를 찾음
     const messageGuide = box.querySelector('.message-guide');
     if (!messageGuide) return; // 해당 box 안에 .message-guide가 없으면 건너뜀
-    
+
     box.addEventListener('mouseenter', () => {
       // [수정된 부분] display: 'flex'로 변경
       messageGuide.style.display = 'flex';
     });
-    
+
     box.addEventListener('mouseleave', () => {
       messageGuide.style.display = 'none';
     });
@@ -727,24 +810,25 @@ function showMessageGuideOnHover() {
 // [수정된 코드] 맵 열기
 document.addEventListener('DOMContentLoaded', () => {
   const mappings = [
-    { menu: '.menu.my-info',    popup: '.popup.my-info' },
-    { menu: '.menu.combat',     popup: '.popup.combat' },
-    { menu: '.menu.enforce',   popup: '.popup.enforce' },
-    { menu: '.menu.inventory',  popup: '.popup.inventory' },
-    { menu: '.menu.skill',      popup: '.popup.skill' },
-    { menu: '.menu.move',       popup: '.popup.move' },
-    { menu: '.button-map',      popup: '.popup.map-info' },
-    { menu: '.menu.shop',      popup: '.popup.shop' }
+    { menu: '.user', popup: '.popup.my-info' },
+    { menu: '.menu.combat', popup: '.popup.combat' },
+    { menu: '.menu.enforce', popup: '.popup.enforce' },
+    { menu: '.menu.inventory', popup: '.popup.inventory' },
+    { menu: '.menu.skill', popup: '.popup.skill' },
+    { menu: '.menu.move', popup: '.popup.move' },
+    { menu: '.button-map', popup: '.popup.map-info' },
+    { menu: '.menu.shop', popup: '.popup.shop' },
+    { menu: '.menu.new', popup: '.popup.new' }
   ];
-  
+
   mappings.forEach(mapping => {
-    const menuElem  = document.querySelector(mapping.menu);
+    const menuElem = document.querySelector(mapping.menu);
     const popupElem = document.querySelector(mapping.popup);
     if (!menuElem || !popupElem) {
       console.error(`Element not found for mapping: ${mapping.menu} or ${mapping.popup}`);
       return;
     }
-    
+
     // .menu.combat 버튼은 이동 중일 때 특별 처리
     if (mapping.menu === '.menu.combat') {
       menuElem.addEventListener('click', () => {
@@ -768,7 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
         popupElem.style.display = 'flex';
         // 상점 팝업 열릴 때 인벤토리 정보를 업데이트
         updateShopInventory();
-      }); 
+      });
     } else {
       // 그 외의 메뉴 버튼은 기존대로 작동
       menuElem.addEventListener('click', () => {
@@ -777,7 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-  
+
   // 각 팝업 내부의 .close-btn을 클릭하면 팝업 닫기
   const closeBtns = document.querySelectorAll('.close-btn');
   closeBtns.forEach(btn => {
@@ -811,7 +895,7 @@ function updateRankByLevel() {
       newRank = "병장";
     }
   }
-  
+
   // 레벨 1은 기본 "노예" 유지, 레벨 21 이상은 별도 처리(예: "병장" 유지)로 설정할 수 있습니다.
   gameState.player.rank = newRank;
   console.log("새로운 계급:", newRank);
@@ -873,7 +957,7 @@ function updateCombatList(region) {
         startNarrativeCombat(key, document.querySelector('.kingdom-message-combat'), () => {
           combatInProgress = false; // 전투 끝
         });
-         // --- 수정됨: 수색 기능 실행 후 전투 팝업 닫기 ---
+        // --- 수정됨: 수색 기능 실행 후 전투 팝업 닫기 ---
         const combatPopup = document.querySelector('.popup.combat');
         if (combatPopup) {
           combatPopup.style.display = 'none';
@@ -885,7 +969,7 @@ function updateCombatList(region) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function () {
   function closeParentPopup(element) {
     const parentPopup = element.closest('.popup');
     if (parentPopup) {
@@ -894,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   document.querySelectorAll('.move-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
+    btn.addEventListener('click', function (e) {
       e.preventDefault();
       closeParentPopup(this);
     });
@@ -926,7 +1010,7 @@ function moveTo(destination, msgContainer) {
     msgContainer.scrollTop = msgContainer.scrollHeight;
     return;
   }
-  
+
   // 이동 시작: 이동 상태 true, 수색 버튼 비활성화
   gameState.player.isMoving = true;
   const combatBtn = document.querySelector('.combat-btn');
@@ -937,9 +1021,9 @@ function moveTo(destination, msgContainer) {
   startMsg.textContent = `${destination}로 이동을 시작합니다...`;
   msgContainer.appendChild(startMsg);
   msgContainer.scrollTop = msgContainer.scrollHeight;
-  
+
   const travelTime = 5000; // 이동 시간 예시 (5초)
-  
+
   function completeMovement() {
     gameState.player.location = destination;
     gameState.player.isMoving = false;
@@ -954,7 +1038,7 @@ function moveTo(destination, msgContainer) {
     updateCombatPopupUI();
     saveGameState();
   }
-  
+
   setTimeout(() => {
     let encounterOccurred = Math.random() < 0.3; // 30% 확률 기습 발생
     if (encounterOccurred) {
@@ -973,14 +1057,14 @@ function moveTo(destination, msgContainer) {
       completeMovement();
     }
   }, travelTime);
-  
+
   saveGameState();
 }
 
 function initLocationList() {
   const locList = document.querySelector('.location-list');
   if (!locList) return;
-  
+
   // 기존 내용 초기화
   locList.innerHTML = '';
 
@@ -1030,7 +1114,7 @@ function updateCombatPopupUI() {
   // 헤더에 지역명만 표시
   const cardTitle = combatCard.querySelector('.card-title');
   if (cardTitle) {
-    cardTitle.textContent = location; 
+    cardTitle.textContent = location;
   }
 
   // [추가] 지역별 몬스터 목록 UI 생성
@@ -1057,12 +1141,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // 이미 버튼이 비활성화되어 있다면(이동 중) 추가 메시지 출력 없이 return
       return;
     }
-    
+
     // 전투(수색)가 이미 진행 중이면 아무런 동작 없이 return
     if (combatInProgress) {
       return;
     }
-    
+
     // 정상적인 상태라면 전투 시작 전에 혹시 남은 메시지 관련 dataset 플래그 삭제
     delete combatBtn.dataset.movingMsgShown;
     delete combatBtn.dataset.combatMsgShown;
@@ -1086,10 +1170,10 @@ function startNarrativeCombat(monsterKey, msgContainer, finalCallback, isAmbush 
   if (gameState.player.isMoving && !isAmbush) {
     return;
   }
-  
+
   const monster = monsterData[monsterKey];
   if (!monster) return;
-  
+
   const initialMessage = isAmbush
     ? `${monster.name}에게 기습당했습니다!`
     : `${monster.name} 수색을 시작합니다...`;
@@ -1097,15 +1181,15 @@ function startNarrativeCombat(monsterKey, msgContainer, finalCallback, isAmbush 
   startDiv.textContent = initialMessage;
   msgContainer.appendChild(startDiv);
   msgContainer.scrollTop = msgContainer.scrollHeight;
-  
+
   const delay = isAmbush ? 0 : Math.random() * monster.maxDelay;
-  
+
   setTimeout(() => {
     const discoverDiv = document.createElement('div');
     discoverDiv.textContent = monster.discoveryMessage;
     msgContainer.appendChild(discoverDiv);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-    
+
     playNarrativeSteps(monster, msgContainer, () => {
       // monsterKey를 함께 전달
       simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback);
@@ -1121,7 +1205,7 @@ function startNarrativeCombat(monsterKey, msgContainer, finalCallback, isAmbush 
 function playNarrativeSteps(monster, container, onComplete) {
   const steps = monster.narrativeSteps || [];
   let index = 0;
-  
+
   function nextStep() {
     if (index < steps.length) {
       const stepDiv = document.createElement('div');
@@ -1136,7 +1220,7 @@ function playNarrativeSteps(monster, container, onComplete) {
       }
     }
   }
-  
+
   nextStep();
 }
 
@@ -1149,7 +1233,7 @@ function playNarrativeSteps(monster, container, onComplete) {
 function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) {
   let currentMonsterHealth = monster.health;
   let roundNumber = 1;
-  
+
   function roundFight() {
     // 한 라운드 시작 메시지
     const roundMsg = document.createElement('div');
@@ -1162,55 +1246,55 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     playerAttackMsg.textContent = `플레이어가 ${playerDamage}의 데미지를 입혔습니다.`;
     msgContainer.appendChild(playerAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-    
+
     currentMonsterHealth -= playerDamage;
-	  
+
     // 몬스터의 공격 데미지: 몬스터 무력레벨 당 3~7의 랜덤 값
     const monsterDamage = monster.militaryLevel * (Math.floor(Math.random() * 5) + 3);
     gameState.player.health -= monsterDamage;
-	
+
     // 체력을 음수가 되지 않도록 0으로 클램프(clamp)
     if (gameState.player.health < 0) {
       gameState.player.health = 0;
     }
-	  
+
     const monsterAttackMsg = document.createElement('div');
     monsterAttackMsg.textContent = `몬스터가 ${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-     // 전투 결과 판정
+    // 전투 결과 판정
     if (currentMonsterHealth <= 0) {
       const victoryMsg = document.createElement('div');
       victoryMsg.textContent = monster.victoryMessage;
       msgContainer.appendChild(victoryMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
-      
+
       // 올바른 monsterKey를 전달하여 전리품과 경험치를 지급
       onMonsterDefeated(monsterKey, msgContainer);
-      
+
       if (typeof finalCallback === 'function') {
         finalCallback();
       }
       return;
     }
-    
+
     if (gameState.player.health <= 0) {
       const defeatMsg = document.createElement('div');
       defeatMsg.textContent = "전투 도중 사망했습니다...";
       msgContainer.appendChild(defeatMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
-      
+
       resetGameExceptSkills();
       if (typeof finalCallback === 'function') {
         finalCallback();
       }
       return;
     }
-    
+
     roundNumber++;
     setTimeout(roundFight, 1500);
   }
-  
+
   roundFight();
 }
 //경험치
@@ -1225,7 +1309,7 @@ function getRequiredExpForLevel(level) {
   } else if (level <= 20) {
     // 레벨 11~20:
     // 10레벨까지 누적: 20 * 10² = 2000
-    const baseFor10 = Math.floor(20 * Math.pow(10, 2)); 
+    const baseFor10 = Math.floor(20 * Math.pow(10, 2));
     // 레벨 11부터 20까지는 선형 증가와 2차항 추가: 
     // 예: extra = 80*(level - 10) + 10*(level - 10)²
     const extra = Math.floor(80 * (level - 10) + 10 * Math.pow(level - 10, 2));
@@ -1277,10 +1361,10 @@ function getDroppedLoot(lootArray) {
 function onMonsterDefeated(monsterKey, messageContainer) {
   const monster = monsterData[monsterKey];
   if (!monster) return;
-  
+
   // 전리품 드랍 처리: loot 배열에서 드랍할 아이템들을 결정합니다.
   const droppedLoot = getDroppedLoot(monster.loot);
-  
+
   if (droppedLoot.length > 0) {
     droppedLoot.forEach(lootData => {
       const lootItem = lootData.item;
@@ -1306,14 +1390,14 @@ function onMonsterDefeated(monsterKey, messageContainer) {
     messageContainer.appendChild(noLootDiv);
     messageContainer.scrollTop = messageContainer.scrollHeight;
   }
-  
+
   // 경험치 추가 등 나머지 처리...
   gameState.player.experience += monster.experience;
   const expDiv = document.createElement('div');
   expDiv.textContent = `경험치 ${monster.experience} 획득했습니다.`;
   messageContainer.appendChild(expDiv);
   messageContainer.scrollTop = messageContainer.scrollHeight;
-  
+
   updateInventory();
   checkLevelUp(messageContainer);
   saveGameState();
@@ -1326,7 +1410,7 @@ function onMonsterDefeated(monsterKey, messageContainer) {
  */
 function checkLevelUp(messageContainer) {
   const player = gameState.player;
-  
+
   while (true) {
     const requiredExp = getRequiredExpForLevel(player.level);
     if (player.experience >= requiredExp) {
@@ -1338,22 +1422,22 @@ function checkLevelUp(messageContainer) {
       // 업데이트된 계급을 UI에 반영
       updateUserClass();
       updateUserStatus();
-	    
+
       // 플레이어 최대 체력 갱신: 초기 50에서 레벨당 1.3배씩 증가
       player.health = Math.floor(50 * Math.pow(1.3, player.level - 1));
-      
+
       const levelUpDiv = document.createElement('div');
       levelUpDiv.textContent = `플레이어 레벨이 ${player.level}이 되었습니다! 체력이 ${player.health}로 증가했습니다.`;
       messageContainer.appendChild(levelUpDiv);
       messageContainer.scrollTop = messageContainer.scrollHeight;
-      
+
       // 무력 레벨 증가 (예전과 동일)
       player.militaryLevel++;
       const mLevelDiv = document.createElement('div');
       mLevelDiv.textContent = `무력 레벨이 ${player.militaryLevel}이 되었습니다! (공격력 증가)`;
       messageContainer.appendChild(mLevelDiv);
       messageContainer.scrollTop = messageContainer.scrollHeight;
-      
+
       // 레벨이 3의 배수이면 카리스마와 통치도도 상승
       if (player.level % 3 === 0) {
         player.charismaLevel++;
@@ -1368,7 +1452,7 @@ function checkLevelUp(messageContainer) {
       break;
     }
   }
-  
+
   updateMyInfo();
   saveGameState();
 }
@@ -1553,13 +1637,13 @@ function canAddItemToInventory(itemName, quantity) {
   });
   // 구매할 아이템 추가
   counts[itemName] = (counts[itemName] || 0) + quantity;
-  
+
   // 각 아이템은 99개씩 슬롯에 들어가므로, 필요한 슬롯 수 계산
   let totalSlots = 0;
   for (const key in counts) {
     totalSlots += Math.ceil(counts[key] / 99);
   }
-  
+
   // 총 슬롯 수가 28개를 넘으면 false 반환
   return totalSlots <= 28;
 }
@@ -1580,39 +1664,39 @@ function initBuyPopup() {
       alert("구매할 개수를 올바르게 입력하세요.");
       return;
     }
-  
+
     // 총 구매 금액 계산
     const totalCost = selectedItemForPurchase.basePrice * quantity;
-  
+
     // 소지금 확인
     if (gameState.player.money < totalCost) {
       alert("소지금이 부족합니다!");
       return;
     }
-    
+
     // 인벤토리 슬롯 체크: 구매 후 슬롯이 28개를 초과하면 구매 불가
     if (!canAddItemToInventory(selectedItemForPurchase.item, quantity)) {
       alert("인벤토리 슬롯이 부족하여 구매할 수 없습니다!");
       return;
     }
-    
+
     // 구매 진행: 돈 차감 및 인벤토리에 아이템 추가
     gameState.player.money -= totalCost;
     for (let i = 0; i < quantity; i++) {
       gameState.player.inventory.push(selectedItemForPurchase.item);
     }
-    
+
     alert(`${selectedItemForPurchase.item}을(를) ${quantity}개 구매했습니다!`);
-  
+
     // UI 및 상태 업데이트
     updateInventory();
     updateShopInventory();
     updateUserStatus();
     saveGameState();
-    
+
     hideBuyPopup();
   });
-  
+
 
   // 닫기 버튼
   buyCloseBtn.addEventListener('click', () => {
@@ -1731,13 +1815,13 @@ function updateShopInventory() {
   // .popup.shop 내의 모든 인벤토리 슬롯(28칸이라고 가정)
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   if (!shopInvBoxes.length) return;
-  
+
   // 플레이어 인벤토리를 아이템별로 그룹화: { "아이템명": 개수, ... }
   const inventoryCounts = {};
   gameState.player.inventory.forEach(item => {
     inventoryCounts[item] = (inventoryCounts[item] || 0) + 1;
   });
-  
+
   // 각 아이템의 총 개수를 99개씩 분리하여 slots 배열 생성
   let slots = [];
   for (const item in inventoryCounts) {
@@ -1748,12 +1832,12 @@ function updateShopInventory() {
       count -= slotCount;
     }
   }
-  
+
   // 슬롯이 인벤토리 박스 수(예: 28)보다 많으면 초과 슬롯은 무시
   if (slots.length > shopInvBoxes.length) {
     slots = slots.slice(0, shopInvBoxes.length);
   }
-  
+
   // 각 상점 인벤토리 슬롯 업데이트
   shopInvBoxes.forEach((box, index) => {
     // 기존 클래스 초기화 (기본 클래스 'inventory-box' 유지)
@@ -1772,7 +1856,7 @@ function updateShopInventory() {
       delete box.dataset.item;
     }
   });
-  
+
   // 상점 인벤토리 클릭 이벤트 등록 (감정 등)
   addShopItemClickListeners();
 }
@@ -1786,25 +1870,25 @@ function addShopItemClickListeners() {
   // .popup.shop 내의 모든 inventory-box 요소 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   shopInvBoxes.forEach(box => {
-    box.addEventListener('click', function(e) {
+    box.addEventListener('click', function (e) {
       e.preventDefault();
-      
+
       // 다른 박스 클릭 시 기존 선택 표시 제거
       shopInvBoxes.forEach(b => {
         b.style.border = ""; // 초기 상태로 복구
       });
       this.style.border = "2px solid white";
-      
+
       // data-item 속성에서 아이템 이름 가져오기
       const itemName = this.dataset.item;
       if (!itemName) return;
-      
+
       // 플레이어 인벤토리에서 해당 아이템 개수 계산
       const itemCount = gameState.player.inventory.filter(item => item === itemName).length;
-      
+
       const connoisseur = document.querySelector('.popup.shop .connoisseur');
       if (!connoisseur) return;
-      
+
       // 우선, 몬스터 전리품 정보에서 가격 조회, 없으면 상점 DB에서 조회
       let price = 0;
       const lootInfo = getLootPriceInfo(itemName);
@@ -1816,10 +1900,10 @@ function addShopItemClickListeners() {
           price = storeInfo.basePrice;
         }
       }
-      
+
       // 총가격: 단가 * 개수
       const totalPrice = price * itemCount;
-      
+
       // toLocaleString()을 사용해 가독성 있게 숫자 표시
       connoisseur.textContent = `감정: ${itemName}, 가격: ${price.toLocaleString()}원, 총가격: ${totalPrice.toLocaleString()}원`;
     });
@@ -1847,27 +1931,27 @@ function sellAllItems() {
     }
     totalSale += price;
   });
-  
+
   // 플레이어의 돈에 판매 금액을 추가
   gameState.player.money += totalSale;
-  
+
   // 판매 후 인벤토리 비우기 (혹은 판매한 아이템만 제거)
   gameState.player.inventory = [];
-  
+
   // UI 업데이트: 인벤토리, 상점 인벤토리, 유저 상태 등
   updateInventory();
-  updateShopInventory();  
+  updateShopInventory();
   updateUserStatus();
 
   // 결과 메시지 표시
   const connoisseur = document.querySelector('.popup.shop .connoisseur');
-  if (connoisseur) { 
+  if (connoisseur) {
     connoisseur.textContent = `모든 아이템을 팔아 ${totalSale}원을 획득했습니다.`;
   }
-  
+
   // 게임 상태 저장
   saveGameState();
-  
+
   // 즉시 소지금 UI 업데이트
   const moneyElem = document.querySelector('.money');
   if (moneyElem) {
@@ -1875,11 +1959,11 @@ function sellAllItems() {
   }
 }
 
- // .money 요소를 바로 찾아 업데이트 (즉시 갱신)
-  const moneyElem = document.querySelector('.money');
-  if (moneyElem) {
-    moneyElem.textContent = gameState.player.money;
-  }
+// .money 요소를 바로 찾아 업데이트 (즉시 갱신)
+const moneyElem = document.querySelector('.money');
+if (moneyElem) {
+  moneyElem.textContent = gameState.player.money;
+}
 
 // .sell-all-btn 버튼에 이벤트 등록
 document.addEventListener('DOMContentLoaded', () => {
@@ -1899,14 +1983,14 @@ function sellSelectedItem(quantity) {
     alert("판매할 아이템을 먼저 선택하세요!");
     return;
   }
-  
+
   // 현재 인벤토리에서 선택된 아이템의 수량 계산
   let currentCount = gameState.player.inventory.filter(item => item === selectedSellItem).length;
   if (quantity > currentCount) {
     alert("판매할 수 있는 수량이 부족합니다!");
     return;
   }
-  
+
   // 판매 가격 산출: 먼저 전리품 정보(loot)를 확인하고, 없으면 상점 아이템 DB에서 조회
   let price = 0;
   const lootInfo = getLootPriceInfo(selectedSellItem);
@@ -1918,9 +2002,9 @@ function sellSelectedItem(quantity) {
       price = storeInfo.basePrice;
     }
   }
-  
+
   const totalSale = price * quantity;
-  
+
   // 인벤토리에서 판매한 개수만큼 제거
   let soldCount = 0;
   gameState.player.inventory = gameState.player.inventory.filter(item => {
@@ -1930,22 +2014,22 @@ function sellSelectedItem(quantity) {
     }
     return true;
   });
-  
+
   // 판매 금액을 유저 소지금에 추가
   gameState.player.money += totalSale;
-  
+
   // UI 업데이트 및 게임 상태 저장
   updateInventory();
   updateShopInventory();
   updateUserStatus();
   saveGameState();
-  
+
   // connoisseur 업데이트: 판매 완료 후 결과 메시지 표시
   const connoisseur = document.querySelector('.popup.shop .connoisseur');
   if (connoisseur) {
     connoisseur.textContent = `${selectedSellItem} ${quantity}개 판매 완료. 총 ${totalSale.toLocaleString()}원을 획득했습니다.`;
   }
-  
+
   alert(`${selectedSellItem}을(를) ${quantity}개 팔아 ${totalSale.toLocaleString()}원을 획득했습니다.`);
 }
 
@@ -1954,7 +2038,7 @@ function setupSellSelectFunctionality() {
   // 1. 인벤토리 아이템 클릭 시 판매할 아이템 선택
   const shopInvBoxes = document.querySelectorAll('.popup.shop .inventory-box');
   shopInvBoxes.forEach(box => {
-    box.addEventListener('click', function(e) {
+    box.addEventListener('click', function (e) {
       e.preventDefault();
       // data-item 속성에 저장된 아이템 이름을 선택
       const itemName = this.dataset.item;
@@ -1970,11 +2054,11 @@ function setupSellSelectFunctionality() {
       }
     });
   });
-  
+
   // 2. .sell-select-btn 클릭 시 판매 입력 창(.input-sell) 표시
   const sellSelectBtn = document.querySelector('.sell-select-btn');
   if (sellSelectBtn) {
-    sellSelectBtn.addEventListener('click', function(e) {
+    sellSelectBtn.addEventListener('click', function (e) {
       e.preventDefault();
       if (!selectedSellItem) {
         alert("판매할 아이템을 먼저 선택하세요!");
@@ -1986,11 +2070,11 @@ function setupSellSelectFunctionality() {
       }
     });
   }
-  
+
   // 3. .sell-input-btn 클릭 시 입력된 개수만큼 판매 처리 (sellSelectedItem 함수 호출)
   const sellInputBtn = document.querySelector('.sell-input-btn');
   if (sellInputBtn) {
-    sellInputBtn.addEventListener('click', function(e) {
+    sellInputBtn.addEventListener('click', function (e) {
       e.preventDefault();
       const inputField = document.querySelector('.input-sell-field');
       if (!inputField) return;
@@ -1999,15 +2083,15 @@ function setupSellSelectFunctionality() {
         alert("판매할 개수를 올바르게 입력하세요!");
         return;
       }
-      
+
       // 입력된 개수를 인자로 전달하여 판매 처리
       sellSelectedItem(sellCount);
-      
+
       // 입력 필드 초기화, 선택 항목 초기화, 선택 표시 제거
       inputField.value = "";
       selectedSellItem = null;
       shopInvBoxes.forEach(box => box.classList.remove('selected'));
-      
+
       // 판매 입력 창 닫기
       const inputSellWindow = document.querySelector('.input-sell');
       if (inputSellWindow) {
@@ -2015,11 +2099,11 @@ function setupSellSelectFunctionality() {
       }
     });
   }
-  
+
   // 4. .sell-input-close-btn 클릭 시 판매 입력 창 닫기
   const sellInputCloseBtn = document.querySelector('.sell-input-close-btn');
   if (sellInputCloseBtn) {
-    sellInputCloseBtn.addEventListener('click', function(e) {
+    sellInputCloseBtn.addEventListener('click', function (e) {
       e.preventDefault();
       const inputSellWindow = document.querySelector('.input-sell');
       if (inputSellWindow) {
@@ -2043,7 +2127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateInventory() {
   // 28개 슬롯 요소를 선택 (HTML에 28개의 .inventory-box 요소가 있어야 함)
   const invBoxes = document.querySelectorAll('.inventory-box');
-  
+
   // 플레이어 인벤토리를 아이템별로 그룹화: { "아이템명": 개수, ... }
   const inventoryCounts = {};
   gameState.player.inventory.forEach(item => {
@@ -2061,12 +2145,12 @@ function updateInventory() {
       count -= slotCount;
     }
   }
-  
+
   // 슬롯이 28개보다 많으면 초과 슬롯은 무시 (혹은 별도 처리 가능)
   if (slots.length > invBoxes.length) {
     slots = slots.slice(0, invBoxes.length);
   }
-  
+
   // 각 인벤토리 슬롯을 업데이트
   invBoxes.forEach((box, index) => {
     // 기존 클래스 초기화 (기본 클래스 유지)
@@ -2088,42 +2172,7 @@ function updateInventory() {
 }
 
 
-//사망시
-function resetGameExceptSkills() {
-  const savedSkills = gameState?.player?.skills ? [...gameState.player.skills] : [];
-  localStorage.clear();
-  let oldRoundCount = gameState.progress.roundCount || 1;
-  gameState.player = {
-    rank: "노예",
-    experience: 0,
-    level: 1,
-    militaryLevel: 1,
-    charismaLevel: 1,
-    governance: 1,
-    skills: savedSkills,
-    inventory: [],
-    location: "왕국 서부",    // [추가] 위치 초기화
-    isMoving: false,     // [추가] 이동 상태 초기화
-    health: 50,
-    money: 0  
-  };
-  gameState.currentDate = {
-    year: 24,
-    month: 4,
-    day: 12
-  };
-  gameState.progress = {
-    currentCycle: 1,
-    monsterInvasions: [],
-    roundCount: oldRoundCount + 1,
-    resourcesInitialized: false
-  };
-  localStorage.setItem('gameState', JSON.stringify(gameState));
-  updateMyInfo();
-  saveGameState();
-  updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
-  updateInventory();
-}
+
 
 //날짜
 // 전역 변수 선언 (페이지 로드 시 한 번만 초기화)
@@ -2236,10 +2285,10 @@ function updateGameDate() {
     }
     dateTextDisplayed = true;
   }
-   
-    refreshShopItemsForNewDay();
-    initShopItems();
-    updateShopInventory();
+
+  refreshShopItemsForNewDay();
+  initShopItems();
+  updateShopInventory();
 
   const dateInfoElem = document.querySelector('.date-info');
   if (dateInfoElem) {
@@ -2280,29 +2329,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return;
       }
-      
+
       // 전투나 이동 중이 아니라면 healing 팝업 열기
       healPopup.style.display = 'flex';
-      
+
       // 휴식중 애니메이션 시작 (사람이 자는 듯한 애니메이션)
       startSleepAnimation();
-      
+
       // 치유 진행 동안 치유 버튼 비활성화
       healMenuBtn.disabled = true;
-      
+
       // 회복 시간: 5초 ~ 20초 랜덤 (밀리초 단위)
       const healingDuration = Math.floor(Math.random() * (20000 - 5000 + 1)) + 5000;
-      
+
       setTimeout(() => {
         // 플레이어 체력 회복 (최대 체력으로)
         gameState.player.health = getMaxHealth();
         updateHealthBar();
         updateUserStatus();
-        
+
         // 애니메이션 중단 및 팝업 닫기
         stopSleepAnimation();
         healPopup.style.display = 'none';
-        
+
         // 치유 버튼 다시 활성화
         healMenuBtn.disabled = false;
       }, healingDuration);
@@ -2317,12 +2366,12 @@ let sleepAnimationInterval = null;
 function startSleepAnimation() {
   const healLoading = document.querySelector('.heal-loading');
   if (!healLoading) return;
-  
+
   // heal-loading의 크기와 위치 설정
   healLoading.style.width = '150px';
   healLoading.style.height = '150px';
   healLoading.style.position = 'relative';
-  
+
   // sleep-container가 없으면 생성
   let sleepContainer = document.querySelector('.sleep-container');
   if (!sleepContainer) {
@@ -2336,9 +2385,9 @@ function startSleepAnimation() {
     sleepContainer.style.overflow = 'hidden';
     healLoading.appendChild(sleepContainer);
   }
-  
+
   // "잠자는 사람" 이모지 관련 요소 제거 (이제 생성하지 않음)
-  
+
   // 500ms마다 "Z" 문자를 생성하여 위로 떠오르는 애니메이션 적용
   sleepAnimationInterval = setInterval(() => {
     const zElem = document.createElement('span');
@@ -2351,21 +2400,21 @@ function startSleepAnimation() {
     zElem.style.opacity = '1';
     zElem.style.fontSize = '20px';
     zElem.style.transition = 'all 2s linear';
-    
+
     sleepContainer.appendChild(zElem);
     // 강제 reflow 후 애니메이션 시작
     void zElem.offsetWidth;
     zElem.style.bottom = '100%';
     zElem.style.opacity = '0';
     zElem.style.transform = 'scale(1.5)';
-    
+
     // 2.1초 후 요소 제거
     setTimeout(() => {
       if (zElem.parentNode === sleepContainer) {
         sleepContainer.removeChild(zElem);
       }
     }, 2100);
-    
+
   }, 500);
 }
 
