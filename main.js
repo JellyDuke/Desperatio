@@ -91,40 +91,55 @@ const storeItemDB = [
   {
     item: "골드",
     description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
+    previousPrice: null,
     effect: null,
+    dailyChangePercent: 0,
     basePrice: 220024,
+    isUp: null,
     appearanceChance: 0.7,
     dailyFluctuationRate: 4  
   },
   {
     item: "실버",
     description: "은은한 광채를 내는 귀금속으로, 소지 시 별다른 효과는 없습니다.",
-    effect: null,  // 소지 시 효과 없음
+    previousPrice: null,
+    effect: null,
+    dailyChangePercent: 0,
     basePrice: 225,
+    isUp: null,
     appearanceChance: 0.9,
     dailyFluctuationRate: 3  
   },
   {
     item: "오팔",
     description: "다채로운 색상이 반짝이는 보석으로, 소지 시 특별한 효과는 없지만 수집 가치가 있습니다.",
-    effect: null,  // 소지 시 효과 없음
+    previousPrice: null,
+    effect: null,
+    dailyChangePercent: 0,
     basePrice: 2250,
+    isUp: null,
     appearanceChance: 0.8,
-    dailyFluctuationRate: 8  // 하루 8% 등락률
+    dailyFluctuationRate: 8  
   },
   {
     item: "루비",
     description: "깊은 붉은 빛을 발하는 보석으로, 수집용으로 인기가 있으나 소지 시 별다른 효과는 없습니다.",
+    previousPrice: null,
     effect: null,
+    dailyChangePercent: 0,
     basePrice: 45318,
+    isUp: null,
     appearanceChance: 0.6,
     dailyFluctuationRate: 30  
   },
   {
     item: "사파이어",
     description: "투명한 푸른빛이 매력적인 보석으로, 장식용 및 수집용으로 활용됩니다.",
+    previousPrice: null,
     effect: null,
+    dailyChangePercent: 0,
     basePrice: 646257,
+    isUp: null,
     appearanceChance: 0.2,
     dailyFluctuationRate: 12 
   }
@@ -1406,25 +1421,36 @@ function getStoreItemInfo(itemName) {
  * 1) dailyFluctuationRate를 바탕으로 가격 조정
  * 2) 오늘 등장할 아이템 목록을 재구성하고 DOM 갱신
  */
+// ——— Shop DB Persistence ———
+function loadShopDB() {
+  const saved = JSON.parse(localStorage.getItem('shopDB'));
+  if (saved) {
+    storeItemDB.splice(0, storeItemDB.length, ...saved);
+  }
+}
+
+function saveShopDB() {
+  localStorage.setItem('shopDB', JSON.stringify(storeItemDB));
+}
+
 function refreshShopItemsForNewDay() {
+  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
+  const lastDate = localStorage.getItem('lastShopDate');
+
+  if (today === lastDate) return;
+
   storeItemDB.forEach(item => {
-    const oldPrice = item.basePrice;  // 어제(이전) 가격
-    // 최대 dailyFluctuationRate% 범위 안에서 0 ~ dailyFluctuationRate 사이 임의 비율
-    const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
-    // 상승 or 하락 방향
-    const direction = Math.random() < 0.5 ? 1 : -1;
-    // 변동값 계산
-    const fluctuation = Math.floor(oldPrice * randomRate * direction);
-    // 새로운 가격
-    const newPrice = Math.max(1, oldPrice + fluctuation);
-
-    // 아이템에 갱신된 가격과 전일 대비 변동 퍼센트를 저장
-    item.basePrice = newPrice;
-
-    // (newPrice - oldPrice) / oldPrice * 100 → 전일 대비 증감 퍼센트
-    const difference = ((newPrice - oldPrice) / oldPrice) * 100;
-    item.dailyChangePercent = difference; 
+    item.previousPrice = item.basePrice;
+    const oldPrice = item.basePrice;
+    const rate = Math.random() * (item.dailyFluctuationRate / 100);
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    item.basePrice = Math.max(1, oldPrice + Math.floor(oldPrice * rate * dir));
+    item.dailyChangePercent = Math.round(((item.basePrice - oldPrice) / oldPrice) * 100);
+    item.isUp = item.basePrice > oldPrice;
   });
+
+  saveShopDB();
+  localStorage.setItem('lastShopDate', today);
 }
 
 
@@ -1435,6 +1461,8 @@ let selectedItemForPurchase = null;
 document.addEventListener('DOMContentLoaded', () => {
   initShopItems();
   initBuyPopup();
+  refreshShopItemsForNewDay();
+  loadShopDB();
 });
 
 /**
@@ -1442,15 +1470,6 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initShopItems() {
 
-  const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
-  const lastShopDate = localStorage.getItem('lastShopDate') || '';
-
-  // 날짜가 변경된 경우에만 가격·재고 갱신
-  if (today !== lastShopDate) {
-    refreshShopItemsForNewDay();
-    localStorage.setItem('lastShopDate', today);
-  }
-  
   const container = document.querySelector('.shop-item-sell-list');
   if (!container) return;
   container.innerHTML = '';
