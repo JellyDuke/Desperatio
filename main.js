@@ -1437,6 +1437,8 @@ function refreshShopItemsForNewDay() {
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
   const lastDate = localStorage.getItem('lastShopDate');
 
+  console.log("refreshShopItemsForNewDay - today:", today, "lastShopDate:", lastShopDate);
+
   if (today !== lastDate) {
     storeItemDB.forEach(item => {
       item.previousPrice = item.basePrice;
@@ -1472,14 +1474,16 @@ function initShopItems() {
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2,'0')}-${String(gameState.currentDate.day).padStart(2,'0')}`;
   const lastShopDate = localStorage.getItem('lastShopDate') || '';
   let todaysItems;
-
+  
   if (today !== lastShopDate) {
     refreshShopItemsForNewDay();
     todaysItems = storeItemDB.filter(item => Math.random() < item.appearanceChance);
     localStorage.setItem('todayShopItems', JSON.stringify(todaysItems));
     localStorage.setItem('lastShopDate', today);
+    console.log("New shop items generated for today:", todaysItems);
   } else {
     todaysItems = JSON.parse(localStorage.getItem('todayShopItems')) || [];
+    console.log("Loaded shop items from storage:", todaysItems);
   }
 
   const container = document.querySelector('.shop-item-sell-list');
@@ -1534,6 +1538,7 @@ function initShopItems() {
     itemBox.append(shopItem, shopItemTxt, buyBtn);
     container.appendChild(itemBox);
   });
+
 }
 
 /**
@@ -2211,7 +2216,8 @@ function updateGameDate() {
   }
 
   const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
-
+  console.log("updateGameDate - currentDateString:", currentDateString);
+  
   // 날짜가 바뀌었으면 자원 변화 처리 및 날짜 텍스트 플래그 재설정
   if (currentDateString !== lastDateStr) {
     dateTextDisplayed = false;
