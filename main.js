@@ -2401,12 +2401,8 @@ function updateGameDate() {
     localStorage.setItem("lastDateStr", lastDateStr);
 
     checkAndRefreshShopItemsIfNeeded();
-    
-    // 상점 팝업이 열려있다면 UI 즉시 갱신
-    const shopPopup = document.querySelector('.popup.shop');
-    if (shopPopup && shopPopup.style.display === 'flex') {
-      initShopItems();
-    }
+
+    initShopItems();
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
