@@ -637,7 +637,7 @@ function initGameStart() {
     localStorage.setItem('gameStarted', 'true');
 
     // 강제 새로고침 → 글로벌 gameState가 초기 선언값으로 리셋됩니다
-+   window.location.reload();
+    +   window.location.reload();
 
     console.log('새 게임이 시작되었습니다.', newGameData);
   });
@@ -1416,7 +1416,7 @@ function loadStoreItemDB() {
       const found = parsedDB.find(d => d.item === storeItemDB[i].item);
       if (found) {
         storeItemDB[i].basePrice = found.basePrice;
-        storeItemDB[i].dailyFluctuationRate  = found.dailyFluctuationRate;
+        storeItemDB[i].dailyFluctuationRate = found.dailyFluctuationRate;
         storeItemDB[i].dailyChangePercent = found.dailyChangePercent;
         storeItemDB[i].fairPrice = found.fairPrice; // 필요하면 추가
       }
@@ -2401,6 +2401,12 @@ function updateGameDate() {
     localStorage.setItem("lastDateStr", lastDateStr);
 
     checkAndRefreshShopItemsIfNeeded();
+    
+    // 상점 팝업이 열려있다면 UI 즉시 갱신
+    const shopPopup = document.querySelector('.popup.shop');
+    if (shopPopup && shopPopup.style.display === 'flex') {
+      initShopItems();
+    }
   }
 
   // [수정된 부분] 현재 페이지 로드 시 또는 날짜가 바뀌었을 때, 날짜 메시지를 한 번만 추가
