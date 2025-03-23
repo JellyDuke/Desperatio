@@ -2473,6 +2473,92 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSellSelectFunctionality();
 });
 
+document.querySelector(".item-chart-btn").addEventListener("click", () => {
+  const chartContainer = document.querySelector(".chart-item");
+  if (chartContainer) {
+    chartContainer.style.display = "flex";
+    startPriceChartSlideshow(storeItemDB); // 슬라이드 시작
+  }
+});
+
+document.querySelector(".chart-close-btn").addEventListener("click", () => {
+  const chartContainer = document.querySelector(".chart-item");
+  if (chartContainer) {
+    chartContainer.style.display = "none";
+    if (chartInterval) clearInterval(chartInterval); // 슬라이드 멈춤
+  }
+});
+
+
+//차트
+let currentChartIndex = 0;
+let chartInterval = null;
+
+function drawPriceChart(item) {
+  const canvas = document.getElementById("priceChartCanvas");
+  if (!canvas || !item.priceHistory || item.priceHistory.length < 2) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 기본 스타일
+  ctx.strokeStyle = "#00ffcc";
+  ctx.lineWidth = 2;
+  ctx.font = "12px sans-serif";
+  ctx.fillStyle = "#fff";
+
+  const prices = item.priceHistory;
+  const maxPrice = Math.max(...prices);
+  const minPrice = Math.min(...prices);
+  const range = maxPrice - minPrice || 1;
+
+  const padding = 20;
+  const stepX = (canvas.width - padding * 2) / (prices.length - 1);
+
+  const getY = (price) =>
+    canvas.height - padding - ((price - minPrice) / range) * (canvas.height - padding * 2);
+
+  // 선 그리기
+  ctx.beginPath();
+  prices.forEach((price, i) => {
+    const x = padding + i * stepX;
+    const y = getY(price);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 점 + 텍스트
+  prices.forEach((price, i) => {
+    const x = padding + i * stepX;
+    const y = getY(price);
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText(price.toLocaleString(), x - 10, y - 8);
+  });
+
+  // 타이틀
+  ctx.fillStyle = "#f1d255";
+  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 15);
+}
+
+function startPriceChartSlideshow(items, interval = 3000) {
+  if (!items || items.length === 0) return;
+
+  // 초기 상태
+  currentChartIndex = 0;
+  drawPriceChart(items[currentChartIndex]);
+
+  // 이전 슬라이드가 있으면 멈춤
+  if (chartInterval) clearInterval(chartInterval);
+
+  chartInterval = setInterval(() => {
+    currentChartIndex = (currentChartIndex + 1) % items.length;
+    drawPriceChart(items[currentChartIndex]);
+  }, interval);
+}
+
 
 //인벤토리
 // [추가] 인벤토리 갱신 함수: .inventory-box 내부에 .leaf 요소를 찾아 잎파리 개수를 표시
