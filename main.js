@@ -1652,18 +1652,39 @@ function refreshShopItemsForNewDay() {
     storeItemDB.forEach(item => {
       item.previousPrice = item.basePrice;
       const oldPrice = item.basePrice;
-      const randomRate = Math.random() * (item.dailyFluctuationRate / 100);
-      const direction = Math.random() < 0.5 ? 1 : -1;
-      // 가격이 1보다 작아지지 않도록 Math.max 사용
-      item.basePrice = Math.max(1, oldPrice + Math.floor(oldPrice * randomRate * direction));
-      item.dailyChangePercent = Math.round(((item.basePrice - oldPrice) / oldPrice) * 100);
-      item.isUp = item.basePrice > oldPrice;
 
-      console.log(`[${item.item}] 이전 가격: ${oldPrice}, 새 가격: ${item.basePrice}, 변화율: ${item.dailyChangePercent}%`);
+      // === 변동 폭 (일일 변동률 범위의 절반 ~ 전체까지) ===
+      const baseFluct = item.dailyFluctuationRate / 100;
+      const fluctuation = baseFluct * (0.5 + Math.random() * 0.5); // 최소 50%, 최대 100% 범위 안에서
+
+      // === 트렌드 기반 방향 결정 ===
+      let direction;
+      if (item.isUp === null) {
+        // 초기엔 랜덤
+        direction = Math.random() < 0.5 ? 1 : -1;
+      } else {
+        // 이전 방향을 유지할 확률 65%
+        direction = Math.random() < 0.65 ? (item.isUp ? 1 : -1) : (item.isUp ? -1 : 1);
+      }
+
+      // === 새로운 가격 계산 ===
+      let newPrice = Math.floor(oldPrice * (1 + fluctuation * direction));
+
+      // === 가격 바닥선 제한 (지속적인 폭락 방지) ===
+      newPrice = Math.max(24, newPrice);
+
+      // === 정보 저장 ===
+      item.basePrice = newPrice;
+      item.dailyChangePercent = Math.round(((newPrice - oldPrice) / oldPrice) * 100);
+      item.isUp = newPrice > oldPrice;
+
+      console.log(`[${item.item}] 이전 가격: ${oldPrice}, 새 가격: ${newPrice}, 변화율: ${item.dailyChangePercent}%`);
     });
+
     saveShopDB();
   }
 }
+
 
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
