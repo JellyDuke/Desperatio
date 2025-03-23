@@ -1692,7 +1692,7 @@ function refreshShopItemsForNewDay() {
         }
       } else {
         // 이벤트 발생 시 강제 변동률
-        rate = baseRate; // 이벤트 강도는 eventFluct가 조정
+        rate *= baseRate; // 이벤트 강도는 eventFluct가 조정
       }
 
       const change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
