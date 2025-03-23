@@ -2475,7 +2475,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.querySelectorAll('.item-chart-btn').forEach((btn, index) => {
   btn.addEventListener('click', () => {
-    const chartWrap = btn.closest('.item-chart-wrap');
     const chartContainer = chartWrap.querySelector('.chart-item');
     const canvas = chartContainer.querySelector('.price-chart-canvas');
 
