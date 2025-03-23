@@ -2507,7 +2507,8 @@ function drawPriceChart(item) {
   const minPrice = Math.min(...prices);
   const range = maxPrice - minPrice || 1;
 
-  const paddingTop = 40; // 더 넉넉하게
+  const padding = 40;
+  const paddingTop = 20; // 더 넉넉하게
   const paddingSide = 20;
 
   const getY = (price) =>
