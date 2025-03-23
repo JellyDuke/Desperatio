@@ -1882,7 +1882,7 @@ function generateEconomicSummaryNews(items) {
   if (stableItems.length) parts.push(`${stableItems.join('·')} 안정세`);
   if (parts.length === 0) return null;
 
-  return `📊 오늘의 시장 요약: ${parts.join(', ')}입니다.`;
+  return `📊 최근 5일 시장 요약: ${parts.join(', ')}입니다.`;
 }
 
 
