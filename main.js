@@ -2538,7 +2538,7 @@ function drawPriceChart(item) {
 
   // 타이틀
   ctx.fillStyle = "#f1d255";
-  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 25);
+  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 15);
 }
 
 
