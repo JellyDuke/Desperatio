@@ -1757,8 +1757,6 @@ function refreshShopItemsForNewDay() {
         }
       }
     });
-
-    localStorage.setItem('lastShopDate', today);
     saveShopDB();
   }
 }
@@ -2520,10 +2518,6 @@ function updateGameDate() {
     }
     dateTextDisplayed = true;
   }
-
-  refreshShopItemsForNewDay();
-  initShopItems();
-  updateShopInventory();
 
   const dateInfoElem = document.querySelector('.date-info');
   if (dateInfoElem) {
