@@ -1715,8 +1715,8 @@ function saveShopDB() {
 }
 
 function refreshShopItemsForNewDay() {
-   // 💡 기준 가격이 없으면 초기화
-   storeItemDB.forEach(item => {
+  // 💡 기준 가격이 없으면 초기화
+  storeItemDB.forEach(item => {
     if (!item.originalBasePrice) {
       item.originalBasePrice = item.basePrice;
     }
@@ -1733,23 +1733,23 @@ function refreshShopItemsForNewDay() {
 
     const volatility = item.volatilityFactor || 1;
     const basePrice = item.basePrice;
-    const originalBase = item.originalBasePrice || basePrice; // 기준 가격 저장
+    const originalBase = item.originalBasePrice || basePrice;
 
     let direction = Math.random() < 0.5 ? -1 : 1;
     let eventFluct = 1;
     let eventText = '';
     let isEvent = false;
 
-    // 저가 반등 확률 및 상승폭 강화
+    // 💥 저가 반등 확률 및 상승폭 강화
     const reboundThreshold = 50;
     if (basePrice <= reboundThreshold) {
-      const reboundChance = Math.min(1, Math.max(0.3, 1 - basePrice / 100));
+      const reboundChance = Math.min(1, Math.max(0.3, 1 - basePrice / 100)); // 가격 낮을수록 상승확률 증가
       if (Math.random() < reboundChance) {
         direction = 1;
       }
     }
 
-    // 폭등/폭락 이벤트
+    // 💥 폭등 / 폭락 이벤트
     const randomEventRoll = Math.random();
     if (randomEventRoll < 0.01) {
       eventFluct = 1 + Math.random() * 2.5;
@@ -1763,43 +1763,45 @@ function refreshShopItemsForNewDay() {
       isEvent = true;
     }
 
-    // 기본 변동률 계산
+    // 📈 기본 변동률 계산
     let rate = 0;
     const baseRate = item.dailyFluctuationRate / 100;
 
     if (!isEvent) {
       const roll = Math.random();
       if (roll < 0.7) {
-        rate = baseRate * (Math.random() * 0.5);
+        rate = baseRate * (Math.random() * 0.5); // 소폭
       } else if (roll < 0.95) {
-        rate = baseRate * (0.5 + Math.random());
+        rate = baseRate * (0.5 + Math.random()); // 중간
       } else {
-        rate = baseRate * (1 + Math.random());
+        rate = baseRate * (1 + Math.random()); // 강한
       }
 
-      // 저가일 때 상승폭 강화
       if (basePrice <= reboundThreshold && direction === 1) {
-        rate *= 2;
+        rate *= 2; // 저가일 때 상승폭 강화
       }
     } else {
-      // 이벤트 변동률
-      if (direction === 1) {
-        rate = 1 + Math.random();
-      } else {
-        rate = 0.8 + Math.random() * 0.7;
-      }
+      // 이벤트일 경우 직접 설정
+      rate = direction === 1 ? (1 + Math.random()) : (0.8 + Math.random() * 0.7);
     }
 
-    // 💡 회귀: 기준 가격과의 차이가 클수록 더 강하게 회귀
+    // 💡 회귀: 기준 가격에서 멀수록 변동 폭 약화
     const regressionFactor = 1 + Math.abs(originalBase - basePrice) / originalBase;
     const change = Math.floor(basePrice * rate * direction * eventFluct * volatility / regressionFactor);
     item.basePrice = Math.max(24, basePrice + change);
+
+    // 💾 최근 5일 가격 기록
+    if (!item.priceHistory) item.priceHistory = [];
+    item.priceHistory.push(item.basePrice);
+    if (item.priceHistory.length > 5) {
+      item.priceHistory.shift();
+    }
 
     const newPrice = item.basePrice;
     const rawPercent = ((newPrice - oldPrice) / oldPrice) * 100;
     let roundedPercent = Math.round(rawPercent);
 
-    // ±3% 이상 보정 (1~3%)
+    // ±3% 미만이면 1~3% 보정
     if (Math.abs(roundedPercent) < 3 && oldPrice !== newPrice) {
       const correction = Math.floor(Math.random() * 3) + 1;
       roundedPercent = newPrice > oldPrice ? correction : -correction;
@@ -1810,7 +1812,7 @@ function refreshShopItemsForNewDay() {
 
     console.log(`[${item.item}] ${eventText || '일반'} 이전: ${oldPrice} → ${newPrice} (${roundedPercent}%)`);
 
-    // 왕국 알림
+    // 📢 왕국 메시지 - 이벤트 알림
     if (eventText) {
       const kingdomMsgElem = document.querySelector('.kingdom-message-news');
       if (kingdomMsgElem) {
@@ -1824,11 +1826,53 @@ function refreshShopItemsForNewDay() {
     }
   });
 
-  // ⬇ 반드시 저장 (반영 요청됨)
+  // 📊 경제 뉴스 스타일 분석 결과 출력
+  const kingdomNews = document.querySelector('.kingdom-message-news');
+  storeItemDB.forEach(item => {
+    if (item.priceHistory && item.priceHistory.length >= 5) {
+      const news = generateEconomicNews(item.item, item.priceHistory);
+      if (news && kingdomNews) {
+        const msg = document.createElement('div');
+        msg.classList.add('txt');
+        msg.style.color = '#f1d255';
+        msg.textContent = news;
+        kingdomNews.appendChild(msg);
+        scrollToBottom(kingdomNews);
+      }
+    }
+  });
+
+  // 💾 저장
   saveShopDB();
 }
 
 
+function generateEconomicNews(item, history) {
+  if (!history || history.length < 5) return null;
+
+  const changes = [];
+  for (let i = 0; i < history.length - 1; i++) {
+    changes.push(history[i + 1] - history[i]);
+  }
+
+  const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
+  const trendStrength = Math.abs(avgChange) / history[history.length - 2] * 100;
+
+  let message = '';
+  if (changes.every(c => c > 0)) {
+    message = `📈 [${item}] 최근 며칠간 가격이 지속적으로 상승 중입니다. 시장의 긍정적 분위기가 감지됩니다.`;
+  } else if (changes.every(c => c < 0)) {
+    message = `📉 [${item}] 최근 가격이 연일 하락세입니다. 투자자들의 불안 심리가 반영된 결과입니다.`;
+  } else if (trendStrength > 20) {
+    message = `⚠️ [${item}] 가격 변동성이 크게 증가했습니다. 단기 매매에 주의가 필요합니다.`;
+  } else if (Math.abs(history[history.length - 1] - history[0]) < history[0] * 0.05) {
+    message = `🔄 [${item}] 최근 가격이 기준 가격 부근을 맴돌고 있습니다. 시장 안정세로 보입니다.`;
+  } else {
+    message = `📊 [${item}] 가격이 오르내림을 반복하며 불안정한 모습을 보이고 있습니다.`;
+  }
+
+  return message;
+}
 
 
 
