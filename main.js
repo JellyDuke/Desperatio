@@ -126,6 +126,18 @@ const storeItemDB = [
     appearanceChance: 0.2,
     dailyFluctuationRate: 12,
     volatilityFactor: 1.2
+  },
+  {
+    item: "다이아몬드",
+    description: "희귀성과 경이로움이 결합된 최고급 보석. 극소수만이 거래할 수 있는 고급 자산입니다.",
+    previousPrice: null,
+    effect: null,
+    dailyChangePercent: 0,
+    basePrice: 12546457,
+    isUp: null,
+    appearanceChance: 0.2,
+    dailyFluctuationRate: 20,
+    volatilityFactor: 1.5
   }
 ];
 
@@ -313,6 +325,18 @@ function resetGameCompletely() {
       appearanceChance: 0.2,
       dailyFluctuationRate: 12,
       volatilityFactor: 1.2
+    },
+    {
+      item: "다이아몬드",
+      description: "희귀성과 경이로움이 결합된 최고급 보석. 극소수만이 거래할 수 있는 고급 자산입니다.",
+      previousPrice: null,
+      effect: null,
+      dailyChangePercent: 0,
+      basePrice: 12546457,
+      isUp: null,
+      appearanceChance: 0.2,
+      dailyFluctuationRate: 20,
+      volatilityFactor: 1.5
     }
   );
 
@@ -436,6 +460,18 @@ function resetGameExceptSkills() {
       appearanceChance: 0.2,
       dailyFluctuationRate: 12,
       volatilityFactor: 1.2
+    },
+    {
+      item: "다이아몬드",
+      description: "희귀성과 경이로움이 결합된 최고급 보석. 극소수만이 거래할 수 있는 고급 자산입니다.",
+      previousPrice: null,
+      effect: null,
+      dailyChangePercent: 0,
+      basePrice: 12546457,
+      isUp: null,
+      appearanceChance: 0.2,
+      dailyFluctuationRate: 20,
+      volatilityFactor: 1.5
     }
   );
 
@@ -2522,7 +2558,7 @@ function updateGameDate() {
   if (dateInfoElem) {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
-  
+
   refreshShopItemsForNewDay();
   initShopItems();
   updateShopInventory();
