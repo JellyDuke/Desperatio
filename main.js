@@ -77,8 +77,7 @@ const storeItemDB = [
     isUp: null,
     appearanceChance: 0.7,
     dailyFluctuationRate: 4,
-    volatilityFactor: 1.1,
-    aftershockDays: 2
+    volatilityFactor: 1.1
   },
   {
     item: "실버",
@@ -90,8 +89,7 @@ const storeItemDB = [
     isUp: null,
     appearanceChance: 0.9,
     dailyFluctuationRate: 3,
-    volatilityFactor: 1.2,
-    aftershockDays: 3
+    volatilityFactor: 1.2
   },
   {
     item: "오팔",
@@ -103,8 +101,7 @@ const storeItemDB = [
     isUp: null,
     appearanceChance: 0.8,
     dailyFluctuationRate: 8,
-    volatilityFactor: 1.3,
-    aftershockDays: 2
+    volatilityFactor: 1.3
   },
   {
     item: "루비",
@@ -116,8 +113,7 @@ const storeItemDB = [
     isUp: null,
     appearanceChance: 0.6,
     dailyFluctuationRate: 30,
-    volatilityFactor: 1.4,
-    aftershockDays: 3
+    volatilityFactor: 1.4
   },
   {
     item: "사파이어",
@@ -129,8 +125,7 @@ const storeItemDB = [
     isUp: null,
     appearanceChance: 0.2,
     dailyFluctuationRate: 12,
-    volatilityFactor: 1.2,
-    aftershockDays: 2
+    volatilityFactor: 1.2
   }
 ];
 
@@ -1659,122 +1654,93 @@ function refreshShopItemsForNewDay() {
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
   if (today !== lastDate) {
-    let lingeringEvents = JSON.parse(localStorage.getItem('lingeringPriceEffects') || '{}');
-
     storeItemDB.forEach(item => {
       item.previousPrice = item.basePrice;
 
       const volatility = item.volatilityFactor || 1;
-      const aftershockDays = item.aftershockDays || 0;
-      const isInAftershock = lingeringEvents[item.item]?.daysLeft > 0;
-
       let direction = Math.random() < 0.5 ? -1 : 1;
       let eventFluct = 1;
       let eventText = '';
       let isEvent = false;
 
-      // 저가 반등 확률 상승 (24~50 사이 가격이면 반등 확률 증가)
-      const reboundBoost = Math.max(0, 1 - (item.basePrice / 120)) * 2;
-      if (Math.random() < reboundBoost && item.basePrice <= 50) {
-        direction = 1;
-      }
-
-      // 📉 폭등/폭락 이벤트 확률 (각 1%)
+      // 📉 폭등/폭락 확률 (각 1%)
       const randomEventRoll = Math.random();
       if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 2.5; // +150% ~ +400%
+        eventFluct = 1 + Math.random() * 2.5;   // +150%~+400%
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
-        lingeringEvents[item.item] = { type: 'spike', daysLeft: aftershockDays };
       } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.5; // -90% ~ -40%
+        eventFluct = 0.5 + Math.random() * 0.5; // -90%~-40%
         direction = -1;
         eventText = '📉 폭락';
         isEvent = true;
-        lingeringEvents[item.item] = { type: 'crash', daysLeft: aftershockDays };
       }
 
-      // 여진 효과 적용
-      if (isInAftershock && !isEvent) {
-        if (lingeringEvents[item.item].type === 'spike') {
-          eventFluct = 1 + Math.random() * 0.5;
-          direction = 1;
-          eventText = '💥 여진';
-        } else if (lingeringEvents[item.item].type === 'crash') {
-          eventFluct = 0.85 + Math.random() * 0.15;
-          direction = -1;
-          eventText = '📉 여진';
-        }
-      }
-
-      // 일반 변동률 계산
+      // 🔁 변동률 계산
       let rate = 0;
       const baseRate = item.dailyFluctuationRate / 100;
-      if (!isEvent && !isInAftershock) {
+
+      if (!isEvent) {
         const roll = Math.random();
         if (roll < 0.7) {
-          rate = baseRate * (Math.random() * 0.5);
+          rate = baseRate * (Math.random() * 0.5);        // 소폭
         } else if (roll < 0.95) {
-          rate = baseRate * (0.5 + Math.random());
+          rate = baseRate * (0.5 + Math.random());        // 중간
         } else {
-           // 이벤트 발생 시 변동률 설정
-           if (direction === 1) {
-            // 폭등: 기본 변동률 높게
-            rate = 1 + Math.random(); // 100% ~ 200%
-          } else {
-            // 폭락: 큰 폭 하락
-            rate = 0.8 + Math.random() * 0.7; // 80% ~ 150%
-          }
+          rate = baseRate * (1 + Math.random());          // 큰 변동
+        }
+      } else {
+        // 이벤트 발생 시 변동률 설정
+        if (direction === 1) {
+          // 폭등: 기본 변동률 높게
+          rate = 1 + Math.random(); // 100% ~ 200%
+        } else {
+          // 폭락: 큰 폭 하락
+          rate = 0.8 + Math.random() * 0.7; // 80% ~ 150%
         }
       }
 
-      // 최종 가격 계산
-      const change = Math.floor(item.basePrice * (rate || baseRate) * direction * eventFluct * volatility);
+      const change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
       item.basePrice = Math.max(24, item.basePrice + change);
 
-      const oldPrice = item.previousPrice;
-      const newPrice = item.basePrice;
-
-      const rawPercent = ((newPrice - oldPrice) / oldPrice) * 100;
+      // 변화율 계산
+      const rawPercent = ((item.basePrice - item.previousPrice) / item.previousPrice) * 100;
       let roundedPercent = Math.round(rawPercent);
-
-      // ±1~3% 보정
-      if (Math.abs(roundedPercent) < 3 && oldPrice !== newPrice) {
-        roundedPercent = newPrice > oldPrice ? 3 : -3;
+      if (roundedPercent === 0 && item.basePrice !== item.previousPrice) {
+        roundedPercent = item.basePrice > item.previousPrice ? 1 : -1;
       }
 
       item.dailyChangePercent = roundedPercent;
-      item.isUp = newPrice > oldPrice;
+      item.isUp = item.basePrice > item.previousPrice;
 
-      // 콘솔 출력
-      console.log(`[${item.item}] ${eventText || '일반'} 이전: ${oldPrice} → ${newPrice} (${roundedPercent}%)`);
+      // 콘솔
+      console.log(`[${item.item}] ${eventText || '일반'} 이전: ${item.previousPrice} → ${item.basePrice} (${item.dailyChangePercent}%)`);
 
       // 왕국 알림
-      if (eventText) {
+      if (isEvent) {
         const kingdomMsgElem = document.querySelector('.kingdom-message-news');
         if (kingdomMsgElem) {
           const msg = document.createElement('div');
           msg.classList.add('txt');
           msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
+
+          const oldPrice = item.previousPrice;
+          const newPrice = item.basePrice;
+
           msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
           kingdomMsgElem.appendChild(msg);
           scrollToBottom(kingdomMsgElem);
         }
       }
-
-      // 여진 카운트 감소
-      if (lingeringEvents[item.item]?.daysLeft > 0 && !isEvent) {
-        lingeringEvents[item.item].daysLeft -= 1;
-      }
     });
 
-    // 저장
-    localStorage.setItem('lingeringPriceEffects', JSON.stringify(lingeringEvents));
-    localStorage.setItem('lastShopDate', today);
     saveShopDB();
   }
 }
+
+
+
 
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
