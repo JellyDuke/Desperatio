@@ -1659,49 +1659,67 @@ function refreshShopItemsForNewDay() {
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
   if (today !== lastDate) {
+    let lingeringEvents = JSON.parse(localStorage.getItem('lingeringPriceEffects') || '{}');
+
     storeItemDB.forEach(item => {
-      const oldPrice = item.basePrice;
+      item.previousPrice = item.basePrice;
+
       const volatility = item.volatilityFactor || 1;
+      const aftershockDays = item.aftershockDays || 0;
+      const isInAftershock = lingeringEvents[item.item]?.daysLeft > 0;
+
+      let direction = Math.random() < 0.5 ? -1 : 1;
       let eventFluct = 1;
       let eventText = '';
       let isEvent = false;
 
-      // 🔁 보정된 상승 확률 계산 (가격이 24에 가까울수록 상승 유도)
-      const minPrice = 24;
-      const safeMargin = 100; // 24 + 100 = 124부터는 영향 거의 없음
-      const distanceFromMin = Math.max(item.basePrice - minPrice, 0);
-      const boostFactor = 1 - Math.min(distanceFromMin / safeMargin, 1); // 0~1 사이
+      // 저가 반등 확률 상승 (24~50 사이 가격이면 반등 확률 증가)
+      const reboundBoost = Math.max(0, 1 - (item.basePrice / 120)) * 2;
+      if (Math.random() < reboundBoost && item.basePrice <= 50) {
+        direction = 1;
+      }
 
-      const upProbability = 0.5 + 0.45 * boostFactor; // 상승 확률 50~95%
-      let direction = Math.random() < upProbability ? 1 : -1;
-
-      // 📉 폭등/폭락 확률
+      // 📉 폭등/폭락 이벤트 확률 (각 1%)
       const randomEventRoll = Math.random();
       if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 2.5;
+        eventFluct = 1 + Math.random() * 2.5; // +150% ~ +400%
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
+        lingeringEvents[item.item] = { type: 'spike', daysLeft: aftershockDays };
       } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.5;
+        eventFluct = 0.5 + Math.random() * 0.5; // -90% ~ -40%
         direction = -1;
         eventText = '📉 폭락';
         isEvent = true;
+        lingeringEvents[item.item] = { type: 'crash', daysLeft: aftershockDays };
       }
 
-      // 📊 일반 변동률
+      // 여진 효과 적용
+      if (isInAftershock && !isEvent) {
+        if (lingeringEvents[item.item].type === 'spike') {
+          eventFluct = 1 + Math.random() * 0.5;
+          direction = 1;
+          eventText = '💥 여진';
+        } else if (lingeringEvents[item.item].type === 'crash') {
+          eventFluct = 0.85 + Math.random() * 0.15;
+          direction = -1;
+          eventText = '📉 여진';
+        }
+      }
+
+      // 일반 변동률 계산
       let rate = 0;
       const baseRate = item.dailyFluctuationRate / 100;
-
-      if (!isEvent) {
+      if (!isEvent && !isInAftershock) {
         const roll = Math.random();
         if (roll < 0.7) {
-          rate = baseRate * (Math.random() * 0.5); 
+          rate = baseRate * (Math.random() * 0.5);
         } else if (roll < 0.95) {
-          rate = baseRate * (0.5 + Math.random()); 
+          rate = baseRate * (0.5 + Math.random());
         } else {
            // 이벤트 발생 시 변동률 설정
-          if (direction === 1) {
+           if (direction === 1) {
             // 폭등: 기본 변동률 높게
             rate = 1 + Math.random(); // 100% ~ 200%
           } else {
@@ -1711,24 +1729,29 @@ function refreshShopItemsForNewDay() {
         }
       }
 
-      const change = Math.floor(oldPrice * rate * direction * eventFluct * volatility);
-      const newPrice = Math.max(minPrice, oldPrice + change);
-      item.basePrice = newPrice;
+      // 최종 가격 계산
+      const change = Math.floor(item.basePrice * (rate || baseRate) * direction * eventFluct * volatility);
+      item.basePrice = Math.max(24, item.basePrice + change);
 
-      // 📈 변화율 계산
+      const oldPrice = item.previousPrice;
+      const newPrice = item.basePrice;
+
       const rawPercent = ((newPrice - oldPrice) / oldPrice) * 100;
       let roundedPercent = Math.round(rawPercent);
-      if (roundedPercent === 0 && newPrice !== oldPrice) {
-        roundedPercent = newPrice > oldPrice ? 1 : -1;
+
+      // ±1~3% 보정
+      if (Math.abs(roundedPercent) < 3 && oldPrice !== newPrice) {
+        roundedPercent = newPrice > oldPrice ? 3 : -3;
       }
 
       item.dailyChangePercent = roundedPercent;
       item.isUp = newPrice > oldPrice;
-      item.previousPrice = oldPrice;
 
+      // 콘솔 출력
       console.log(`[${item.item}] ${eventText || '일반'} 이전: ${oldPrice} → ${newPrice} (${roundedPercent}%)`);
 
-      if (isEvent) {
+      // 왕국 알림
+      if (eventText) {
         const kingdomMsgElem = document.querySelector('.kingdom-message-news');
         if (kingdomMsgElem) {
           const msg = document.createElement('div');
@@ -1738,14 +1761,21 @@ function refreshShopItemsForNewDay() {
           kingdomMsgElem.appendChild(msg);
           scrollToBottom(kingdomMsgElem);
         }
+      }
 
-        item.eventAftershockDays = 2;
+      // 여진 카운트 감소
+      if (lingeringEvents[item.item]?.daysLeft > 0 && !isEvent) {
+        lingeringEvents[item.item].daysLeft -= 1;
       }
     });
 
+    // 저장
+    localStorage.setItem('lingeringPriceEffects', JSON.stringify(lingeringEvents));
+    localStorage.setItem('lastShopDate', today);
     saveShopDB();
   }
 }
+
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
 let selectedItemForPurchase = null;
