@@ -2496,28 +2496,30 @@ function drawPriceChart(item) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 기본 스타일
-  ctx.strokeStyle = "#00ffcc";
-  ctx.lineWidth = 2;
-  ctx.font = "12px sans-serif";
-  ctx.fillStyle = "#fff";
-
   const prices = item.priceHistory;
   const maxPrice = Math.max(...prices);
   const minPrice = Math.min(...prices);
   const range = maxPrice - minPrice || 1;
 
-  const padding = 40;
-  const paddingTop = 20; // 더 넉넉하게
+  // ✅ padding 정의
+  const paddingTop = 40;
   const paddingSide = 20;
+  const paddingBottom = 20;
 
+  const stepX = (canvas.width - paddingSide * 2) / (prices.length - 1);
   const getY = (price) =>
-  canvas.height - paddingSide - ((price - minPrice) / range) * (canvas.height - paddingTop - paddingSide);
+    canvas.height - paddingBottom - ((price - minPrice) / range) * (canvas.height - paddingTop - paddingBottom);
 
-  // 선 그리기
+  // 스타일
+  ctx.strokeStyle = "#00ffcc";
+  ctx.lineWidth = 2;
+  ctx.font = "12px sans-serif";
+  ctx.fillStyle = "#fff";
+
+  // 선
   ctx.beginPath();
   prices.forEach((price, i) => {
-    const x = padding + i * stepX;
+    const x = paddingSide + i * stepX;
     const y = getY(price);
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -2526,18 +2528,19 @@ function drawPriceChart(item) {
 
   // 점 + 텍스트
   prices.forEach((price, i) => {
-    const x = padding + i * stepX;
+    const x = paddingSide + i * stepX;
     const y = getY(price);
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, 2 * Math.PI); 
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
     ctx.fill();
     ctx.fillText(price.toLocaleString(), x - 10, y - 8);
   });
 
   // 타이틀
   ctx.fillStyle = "#f1d255";
-  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 20);
+  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 25);
 }
+
 
 function startPriceChartSlideshow(items, interval = 3000) {
   if (!items || items.length === 0) return;
