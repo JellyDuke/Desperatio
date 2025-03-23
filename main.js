@@ -2507,11 +2507,11 @@ function drawPriceChart(item) {
   const minPrice = Math.min(...prices);
   const range = maxPrice - minPrice || 1;
 
-  const padding = 20;
-  const stepX = (canvas.width - padding * 2) / (prices.length - 1);
+  const paddingTop = 40; // 더 넉넉하게
+  const paddingSide = 20;
 
   const getY = (price) =>
-    canvas.height - padding - ((price - minPrice) / range) * (canvas.height - padding * 2);
+  canvas.height - paddingSide - ((price - minPrice) / range) * (canvas.height - paddingTop - paddingSide);
 
   // 선 그리기
   ctx.beginPath();
@@ -2528,14 +2528,14 @@ function drawPriceChart(item) {
     const x = padding + i * stepX;
     const y = getY(price);
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.arc(x, y, 3, 0, 2 * Math.PI); 
     ctx.fill();
     ctx.fillText(price.toLocaleString(), x - 10, y - 8);
   });
 
   // 타이틀
   ctx.fillStyle = "#f1d255";
-  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 15);
+  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 20);
 }
 
 function startPriceChartSlideshow(items, interval = 3000) {
