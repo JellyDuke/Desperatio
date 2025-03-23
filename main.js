@@ -2468,28 +2468,35 @@ function setupSellSelectFunctionality() {
 }
 
 //차트
-
 let currentChartIndex = 0;
 let chartInterval = null;
 
-// 슬라이드 시작 함수
+// 🔁 차트 슬라이드 시작 함수
 function startPriceChartSlideshow(chartItem, items, interval = 3000) {
   if (!items || items.length === 0) return;
 
   const canvas = chartItem.querySelector('canvas.price-chart-canvas');
   const header = chartItem.querySelector('.chart-header');
 
-  if (!canvas || !header) return;
+  if (!canvas || !header) {
+    console.warn('차트 영역 요소를 찾을 수 없습니다.');
+    return;
+  }
 
-  if (chartInterval) clearInterval(chartInterval);
+  // 이전 차트 제거
+  if (canvas.chartInstance) {
+    canvas.chartInstance.destroy();
+  }
 
-  function draw(index) {
+  const draw = (index) => {
     const item = items[index];
     header.textContent = `[${item.item}] 최근 5일 가격`;
     drawItemPriceChart(canvas, item);
-  }
+  };
 
-  draw(currentChartIndex); // 첫 차트
+  draw(currentChartIndex); // 첫 차트 표시
+
+  if (chartInterval) clearInterval(chartInterval); // 기존 슬라이드 종료
 
   chartInterval = setInterval(() => {
     currentChartIndex = (currentChartIndex + 1) % items.length;
@@ -2497,7 +2504,7 @@ function startPriceChartSlideshow(chartItem, items, interval = 3000) {
   }, interval);
 }
 
-// 차트 그리기 함수 (제목 포함)
+// 📈 차트 그리기
 function drawItemPriceChart(canvas, item) {
   const ctx = canvas.getContext('2d');
   const prices = item.priceHistory || [];
@@ -2539,17 +2546,16 @@ function drawItemPriceChart(canvas, item) {
   });
 }
 
-
-// 버튼으로 차트 오픈 시 슬라이드 시작
+// ▶️ 차트 열기 버튼
 document.querySelectorAll('.item-chart-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const chartItem = document.querySelector('.chart-item'); // 단일 차트 팝업 사용
+    const chartItem = document.querySelector('.chart-item');
     if (!chartItem) return;
 
-    chartItem.style.display = 'flex'; // 차트 팝업 열기
+    chartItem.style.display = 'flex';
 
-    const itemId = btn.dataset.item; // 아이템 id
-    const items = storeItemDB; // 전체 DB에서 슬라이드
+    const itemId = btn.dataset.item;
+    const items = storeItemDB;
     const startIndex = items.findIndex(i => i.item === itemId);
     if (startIndex === -1) return;
 
@@ -2558,6 +2564,7 @@ document.querySelectorAll('.item-chart-btn').forEach(btn => {
   });
 });
 
+// ❌ 차트 닫기 버튼
 document.querySelectorAll('.chart-close-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const chartItem = btn.closest('.chart-item');
@@ -2567,6 +2574,7 @@ document.querySelectorAll('.chart-close-btn').forEach(btn => {
     }
   });
 });
+
 
 //인벤토리
 // [추가] 인벤토리 갱신 함수: .inventory-box 내부에 .leaf 요소를 찾아 잎파리 개수를 표시
