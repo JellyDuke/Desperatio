@@ -256,58 +256,63 @@ function resetGameCompletely() {
   storeItemDB.splice(0, storeItemDB.length, 
     {
       item: "골드",
-      description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속입니다.",
+      description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 220024,
       isUp: null,
       appearanceChance: 0.7,
-      dailyFluctuationRate: 4  
+      dailyFluctuationRate: 4,
+      volatilityFactor: 1.1
     },
     {
       item: "실버",
-      description: "은은한 광채를 내는 귀금속입니다.",
+      description: "은은한 광채를 내는 귀금속으로, 소지 시 별다른 효과는 없습니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 225,
       isUp: null,
       appearanceChance: 0.9,
-      dailyFluctuationRate: 3  
+      dailyFluctuationRate: 3,
+      volatilityFactor: 1.2
     },
     {
       item: "오팔",
-      description: "다채로운 색상이 반짝이는 보석입니다.",
+      description: "다채로운 색상이 반짝이는 보석으로, 소지 시 특별한 효과는 없지만 수집 가치가 있습니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 2250,
       isUp: null,
       appearanceChance: 0.8,
-      dailyFluctuationRate: 8  
+      dailyFluctuationRate: 8,
+      volatilityFactor: 1.3
     },
     {
       item: "루비",
-      description: "깊은 붉은 빛을 발하는 보석입니다.",
+      description: "깊은 붉은 빛을 발하는 보석으로, 수집용으로 인기가 있으나 소지 시 별다른 효과는 없습니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 45318,
       isUp: null,
       appearanceChance: 0.6,
-      dailyFluctuationRate: 30  
+      dailyFluctuationRate: 30,
+      volatilityFactor: 1.4
     },
     {
       item: "사파이어",
-      description: "투명한 푸른빛을 발하는 보석입니다.",
+      description: "투명한 푸른빛이 매력적인 보석으로, 장식용 및 수집용으로 활용됩니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 646257,
       isUp: null,
       appearanceChance: 0.2,
-      dailyFluctuationRate: 12 
+      dailyFluctuationRate: 12,
+      volatilityFactor: 1.2
     }
   );
 
@@ -374,58 +379,63 @@ function resetGameExceptSkills() {
   storeItemDB.splice(0, storeItemDB.length, 
     {
       item: "골드",
-      description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속입니다.",
+      description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 220024,
       isUp: null,
       appearanceChance: 0.7,
-      dailyFluctuationRate: 4  
+      dailyFluctuationRate: 4,
+      volatilityFactor: 1.1
     },
     {
       item: "실버",
-      description: "은은한 광채를 내는 귀금속입니다.",
+      description: "은은한 광채를 내는 귀금속으로, 소지 시 별다른 효과는 없습니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 225,
       isUp: null,
       appearanceChance: 0.9,
-      dailyFluctuationRate: 3  
+      dailyFluctuationRate: 3,
+      volatilityFactor: 1.2
     },
     {
       item: "오팔",
-      description: "다채로운 색상이 반짝이는 보석입니다.",
+      description: "다채로운 색상이 반짝이는 보석으로, 소지 시 특별한 효과는 없지만 수집 가치가 있습니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 2250,
       isUp: null,
       appearanceChance: 0.8,
-      dailyFluctuationRate: 8  
+      dailyFluctuationRate: 8,
+      volatilityFactor: 1.3
     },
     {
       item: "루비",
-      description: "깊은 붉은 빛을 발하는 보석입니다.",
+      description: "깊은 붉은 빛을 발하는 보석으로, 수집용으로 인기가 있으나 소지 시 별다른 효과는 없습니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 45318,
       isUp: null,
       appearanceChance: 0.6,
-      dailyFluctuationRate: 30  
+      dailyFluctuationRate: 30,
+      volatilityFactor: 1.4
     },
     {
       item: "사파이어",
-      description: "투명한 푸른빛을 발하는 보석입니다.",
+      description: "투명한 푸른빛이 매력적인 보석으로, 장식용 및 수집용으로 활용됩니다.",
       previousPrice: null,
       effect: null,
       dailyChangePercent: 0,
       basePrice: 646257,
       isUp: null,
       appearanceChance: 0.2,
-      dailyFluctuationRate: 12 
+      dailyFluctuationRate: 12,
+      volatilityFactor: 1.2
     }
   );
 
