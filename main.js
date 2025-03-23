@@ -12,7 +12,8 @@ const itemClassMapping = {
   "골드": "gold",
   "실버": "silver",
   "루비": "ruby",
-  "사파이어": "sapphire"
+  "사파이어": "sapphire",
+  "다이아몬드": "diamond"
 };
 
 // 상점 스킬 DB (전투 시 스킬 효과 적용 방식 포함)
@@ -1720,7 +1721,7 @@ function refreshShopItemsForNewDay() {
       item.originalBasePrice = item.basePrice;
     }
   });
-  
+
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2, '0')}-${String(gameState.currentDate.day).padStart(2, '0')}`;
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
