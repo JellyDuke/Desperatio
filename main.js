@@ -1716,7 +1716,7 @@ function refreshShopItemsForNewDay() {
           const reboundBoost = 2 - (item.basePrice / reboundThreshold); // basePrice가 낮을수록 boost 커짐
           rate *= (1 + reboundBoost); // 상승폭 증가
         }
-        
+
       } else {
         // 이벤트 발생 시 변동률 설정
         if (direction === 1) {
@@ -2502,9 +2502,6 @@ function updateGameDate() {
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
 
-    refreshShopItemsForNewDay();
-    initShopItems();
-    updateShopInventory();
   }
 
   // 날짜가 바뀌었거나 페이지가 처음 로드되었을 때, 상점 목록을 갱신하여 즉시 UI에 반영
@@ -2525,8 +2522,12 @@ function updateGameDate() {
   if (dateInfoElem) {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
-
+  
+  refreshShopItemsForNewDay();
+  initShopItems();
+  updateShopInventory();
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
+  
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
