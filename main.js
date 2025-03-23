@@ -1713,8 +1713,10 @@ function refreshShopItemsForNewDay() {
 
         // ✅ 저가일 때 상승폭 강화
         if (item.basePrice <= reboundThreshold && direction === 1) {
-          rate *= 1.5; // 상승폭 보정
+          const reboundBoost = 2 - (item.basePrice / reboundThreshold); // basePrice가 낮을수록 boost 커짐
+          rate *= (1 + reboundBoost); // 상승폭 증가
         }
+        
       } else {
         // 이벤트 발생 시 변동률 설정
         if (direction === 1) {
