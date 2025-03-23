@@ -1658,20 +1658,30 @@ function refreshShopItemsForNewDay() {
       item.previousPrice = item.basePrice;
 
       const volatility = item.volatilityFactor || 1;
+      const oldPrice = item.basePrice;
       let direction = Math.random() < 0.5 ? -1 : 1;
       let eventFluct = 1;
       let eventText = '';
       let isEvent = false;
 
+      // ✅ 저가 반등 확률 강화
+      const reboundThreshold = 50;
+      if (item.basePrice <= reboundThreshold) {
+        const reboundChance = Math.max(0.3, 1 - item.basePrice / 100); // 가격이 낮을수록 확률 상승
+        if (Math.random() < reboundChance) {
+          direction = 1; // 상승 방향 고정
+        }
+      }
+
       // 📉 폭등/폭락 확률 (각 1%)
       const randomEventRoll = Math.random();
       if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 2.5;   // +150%~+400%
+        eventFluct = 1 + Math.random() * 2.5; // 폭등: +150%~+400%
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
       } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.5; // -90%~-40%
+        eventFluct = 0.5 + Math.random() * 0.5; // 폭락: -90%~ -40%
         direction = -1;
         eventText = '📉 폭락';
         isEvent = true;
@@ -1690,44 +1700,47 @@ function refreshShopItemsForNewDay() {
         } else {
           rate = baseRate * (1 + Math.random());          // 큰 변동
         }
+
+        // ✅ 저가일 때 상승폭 강화
+        if (item.basePrice <= reboundThreshold && direction === 1) {
+          rate *= 1.5; // 상승폭 보정
+        }
       } else {
         // 이벤트 발생 시 변동률 설정
         if (direction === 1) {
-          // 폭등: 기본 변동률 높게
-          rate = 1 + Math.random(); // 100% ~ 200%
+          rate = 1 + Math.random(); // 폭등: 100% ~ 200%
         } else {
-          // 폭락: 큰 폭 하락
-          rate = 0.8 + Math.random() * 0.7; // 80% ~ 150%
+          rate = 0.8 + Math.random() * 0.7; // 폭락: 80% ~ 150%
         }
       }
 
-      const change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
-      item.basePrice = Math.max(24, item.basePrice + change);
+      // 💰 최종 가격 계산
+      const change = Math.floor(oldPrice * rate * direction * eventFluct * volatility);
+      item.basePrice = Math.max(24, oldPrice + change);
 
-      // 변화율 계산
-      const rawPercent = ((item.basePrice - item.previousPrice) / item.previousPrice) * 100;
+      const newPrice = item.basePrice;
+      const rawPercent = ((newPrice - oldPrice) / oldPrice) * 100;
       let roundedPercent = Math.round(rawPercent);
-      if (roundedPercent === 0 && item.basePrice !== item.previousPrice) {
-        roundedPercent = item.basePrice > item.previousPrice ? 1 : -1;
+
+      // ±3% 보정
+      if (Math.abs(roundedPercent) < 3 && oldPrice !== newPrice) {
+        const randomBoost = Math.floor(Math.random() * 3) + 1; // 1~3
+        roundedPercent = newPrice > oldPrice ? randomBoost : -randomBoost;
       }
 
       item.dailyChangePercent = roundedPercent;
-      item.isUp = item.basePrice > item.previousPrice;
+      item.isUp = newPrice > oldPrice;
 
-      // 콘솔
-      console.log(`[${item.item}] ${eventText || '일반'} 이전: ${item.previousPrice} → ${item.basePrice} (${item.dailyChangePercent}%)`);
+      // 📋 콘솔 출력
+      console.log(`[${item.item}] ${eventText || '일반'} 이전: ${oldPrice} → ${newPrice} (${roundedPercent}%)`);
 
-      // 왕국 알림
+      // 📢 왕국 알림
       if (isEvent) {
         const kingdomMsgElem = document.querySelector('.kingdom-message-news');
         if (kingdomMsgElem) {
           const msg = document.createElement('div');
           msg.classList.add('txt');
           msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
-
-          const oldPrice = item.previousPrice;
-          const newPrice = item.basePrice;
-
           msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
           kingdomMsgElem.appendChild(msg);
           scrollToBottom(kingdomMsgElem);
@@ -1735,9 +1748,11 @@ function refreshShopItemsForNewDay() {
       }
     });
 
+    localStorage.setItem('lastShopDate', today);
     saveShopDB();
   }
 }
+
 
 
 
