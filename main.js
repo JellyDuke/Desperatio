@@ -1661,47 +1661,53 @@ function refreshShopItemsForNewDay() {
       let eventFluct = 1;
       let direction = Math.random() < 0.5 ? -1 : 1;
       let eventText = '';
-      const volatility = item.volatilityFactor || 1;  // 각 아이템별 변동성 계수
+      const volatility = item.volatilityFactor || 1;
 
-      // 📉 폭등/폭락 이벤트 처리 (각 1% 확률)
+      // 📉 폭등/폭락 이벤트 (각 1%)
       const randomEventRoll = Math.random();
       if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 0.3; // 폭등: +100~300%
+        eventFluct = 1 + Math.random() * 2; // +100%~+300%
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
       } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.3; // 폭락: -30~-80%
+        eventFluct = 0.5 + Math.random() * 0.3; // -30%~-80%
         direction = -1;
         eventText = '📉 폭락';
         isEvent = true;
       }
 
-      // 기본 변동률 구간 확률로 결정
+      // 기본 변동률
       let rate = 0;
       const baseRate = item.dailyFluctuationRate / 100;
       if (!isEvent) {
         const roll = Math.random();
         if (roll < 0.7) {
-          rate = baseRate * (Math.random() * 0.2);        // 소폭 변동 (±0~20%)
+          rate = baseRate * (Math.random() * 0.2); // 소폭
         } else if (roll < 0.95) {
-          rate = baseRate * (0.2 + Math.random());         // 중간 변동 (±20%~150%)
+          rate = baseRate * (0.2 + Math.random()); // 중간
         } else {
-          rate = baseRate * (0.5 + Math.random());         // 큰 변동 (±50%~250%)
+          rate = baseRate * (0.5 + Math.random()); // 큰 폭
         }
       }
 
-      // 최종 가격 계산
-      const change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
+      // 가격 변화량 계산
+      let change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
+
+      // 이벤트인데 변화량이 0이면 최소 변동 보장
+      if (isEvent && change === 0) {
+        const minChange = Math.ceil(item.basePrice * 0.01); // 최소 1% 변동
+        change = direction * Math.max(1, minChange);
+      }
+
       item.basePrice = Math.max(24, item.basePrice + change);
       item.dailyChangePercent = Math.round(((item.basePrice - item.previousPrice) / item.previousPrice) * 100);
       item.isUp = item.basePrice > item.previousPrice;
 
-      // 콘솔 출력
       console.log(`[${item.item}] ${eventText || '일반'} 이전: ${item.previousPrice} → ${item.basePrice} (${item.dailyChangePercent}%)`);
 
-      // 왕국 뉴스 출력
-      if (isEvent) {
+      // 뉴스 출력
+      if (isEvent && change !== 0) {
         const kingdomMsgElem = document.querySelector('.kingdom-message-news');
         if (kingdomMsgElem) {
           const msg = document.createElement('div');
@@ -1714,12 +1720,9 @@ function refreshShopItemsForNewDay() {
       }
     });
 
-    saveShopDB(); // 가격 갱신 후 저장
+    saveShopDB();
   }
 }
-
-
-
 
 
 // 구매하려는 아이템 정보를 임시 저장할 변수
