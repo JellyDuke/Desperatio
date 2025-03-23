@@ -76,7 +76,8 @@ const storeItemDB = [
     basePrice: 220024,
     isUp: null,
     appearanceChance: 0.7,
-    dailyFluctuationRate: 4
+    dailyFluctuationRate: 4,
+    volatilityFactor: 1.1
   },
   {
     item: "실버",
@@ -87,7 +88,8 @@ const storeItemDB = [
     basePrice: 225,
     isUp: null,
     appearanceChance: 0.9,
-    dailyFluctuationRate: 3
+    dailyFluctuationRate: 3,
+    volatilityFactor: 1.2
   },
   {
     item: "오팔",
@@ -98,7 +100,8 @@ const storeItemDB = [
     basePrice: 2250,
     isUp: null,
     appearanceChance: 0.8,
-    dailyFluctuationRate: 8
+    dailyFluctuationRate: 8,
+    volatilityFactor: 1.3
   },
   {
     item: "루비",
@@ -109,7 +112,8 @@ const storeItemDB = [
     basePrice: 45318,
     isUp: null,
     appearanceChance: 0.6,
-    dailyFluctuationRate: 30
+    dailyFluctuationRate: 30,
+    volatilityFactor: 1.4
   },
   {
     item: "사파이어",
@@ -120,7 +124,8 @@ const storeItemDB = [
     basePrice: 646257,
     isUp: null,
     appearanceChance: 0.2,
-    dailyFluctuationRate: 12
+    dailyFluctuationRate: 12,
+    volatilityFactor: 1.2
   }
 ];
 
@@ -1649,60 +1654,70 @@ function refreshShopItemsForNewDay() {
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
   if (today !== lastDate) {
-    const newsElem = document.querySelector('.kingdom-message-news');
-
     storeItemDB.forEach(item => {
       item.previousPrice = item.basePrice;
-      const oldPrice = item.basePrice;
 
-      const baseFluct = item.dailyFluctuationRate / 100;
-      const fluctuation = baseFluct * (0.5 + Math.random() * 0.5);
-
-      let direction = Math.random() < 0.5 ? 1 : -1;
-      if (item.isUp !== null && Math.random() < 0.65) {
-        direction = item.isUp ? 1 : -1;
-      }
-
-      let eventText = '';
-      let eventFluct = fluctuation;
       let isEvent = false;
+      let eventFluct = 1;
+      let direction = Math.random() < 0.5 ? -1 : 1;
+      let eventText = '';
+      const volatility = item.volatilityFactor || 1;  // 각 아이템별 변동성 계수
 
+      // 📉 폭등/폭락 이벤트 처리 (각 1% 확률)
       const randomEventRoll = Math.random();
       if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 2;
+        eventFluct = 1 + Math.random() * 0.3; // 폭등: +100~300%
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
       } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.3;
+        eventFluct = 0.5 + Math.random() * 0.3; // 폭락: -30~-80%
         direction = -1;
         eventText = '📉 폭락';
         isEvent = true;
       }
 
-      let newPrice = Math.floor(oldPrice * (1 + eventFluct * direction));
-      newPrice = Math.max(24, newPrice);
+      // 기본 변동률 구간 확률로 결정
+      let rate = 0;
+      const baseRate = item.dailyFluctuationRate / 100;
+      if (!isEvent) {
+        const roll = Math.random();
+        if (roll < 0.7) {
+          rate = baseRate * (Math.random() * 0.2);        // 소폭 변동 (±0~20%)
+        } else if (roll < 0.95) {
+          rate = baseRate * (0.2 + Math.random());         // 중간 변동 (±20%~150%)
+        } else {
+          rate = baseRate * (0.5 + Math.random());         // 큰 변동 (±50%~250%)
+        }
+      }
 
-      item.basePrice = newPrice;
-      item.dailyChangePercent = Math.round(((newPrice - oldPrice) / oldPrice) * 100);
-      item.isUp = newPrice > oldPrice;
+      // 최종 가격 계산
+      const change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
+      item.basePrice = Math.max(24, item.basePrice + change);
+      item.dailyChangePercent = Math.round(((item.basePrice - item.previousPrice) / item.previousPrice) * 100);
+      item.isUp = item.basePrice > item.previousPrice;
 
-      console.log(`[${item.item}] ${eventText} 이전 가격: ${oldPrice}, 새 가격: ${newPrice}, 변화율: ${item.dailyChangePercent}%`);
+      // 콘솔 출력
+      console.log(`[${item.item}] ${eventText || '일반'} 이전: ${item.previousPrice} → ${item.basePrice} (${item.dailyChangePercent}%)`);
 
-      // 🔔 왕국 메시지 출력
-      if (isEvent && newsElem) {
-        const msg = document.createElement('div');
-        msg.classList.add('txt');
-        msg.style.color = direction === 1 ? '#ff6f61' : '#5aa9e6'; // 폭등은 빨간색, 폭락은 파란색
-        msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
-        newsElem.appendChild(msg);
-        scrollToBottom(newsElem);
+      // 왕국 뉴스 출력
+      if (isEvent) {
+        const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+        if (kingdomMsgElem) {
+          const msg = document.createElement('div');
+          msg.classList.add('txt');
+          msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
+          msg.textContent = `${item.item}에 ${eventText} 발생! 가격이 ${item.dailyChangePercent > 0 ? '급등했습니다' : '급락했습니다'}.`;
+          kingdomMsgElem.appendChild(msg);
+          scrollToBottom(kingdomMsgElem);
+        }
       }
     });
 
-    saveShopDB();
+    saveShopDB(); // 가격 갱신 후 저장
   }
 }
+
 
 
 
