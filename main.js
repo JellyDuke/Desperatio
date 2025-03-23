@@ -1666,12 +1666,12 @@ function refreshShopItemsForNewDay() {
       // 폭등/폭락 확률
       const randomEventRoll = Math.random();
       if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 2;  // 폭등: 100~300%
+        eventFluct = 1 + Math.random() * 2.5;   // +150% ~ +400%
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
       } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.3; // 폭락: 30~80%
+        eventFluct = 0.5 + Math.random() * 0.5; // -90% ~ -40%
         direction = -1;
         eventText = '📉 폭락';
         isEvent = true;
@@ -1684,11 +1684,11 @@ function refreshShopItemsForNewDay() {
       if (!isEvent) {
         const roll = Math.random();
         if (roll < 0.7) {
-          rate = baseRate * (Math.random() * 0.2); // 소폭
+          rate = baseRate * (Math.random() * 0.5); // 소폭
         } else if (roll < 0.95) {
-          rate = baseRate * (0.2 + Math.random()); // 중간
+          rate = baseRate * (0.5 + Math.random()); // 중간
         } else {
-          rate = baseRate * (0.5 + Math.random()); // 큰
+          rate = baseRate * (1 + Math.random()); // 큰
         }
       } else {
         // 이벤트 발생 시 강제 변동률
