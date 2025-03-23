@@ -1752,12 +1752,12 @@ function refreshShopItemsForNewDay() {
     // 💥 폭등 / 폭락 이벤트
     const randomEventRoll = Math.random();
     if (randomEventRoll < 0.005) {
-      eventFluct = 1 + Math.random() * 2.5;
+      eventFluct = 1.1 + Math.random() * 2;
       direction = 1;
       eventText = '💥 폭등';
       isEvent = true;
     } else if (randomEventRoll < 0.01) {
-      eventFluct = 0.5 + Math.random() * 0.5;
+      eventFluct = 0.5 + Math.random() * 0.4;
       direction = -1;
       eventText = '📉 폭락';
       isEvent = true;
