@@ -271,8 +271,8 @@ const gameState = {
 function resetGameCompletely() {
   // localStorage 전체 삭제
   localStorage.clear();
- 
-  storeItemDB.splice(0, storeItemDB.length, 
+
+  storeItemDB.splice(0, storeItemDB.length,
     {
       item: "골드",
       description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
@@ -413,7 +413,7 @@ function resetGameExceptSkills() {
   localStorage.clear();
   let oldRoundCount = gameState.progress.roundCount || 1;
 
-  storeItemDB.splice(0, storeItemDB.length, 
+  storeItemDB.splice(0, storeItemDB.length,
     {
       item: "골드",
       description: "순수한 금속의 영롱한 빛이 돋보이는 귀금속으로, 상점에서 주요 거래 수단으로 사용됩니다.",
@@ -1827,15 +1827,22 @@ function refreshShopItemsForNewDay() {
   });
 
   // 📊 경제 뉴스 스타일 분석 결과 출력
-  const summaryNews = generateEconomicSummaryNews(storeItemDB);
-  if (summaryNews) {
-    const kingdomNews = document.querySelector('.kingdom-message-news');
-    const msg = document.createElement('div');
-    msg.classList.add('txt');
-    msg.style.color = '#f1d255';
-    msg.textContent = summaryNews;
-    kingdomNews.appendChild(msg);
-    scrollToBottom(kingdomNews);
+  const summaryDateKey = 'lastSummaryDate';
+  const lastSummaryDate = localStorage.getItem(summaryDateKey);
+  if (lastSummaryDate !== today) {
+    const summary = generateEconomicSummaryNews(storeItemDB);
+    if (summary) {
+      const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+      if (kingdomMsgElem) {
+        const msg = document.createElement('div');
+        msg.classList.add('txt');
+        msg.style.color = '#f1d255';
+        msg.textContent = summary;
+        kingdomMsgElem.appendChild(msg);
+        scrollToBottom(kingdomMsgElem);
+      }
+    }
+    localStorage.setItem(summaryDateKey, today); // ✅ 오늘 요약 뉴스 출력 기록
   }
 
   // 💾 저장
@@ -1873,7 +1880,6 @@ function generateEconomicSummaryNews(items) {
   if (downItems.length) parts.push(`${downItems.join('·')} 하락`);
   if (unstableItems.length) parts.push(`${unstableItems.join('·')} 불안정`);
   if (stableItems.length) parts.push(`${stableItems.join('·')} 안정세`);
-
   if (parts.length === 0) return null;
 
   return `📊 오늘의 시장 요약: ${parts.join(', ')}입니다.`;
@@ -2640,7 +2646,7 @@ function updateGameDate() {
   initShopItems();
   updateShopInventory();
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
-  
+
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
