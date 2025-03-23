@@ -1700,7 +1700,14 @@ function refreshShopItemsForNewDay() {
         } else if (roll < 0.95) {
           rate = baseRate * (0.5 + Math.random()); 
         } else {
-          rate = baseRate * (1 + Math.random());
+           // 이벤트 발생 시 변동률 설정
+          if (direction === 1) {
+            // 폭등: 기본 변동률 높게
+            rate = 1 + Math.random(); // 100% ~ 200%
+          } else {
+            // 폭락: 큰 폭 하락
+            rate = 0.8 + Math.random() * 0.7; // 80% ~ 150%
+          }
         }
       }
 
