@@ -1827,53 +1827,57 @@ function refreshShopItemsForNewDay() {
   });
 
   // 📊 경제 뉴스 스타일 분석 결과 출력
-  const kingdomNews = document.querySelector('.kingdom-message-news');
-  storeItemDB.forEach(item => {
-    if (item.priceHistory && item.priceHistory.length >= 5) {
-      const news = generateEconomicNews(item.item, item.priceHistory);
-      if (news && kingdomNews) {
-        const msg = document.createElement('div');
-        msg.classList.add('txt');
-        msg.style.color = '#f1d255';
-        msg.textContent = news;
-        kingdomNews.appendChild(msg);
-        scrollToBottom(kingdomNews);
-      }
-    }
-  });
+  const summaryNews = generateEconomicSummaryNews(storeItemDB);
+  if (summaryNews) {
+    const kingdomNews = document.querySelector('.kingdom-message-news');
+    const msg = document.createElement('div');
+    msg.classList.add('txt');
+    msg.style.color = '#f1d255';
+    msg.textContent = summaryNews;
+    kingdomNews.appendChild(msg);
+    scrollToBottom(kingdomNews);
+  }
 
   // 💾 저장
   saveShopDB();
 }
 
 
-function generateEconomicNews(item, history) {
-  if (!history || history.length < 5) return null;
+function generateEconomicSummaryNews(items) {
+  const downItems = [];
+  const unstableItems = [];
+  const stableItems = [];
 
-  const changes = [];
-  for (let i = 0; i < history.length - 1; i++) {
-    changes.push(history[i + 1] - history[i]);
-  }
+  items.forEach(item => {
+    const history = item.priceHistory;
+    const base = item.originalBasePrice || item.basePrice;
 
-  const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
-  const trendStrength = Math.abs(avgChange) / history[history.length - 2] * 100;
+    if (!history || history.length < 5) return;
 
-  let message = '';
-  if (changes.every(c => c > 0)) {
-    message = `📈 [${item}] 최근 며칠간 가격이 지속적으로 상승 중입니다. 시장의 긍정적 분위기가 감지됩니다.`;
-  } else if (changes.every(c => c < 0)) {
-    message = `📉 [${item}] 최근 가격이 연일 하락세입니다. 투자자들의 불안 심리가 반영된 결과입니다.`;
-  } else if (trendStrength > 20) {
-    message = `⚠️ [${item}] 가격 변동성이 크게 증가했습니다. 단기 매매에 주의가 필요합니다.`;
-  } else if (Math.abs(history[history.length - 1] - history[0]) < history[0] * 0.05) {
-    message = `🔄 [${item}] 최근 가격이 기준 가격 부근을 맴돌고 있습니다. 시장 안정세로 보입니다.`;
-  } else {
-    message = `📊 [${item}] 가격이 오르내림을 반복하며 불안정한 모습을 보이고 있습니다.`;
-  }
+    const changes = history.map(p => (p - base) / base);
+    const avg = changes.reduce((a, b) => a + b, 0) / changes.length;
+    const variance = changes.map(c => Math.pow(c - avg, 2)).reduce((a, b) => a + b, 0) / changes.length;
+    const stdDev = Math.sqrt(variance);
 
-  return message;
+    if (avg < -0.05 && stdDev < 0.05) {
+      downItems.push(item.item);
+    } else if (stdDev > 0.07) {
+      unstableItems.push(item.item);
+    } else {
+      stableItems.push(item.item);
+    }
+  });
+
+  const parts = [];
+
+  if (downItems.length) parts.push(`${downItems.join('·')} 하락`);
+  if (unstableItems.length) parts.push(`${unstableItems.join('·')} 불안정`);
+  if (stableItems.length) parts.push(`${stableItems.join('·')} 안정세`);
+
+  if (parts.length === 0) return null;
+
+  return `📊 오늘의 시장 요약: ${parts.join(', ')}입니다.`;
 }
-
 
 
 
