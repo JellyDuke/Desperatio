@@ -74,6 +74,7 @@ const storeItemDB = [
     effect: null,
     dailyChangePercent: 0,
     basePrice: 220024,
+    originalBasePrice: 220024,
     isUp: null,
     appearanceChance: 0.7,
     dailyFluctuationRate: 4,
@@ -86,6 +87,7 @@ const storeItemDB = [
     effect: null,
     dailyChangePercent: 0,
     basePrice: 225,
+    originalBasePrice: 225,
     isUp: null,
     appearanceChance: 0.9,
     dailyFluctuationRate: 3,
@@ -98,6 +100,7 @@ const storeItemDB = [
     effect: null,
     dailyChangePercent: 0,
     basePrice: 2250,
+    originalBasePrice: 2250,
     isUp: null,
     appearanceChance: 0.8,
     dailyFluctuationRate: 8,
@@ -110,6 +113,7 @@ const storeItemDB = [
     effect: null,
     dailyChangePercent: 0,
     basePrice: 45318,
+    originalBasePrice: 45318,
     isUp: null,
     appearanceChance: 0.6,
     dailyFluctuationRate: 30,
@@ -122,6 +126,7 @@ const storeItemDB = [
     effect: null,
     dailyChangePercent: 0,
     basePrice: 646257,
+    originalBasePrice: 646257,
     isUp: null,
     appearanceChance: 0.2,
     dailyFluctuationRate: 12,
@@ -134,6 +139,7 @@ const storeItemDB = [
     effect: null,
     dailyChangePercent: 0,
     basePrice: 12546457,
+    originalBasePrice: 12546457,
     isUp: null,
     appearanceChance: 0.2,
     dailyFluctuationRate: 20,
@@ -273,6 +279,7 @@ function resetGameCompletely() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 220024,
+      originalBasePrice: 220024,
       isUp: null,
       appearanceChance: 0.7,
       dailyFluctuationRate: 4,
@@ -285,6 +292,7 @@ function resetGameCompletely() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 225,
+      originalBasePrice: 225,
       isUp: null,
       appearanceChance: 0.9,
       dailyFluctuationRate: 3,
@@ -297,6 +305,7 @@ function resetGameCompletely() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 2250,
+      originalBasePrice: 2250,
       isUp: null,
       appearanceChance: 0.8,
       dailyFluctuationRate: 8,
@@ -309,6 +318,7 @@ function resetGameCompletely() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 45318,
+      originalBasePrice: 45318,
       isUp: null,
       appearanceChance: 0.6,
       dailyFluctuationRate: 30,
@@ -321,6 +331,7 @@ function resetGameCompletely() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 646257,
+      originalBasePrice: 646257,
       isUp: null,
       appearanceChance: 0.2,
       dailyFluctuationRate: 12,
@@ -333,6 +344,7 @@ function resetGameCompletely() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 12546457,
+      originalBasePrice: 12546457,
       isUp: null,
       appearanceChance: 0.2,
       dailyFluctuationRate: 20,
@@ -408,6 +420,7 @@ function resetGameExceptSkills() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 220024,
+      originalBasePrice: 220024,
       isUp: null,
       appearanceChance: 0.7,
       dailyFluctuationRate: 4,
@@ -420,6 +433,7 @@ function resetGameExceptSkills() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 225,
+      originalBasePrice: 225,
       isUp: null,
       appearanceChance: 0.9,
       dailyFluctuationRate: 3,
@@ -432,6 +446,7 @@ function resetGameExceptSkills() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 2250,
+      originalBasePrice: 2250,
       isUp: null,
       appearanceChance: 0.8,
       dailyFluctuationRate: 8,
@@ -444,6 +459,7 @@ function resetGameExceptSkills() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 45318,
+      originalBasePrice: 45318,
       isUp: null,
       appearanceChance: 0.6,
       dailyFluctuationRate: 30,
@@ -456,6 +472,7 @@ function resetGameExceptSkills() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 646257,
+      originalBasePrice: 646257,
       isUp: null,
       appearanceChance: 0.2,
       dailyFluctuationRate: 12,
@@ -468,6 +485,7 @@ function resetGameExceptSkills() {
       effect: null,
       dailyChangePercent: 0,
       basePrice: 12546457,
+      originalBasePrice: 12546457,
       isUp: null,
       appearanceChance: 0.2,
       dailyFluctuationRate: 20,
@@ -1696,107 +1714,117 @@ function saveShopDB() {
 }
 
 function refreshShopItemsForNewDay() {
+   // 💡 기준 가격이 없으면 초기화
+   storeItemDB.forEach(item => {
+    if (!item.originalBasePrice) {
+      item.originalBasePrice = item.basePrice;
+    }
+  });
+  
   const today = `${gameState.currentDate.year}-${String(gameState.currentDate.month).padStart(2, '0')}-${String(gameState.currentDate.day).padStart(2, '0')}`;
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
-  if (today !== lastDate) {
-    storeItemDB.forEach(item => {
-      item.previousPrice = item.basePrice;
+  if (today === lastDate) return;
 
-      const volatility = item.volatilityFactor || 1;
-      const oldPrice = item.basePrice;
-      let direction = Math.random() < 0.5 ? -1 : 1;
-      let eventFluct = 1;
-      let eventText = '';
-      let isEvent = false;
+  storeItemDB.forEach(item => {
+    item.previousPrice = item.basePrice;
+    const oldPrice = item.basePrice;
 
-      // ✅ 저가 반등 확률 강화
-      const reboundThreshold = 50;
-      if (item.basePrice <= reboundThreshold) {
-        const reboundChance = Math.max(0.3, 1 - item.basePrice / 100); // 가격이 낮을수록 확률 상승
-        if (Math.random() < reboundChance) {
-          direction = 1; // 상승 방향 고정
-        }
-      }
+    const volatility = item.volatilityFactor || 1;
+    const basePrice = item.basePrice;
+    const originalBase = item.originalBasePrice || basePrice; // 기준 가격 저장
 
-      // 📉 폭등/폭락 확률 (각 1%)
-      const randomEventRoll = Math.random();
-      if (randomEventRoll < 0.01) {
-        eventFluct = 1 + Math.random() * 2.5; // 폭등: +150%~+400%
+    let direction = Math.random() < 0.5 ? -1 : 1;
+    let eventFluct = 1;
+    let eventText = '';
+    let isEvent = false;
+
+    // 저가 반등 확률 및 상승폭 강화
+    const reboundThreshold = 50;
+    if (basePrice <= reboundThreshold) {
+      const reboundChance = Math.min(1, Math.max(0.3, 1 - basePrice / 100));
+      if (Math.random() < reboundChance) {
         direction = 1;
-        eventText = '💥 폭등';
-        isEvent = true;
-      } else if (randomEventRoll < 0.02) {
-        eventFluct = 0.5 + Math.random() * 0.5; // 폭락: -90%~ -40%
-        direction = -1;
-        eventText = '📉 폭락';
-        isEvent = true;
       }
+    }
 
-      // 🔁 변동률 계산
-      let rate = 0;
-      const baseRate = item.dailyFluctuationRate / 100;
+    // 폭등/폭락 이벤트
+    const randomEventRoll = Math.random();
+    if (randomEventRoll < 0.01) {
+      eventFluct = 1 + Math.random() * 2.5;
+      direction = 1;
+      eventText = '💥 폭등';
+      isEvent = true;
+    } else if (randomEventRoll < 0.02) {
+      eventFluct = 0.5 + Math.random() * 0.5;
+      direction = -1;
+      eventText = '📉 폭락';
+      isEvent = true;
+    }
 
-      if (!isEvent) {
-        const roll = Math.random();
-        if (roll < 0.7) {
-          rate = baseRate * (Math.random() * 0.5);        // 소폭
-        } else if (roll < 0.95) {
-          rate = baseRate * (0.5 + Math.random());        // 중간
-        } else {
-          rate = baseRate * (1 + Math.random());          // 큰 변동
-        }
+    // 기본 변동률 계산
+    let rate = 0;
+    const baseRate = item.dailyFluctuationRate / 100;
 
-        // ✅ 저가일 때 상승폭 강화
-        if (item.basePrice <= reboundThreshold && direction === 1) {
-          const reboundBoost = 2 - (item.basePrice / reboundThreshold); // basePrice가 낮을수록 boost 커짐
-          rate *= (1 + reboundBoost); // 상승폭 증가
-        }
-
+    if (!isEvent) {
+      const roll = Math.random();
+      if (roll < 0.7) {
+        rate = baseRate * (Math.random() * 0.5);
+      } else if (roll < 0.95) {
+        rate = baseRate * (0.5 + Math.random());
       } else {
-        // 이벤트 발생 시 변동률 설정
-        if (direction === 1) {
-          rate = 1 + Math.random(); // 폭등: 100% ~ 200%
-        } else {
-          rate = 0.8 + Math.random() * 0.7; // 폭락: 80% ~ 150%
-        }
+        rate = baseRate * (1 + Math.random());
       }
 
-      // 💰 최종 가격 계산
-      const change = Math.floor(oldPrice * rate * direction * eventFluct * volatility);
-      item.basePrice = Math.max(24, oldPrice + change);
-
-      const newPrice = item.basePrice;
-      const rawPercent = ((newPrice - oldPrice) / oldPrice) * 100;
-      let roundedPercent = Math.round(rawPercent);
-
-      // ±3% 보정
-      if (Math.abs(roundedPercent) < 3 && oldPrice !== newPrice) {
-        const randomBoost = Math.floor(Math.random() * 3) + 1; // 1~3
-        roundedPercent = newPrice > oldPrice ? randomBoost : -randomBoost;
+      // 저가일 때 상승폭 강화
+      if (basePrice <= reboundThreshold && direction === 1) {
+        rate *= 2;
       }
-
-      item.dailyChangePercent = roundedPercent;
-      item.isUp = newPrice > oldPrice;
-
-      // 📋 콘솔 출력
-      console.log(`[${item.item}] ${eventText || '일반'} 이전: ${oldPrice} → ${newPrice} (${roundedPercent}%)`);
-
-      // 📢 왕국 알림
-      if (isEvent) {
-        const kingdomMsgElem = document.querySelector('.kingdom-message-news');
-        if (kingdomMsgElem) {
-          const msg = document.createElement('div');
-          msg.classList.add('txt');
-          msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
-          msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
-          kingdomMsgElem.appendChild(msg);
-          scrollToBottom(kingdomMsgElem);
-        }
+    } else {
+      // 이벤트 변동률
+      if (direction === 1) {
+        rate = 1 + Math.random();
+      } else {
+        rate = 0.8 + Math.random() * 0.7;
       }
-    });
-    saveShopDB();
-  }
+    }
+
+    // 💡 회귀: 기준 가격과의 차이가 클수록 더 강하게 회귀
+    const regressionFactor = 1 + Math.abs(originalBase - basePrice) / originalBase;
+    const change = Math.floor(basePrice * rate * direction * eventFluct * volatility / regressionFactor);
+    item.basePrice = Math.max(24, basePrice + change);
+
+    const newPrice = item.basePrice;
+    const rawPercent = ((newPrice - oldPrice) / oldPrice) * 100;
+    let roundedPercent = Math.round(rawPercent);
+
+    // ±3% 이상 보정 (1~3%)
+    if (Math.abs(roundedPercent) < 3 && oldPrice !== newPrice) {
+      const correction = Math.floor(Math.random() * 3) + 1;
+      roundedPercent = newPrice > oldPrice ? correction : -correction;
+    }
+
+    item.dailyChangePercent = roundedPercent;
+    item.isUp = newPrice > oldPrice;
+
+    console.log(`[${item.item}] ${eventText || '일반'} 이전: ${oldPrice} → ${newPrice} (${roundedPercent}%)`);
+
+    // 왕국 알림
+    if (eventText) {
+      const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+      if (kingdomMsgElem) {
+        const msg = document.createElement('div');
+        msg.classList.add('txt');
+        msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
+        msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
+        kingdomMsgElem.appendChild(msg);
+        scrollToBottom(kingdomMsgElem);
+      }
+    }
+  });
+
+  // ⬇ 반드시 저장 (반영 요청됨)
+  saveShopDB();
 }
 
 
