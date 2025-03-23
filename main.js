@@ -1713,13 +1713,13 @@ function refreshShopItemsForNewDay() {
           const msg = document.createElement('div');
           msg.classList.add('txt');
           msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
-          msg.textContent = `${item.item}에 ${eventText} 발생! 가격이 ${item.dailyChangePercent > 0 ? '급등했습니다' : '급락했습니다'}.`;
+          const isRise = direction > 0;
+          msg.textContent = `${item.item}에 ${eventText} 발생! 가격이 ${isRise ? '급등했습니다' : '급락했습니다'}.`;
           kingdomMsgElem.appendChild(msg);
           scrollToBottom(kingdomMsgElem);
         }
       }
     });
-
     saveShopDB();
   }
 }
