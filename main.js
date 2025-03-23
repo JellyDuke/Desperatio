@@ -1691,7 +1691,14 @@ function refreshShopItemsForNewDay() {
           rate = baseRate * (1 + Math.random());          // 큰 변동
         }
       } else {
-        rate = 1.0; // 이벤트일 경우 최소 rate 보장
+        // 이벤트 발생 시 변동률 설정
+        if (direction === 1) {
+          // 폭등: 기본 변동률 높게
+          rate = 1 + Math.random(); // 100% ~ 200%
+        } else {
+          // 폭락: 큰 폭 하락
+          rate = 0.8 + Math.random() * 0.7; // 80% ~ 150%
+        }
       }
 
       const change = Math.floor(item.basePrice * rate * direction * eventFluct * volatility);
