@@ -2468,112 +2468,91 @@ function setupSellSelectFunctionality() {
 }
 
 //차트
+document.querySelector(".item-chart-btn").addEventListener("click", () => {
+  const chartContainer = document.querySelector(".chart-item");
+  if (chartContainer) {
+    chartContainer.style.display = "flex";
+    startPriceChartSlideshow(storeItemDB); // 슬라이드 시작
+  }
+});
+
+document.querySelector(".chart-close-btn").addEventListener("click", () => {
+  const chartContainer = document.querySelector(".chart-item");
+  if (chartContainer) {
+    chartContainer.style.display = "none";
+    if (chartInterval) clearInterval(chartInterval); // 슬라이드 멈춤
+  }
+});
+
+
+//차트
 let currentChartIndex = 0;
 let chartInterval = null;
 
-// 🔁 차트 슬라이드 시작 함수
-function startPriceChartSlideshow(chartItem, items, interval = 3000) {
+function drawPriceChart(item) {
+  const canvas = document.getElementById("priceChartCanvas");
+  if (!canvas || !item.priceHistory || item.priceHistory.length < 2) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 기본 스타일
+  ctx.strokeStyle = "#00ffcc";
+  ctx.lineWidth = 2;
+  ctx.font = "12px sans-serif";
+  ctx.fillStyle = "#fff";
+
+  const prices = item.priceHistory;
+  const maxPrice = Math.max(...prices);
+  const minPrice = Math.min(...prices);
+  const range = maxPrice - minPrice || 1;
+
+  const padding = 20;
+  const stepX = (canvas.width - padding * 2) / (prices.length - 1);
+
+  const getY = (price) =>
+    canvas.height - padding - ((price - minPrice) / range) * (canvas.height - padding * 2);
+
+  // 선 그리기
+  ctx.beginPath();
+  prices.forEach((price, i) => {
+    const x = padding + i * stepX;
+    const y = getY(price);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 점 + 텍스트
+  prices.forEach((price, i) => {
+    const x = padding + i * stepX;
+    const y = getY(price);
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText(price.toLocaleString(), x - 10, y - 8);
+  });
+
+  // 타이틀
+  ctx.fillStyle = "#f1d255";
+  ctx.fillText(`[${item.item}] 최근 5일 가격`, 10, 15);
+}
+
+function startPriceChartSlideshow(items, interval = 3000) {
   if (!items || items.length === 0) return;
 
-  const canvas = chartItem.querySelector('canvas.price-chart-canvas');
-  const header = chartItem.querySelector('.chart-header');
+  // 초기 상태
+  currentChartIndex = 0;
+  drawPriceChart(items[currentChartIndex]);
 
-  if (!canvas || !header) {
-    console.warn('차트 영역 요소를 찾을 수 없습니다.');
-    return;
-  }
-
-  // 이전 차트 제거
-  if (canvas.chartInstance) {
-    canvas.chartInstance.destroy();
-  }
-
-  const draw = (index) => {
-    const item = items[index];
-    header.textContent = `[${item.item}] 최근 5일 가격`;
-    drawItemPriceChart(canvas, item);
-  };
-
-  draw(currentChartIndex); // 첫 차트 표시
-
-  if (chartInterval) clearInterval(chartInterval); // 기존 슬라이드 종료
+  // 이전 슬라이드가 있으면 멈춤
+  if (chartInterval) clearInterval(chartInterval);
 
   chartInterval = setInterval(() => {
     currentChartIndex = (currentChartIndex + 1) % items.length;
-    draw(currentChartIndex);
+    drawPriceChart(items[currentChartIndex]);
   }, interval);
 }
-
-// 📈 차트 그리기
-function drawItemPriceChart(canvas, item) {
-  const ctx = canvas.getContext('2d');
-  const prices = item.priceHistory || [];
-
-  if (canvas.chartInstance) {
-    canvas.chartInstance.destroy();
-  }
-
-  canvas.chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: prices.map((_, i) => `Day ${i + 1}`),
-      datasets: [{
-        data: prices,
-        borderColor: '#00ffaa',
-        backgroundColor: '#00ffaa',
-        tension: 0.2,
-        pointBackgroundColor: '#ffffff',
-        pointRadius: 3,
-      }]
-    },
-    options: {
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: context => `${context.parsed.y.toLocaleString()}`
-          }
-        }
-      },
-      layout: {
-        padding: { top: 30 }
-      },
-      scales: {
-        x: { ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-        y: { ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-      }
-    }
-  });
-}
-
-// ▶️ 차트 열기 버튼
-document.querySelectorAll('.item-chart-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const chartItem = document.querySelector('.chart-item');
-    if (!chartItem) return;
-
-    chartItem.style.display = 'flex';
-
-    const itemId = btn.dataset.item;
-    const items = storeItemDB;
-    const startIndex = items.findIndex(i => i.item === itemId);
-    if (startIndex === -1) return;
-
-    currentChartIndex = startIndex;
-    startPriceChartSlideshow(chartItem, items); // 슬라이드 시작
-  });
-});
-
-// ❌ 차트 닫기 버튼
-document.querySelectorAll('.chart-close-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const chartItem = btn.closest('.chart-item');
-    if (chartItem) {
-      chartItem.style.display = 'none';
-      clearInterval(chartInterval); // 슬라이드 정지
-    }
-  });
-});
 
 
 //인벤토리
