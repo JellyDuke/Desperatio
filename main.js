@@ -2467,50 +2467,48 @@ function setupSellSelectFunctionality() {
   }
 }
 
-
-// DOMContentLoaded 시 Sell Select 기능 설정
-document.addEventListener('DOMContentLoaded', () => {
-  setupSellSelectFunctionality();
-});
-
-document.querySelectorAll('.item-chart-btn').forEach((btn, index) => {
-  btn.addEventListener('click', () => {
-    const chartContainer = chartWrap.querySelector('.chart-item');
-    const canvas = chartContainer.querySelector('.price-chart-canvas');
-
-    chartContainer.style.display = 'flex'; // 📊 슬라이드 표시
-
-    const itemData = storeItemDB[index];
-    drawItemPriceChart(canvas, itemData);
-  });
-});
-
-document.querySelectorAll('.chart-close-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const chartWrap = btn.closest('.chart-item');
-    chartWrap.style.display = 'none';
-  });
-});
-
-
 //차트
+
 let currentChartIndex = 0;
 let chartInterval = null;
 
-function drawPriceChart(item) {
+// 슬라이드 시작 함수
+function startPriceChartSlideshow(chartContainer, items, interval = 3000) {
+  if (!items || items.length === 0) return;
+
+  const canvas = chartContainer.querySelector('.price-chart-canvas');
+  const titleElem = chartContainer.querySelector('.chart-header');
+
+  currentChartIndex = 0;
+  drawPriceChart(canvas, titleElem, items[currentChartIndex]);
+
+  if (chartInterval) clearInterval(chartInterval);
+
+  chartInterval = setInterval(() => {
+    currentChartIndex = (currentChartIndex + 1) % items.length;
+    drawPriceChart(canvas, titleElem, items[currentChartIndex]);
+  }, interval);
+}
+
+// 차트 그리기 함수 (제목 포함)
+function drawPriceChart(canvas, titleElem, item) {
   const ctx = canvas.getContext('2d');
   const prices = item.priceHistory || [];
   const labels = prices.map((_, i) => `Day ${i + 1}`);
 
-  // 기존 차트 제거 (겹치는 문제 방지)
   if (canvas.chartInstance) {
     canvas.chartInstance.destroy();
   }
 
-  const chart = new Chart(ctx, {
+  // 제목 자동 변경
+  if (titleElem) {
+    titleElem.textContent = `[${item.item}] 최근 5일 가격`;
+  }
+
+  canvas.chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         label: '',
         data: prices,
@@ -2532,9 +2530,7 @@ function drawPriceChart(item) {
         }
       },
       layout: {
-        padding: {
-          top: 30 // ✅ 텍스트와 겹치지 않도록 위쪽 공간 확보
-        }
+        padding: { top: 30 } // 텍스트 겹침 방지
       },
       scales: {
         x: {
@@ -2548,26 +2544,28 @@ function drawPriceChart(item) {
       }
     }
   });
-
-  canvas.chartInstance = chart;
 }
 
-function startPriceChartSlideshow(items, interval = 3000) {
-  if (!items || items.length === 0) return;
 
-  // 초기 상태
-  currentChartIndex = 0;
-  drawPriceChart(items[currentChartIndex]);
+// 버튼으로 차트 오픈 시 슬라이드 시작
+document.querySelectorAll('.item-chart-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const parent = btn.closest('.shop-item');
+    const chartItem = parent.querySelector('.chart-item');
+    chartItem.style.display = 'flex';
 
-  // 이전 슬라이드가 있으면 멈춤
-  if (chartInterval) clearInterval(chartInterval);
+    startPriceChartSlideshow(chartItem, storeItemDB); // 슬라이드 시작
+  });
+});
 
-  chartInterval = setInterval(() => {
-    currentChartIndex = (currentChartIndex + 1) % items.length;
-    drawPriceChart(items[currentChartIndex]);
-  }, interval);
-}
-
+// 닫기 버튼
+document.querySelectorAll('.chart-close-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const chartItem = btn.closest('.chart-item');
+    chartItem.style.display = 'none';
+    if (chartInterval) clearInterval(chartInterval); // 슬라이드 멈춤
+  });
+});
 
 //인벤토리
 // [추가] 인벤토리 갱신 함수: .inventory-box 내부에 .leaf 요소를 찾아 잎파리 개수를 표시
