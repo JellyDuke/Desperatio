@@ -1649,41 +1649,61 @@ function refreshShopItemsForNewDay() {
   const lastDate = localStorage.getItem('lastShopDate') || '';
 
   if (today !== lastDate) {
+    const newsElem = document.querySelector('.kingdom-message-news');
+
     storeItemDB.forEach(item => {
       item.previousPrice = item.basePrice;
       const oldPrice = item.basePrice;
 
-      // === 변동 폭 (일일 변동률 범위의 절반 ~ 전체까지) ===
       const baseFluct = item.dailyFluctuationRate / 100;
-      const fluctuation = baseFluct * (0.5 + Math.random() * 0.5); // 최소 50%, 최대 100% 범위 안에서
+      const fluctuation = baseFluct * (0.5 + Math.random() * 0.5);
 
-      // === 트렌드 기반 방향 결정 ===
-      let direction;
-      if (item.isUp === null) {
-        // 초기엔 랜덤
-        direction = Math.random() < 0.5 ? 1 : -1;
-      } else {
-        // 이전 방향을 유지할 확률 65%
-        direction = Math.random() < 0.65 ? (item.isUp ? 1 : -1) : (item.isUp ? -1 : 1);
+      let direction = Math.random() < 0.5 ? 1 : -1;
+      if (item.isUp !== null && Math.random() < 0.65) {
+        direction = item.isUp ? 1 : -1;
       }
 
-      // === 새로운 가격 계산 ===
-      let newPrice = Math.floor(oldPrice * (1 + fluctuation * direction));
+      let eventText = '';
+      let eventFluct = fluctuation;
+      let isEvent = false;
 
-      // === 가격 바닥선 제한 (지속적인 폭락 방지) ===
+      const randomEventRoll = Math.random();
+      if (randomEventRoll < 0.05) {
+        eventFluct = 1 + Math.random() * 2;
+        direction = 1;
+        eventText = '💥 폭등';
+        isEvent = true;
+      } else if (randomEventRoll < 0.10) {
+        eventFluct = 0.5 + Math.random() * 0.3;
+        direction = -1;
+        eventText = '📉 폭락';
+        isEvent = true;
+      }
+
+      let newPrice = Math.floor(oldPrice * (1 + eventFluct * direction));
       newPrice = Math.max(24, newPrice);
 
-      // === 정보 저장 ===
       item.basePrice = newPrice;
       item.dailyChangePercent = Math.round(((newPrice - oldPrice) / oldPrice) * 100);
       item.isUp = newPrice > oldPrice;
 
-      console.log(`[${item.item}] 이전 가격: ${oldPrice}, 새 가격: ${newPrice}, 변화율: ${item.dailyChangePercent}%`);
+      console.log(`[${item.item}] ${eventText} 이전 가격: ${oldPrice}, 새 가격: ${newPrice}, 변화율: ${item.dailyChangePercent}%`);
+
+      // 🔔 왕국 메시지 출력
+      if (isEvent && newsElem) {
+        const msg = document.createElement('div');
+        msg.classList.add('txt');
+        msg.style.color = direction === 1 ? '#ff6f61' : '#5aa9e6'; // 폭등은 빨간색, 폭락은 파란색
+        msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
+        newsElem.appendChild(msg);
+        scrollToBottom(newsElem);
+      }
     });
 
     saveShopDB();
   }
 }
+
 
 
 
