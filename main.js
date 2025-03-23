@@ -1668,12 +1668,12 @@ function refreshShopItemsForNewDay() {
       let isEvent = false;
 
       const randomEventRoll = Math.random();
-      if (randomEventRoll < 0.05) {
+      if (randomEventRoll < 0.01) {
         eventFluct = 1 + Math.random() * 2;
         direction = 1;
         eventText = '💥 폭등';
         isEvent = true;
-      } else if (randomEventRoll < 0.10) {
+      } else if (randomEventRoll < 0.02) {
         eventFluct = 0.5 + Math.random() * 0.3;
         direction = -1;
         eventText = '📉 폭락';
