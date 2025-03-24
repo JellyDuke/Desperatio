@@ -1819,7 +1819,7 @@ function refreshShopItemsForNewDay() {
         const msg = document.createElement('div');
         msg.classList.add('txt');
         msg.style.color = direction > 0 ? '#ff6363' : '#66aaff';
-        msg.textContent = `[${eventText}] ${item.item} ${eventText} 발생! 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
+        msg.textContent = `[${eventText}] ${item.item} 가격이 ${oldPrice.toLocaleString()} → ${newPrice.toLocaleString()} 으로 ${direction === 1 ? '상승' : '하락'}했습니다.`;
         kingdomMsgElem.appendChild(msg);
         scrollToBottom(kingdomMsgElem);
       }
