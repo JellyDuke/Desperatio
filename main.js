@@ -32,7 +32,13 @@ const storeSkillDB = [
     variance: 5000,           // 스킬 가격 변동은 여전히 적용 (원하는 경우 조정 가능)
     appearanceChance: 0.5,  // 50% 확률로 상점에 등장
     activation: "random",   // 전투 시 랜덤 발동
-    triggerChance: 0.3      // 약 30% 확률로 발동
+    triggerChance: 0.3,     // 약 30% 확률로 발동
+    rarity: "common", //회귀도
+    unlockCondition: {
+      type: "defeat",     // defeat, useSkill, reachLevel 등
+      target: "오크",  // 특정 몬스터
+      count: 5
+    }
   },
   {
     name: "회복",
@@ -47,7 +53,14 @@ const storeSkillDB = [
     basePrice: 120,
     variance: 30,
     appearanceChance: 0.4,  // 40% 확률
-    activation: "passive"   // 별도 입력 없이 자동 적용 (예: 매 라운드 회복)
+    activation: "passive",   // 별도 입력 없이 자동 적용 (예: 매 라운드 회복)
+    triggerChance: 1, 
+    rarity: "common", //회귀도
+    unlockCondition: {
+      type: "useSkill",     // defeat, useSkill, reachLevel 등
+      target: "강타",  // 특정 몬스터
+      count: 5
+    }
   },
   {
     name: "출혈",
@@ -63,7 +76,13 @@ const storeSkillDB = [
     variance: 25,
     appearanceChance: 0.3,  // 30% 확률
     activation: "random",   // 전투 시 랜덤 발동
-    triggerChance: 0.2      // 약 20% 확률로 발동
+    triggerChance: 0.2,      // 약 20% 확률로 발동
+    rarity: "common", //회귀도
+    unlockCondition: {
+      type: "defeat",     // defeat, useSkill, reachLevel 등
+      target: "식물",  // 특정 몬스터
+      count: 5
+    }
   }
 ];
 
@@ -1660,6 +1679,121 @@ function checkLevelUp(messageContainer) {
   saveGameState();
 }
 
+//스킬
+let todaySkillList = [];
+
+function refreshSkillShopForNewDay() {
+  const todayKey = `${gameState.currentDate.year}-${gameState.currentDate.month}-${gameState.currentDate.day}`;
+
+  // 이미 갱신한 날짜라면 그대로 유지
+  if (localStorage.getItem("lastSkillShopDate") === todayKey) return;
+
+  todaySkillList = [];
+
+  storeSkillDB.forEach(skill => {
+    // 등장 확률 체크
+    if (Math.random() <= skill.appearanceChance) {
+      // 잠금 조건 체크
+      if (checkSkillUnlockCondition(skill.unlockCondition)) {
+        const priceFluctuation = Math.floor((Math.random() - 0.5) * skill.variance * 2);
+        skill.todayPrice = skill.basePrice + priceFluctuation;
+        todaySkillList.push(skill);
+      }
+    }
+  });
+
+  localStorage.setItem("lastSkillShopDate", todayKey);
+  localStorage.setItem("todaySkillList", JSON.stringify(todaySkillList));
+}
+
+function checkSkillUnlockCondition(condition) {
+  if (!condition) return true;
+
+  const progress = gameState.progress;
+
+  switch (condition.type) {
+    case "defeat":
+      return (progress.defeatedMonsters?.[condition.target] || 0) >= condition.count;
+
+    case "useSkill":
+      return (progress.usedSkills?.[condition.target] || 0) >= condition.count;
+
+    case "reachLevel":
+      return gameState.player.level >= condition.target;
+
+    default:
+      return false;
+  }
+}
+function renderSkillShop() {
+  const skillListElem = document.querySelector("#skill-sell-list");
+  skillListElem.innerHTML = "";
+
+  const skillList = JSON.parse(localStorage.getItem("todaySkillList")) || [];
+
+  skillList.forEach(skill => {
+    const skillElem = document.createElement("div");
+    skillElem.classList.add("shop-skill-txt");
+
+    skillElem.innerHTML = `
+      <div class="skill-flex-box">
+        <div class="skill-name">${skill.name}</div>
+        <div class="skill-rarity">${skill.rarity}</div>
+        <div class="skill-description">${skill.description}</div>
+        
+        <div class="skill-flex-box-wrap">
+          <div>타입:</div><div class="skill-activation">${skill.activation}</div>
+        </div>
+        <div class="skill-flex-box-wrap">
+          <div>필요 레벨:</div><div class="skill-required-level">${skill.requiredLevel}</div>
+        </div>
+        <div class="skill-flex-box-wrap">
+          <div>발동 확률:</div><div class="skill-triggerChance">${Math.round(skill.triggerChance * 100)}%</div>
+        </div>
+        <div class="skill-flex-box-wrap">
+          <div>가격:</div><div class="skill-price">${skill.todayPrice?.toLocaleString() || skill.basePrice.toLocaleString()}</div>
+        </div>
+        <button class="skill-buy-btn" data-skill="${skill.name}">구매</button>
+      </div>
+    `;
+
+    skillListElem.appendChild(skillElem);
+  });
+
+  // 버튼 이벤트 연결
+  setSkillBuyButtonEvents();
+}
+
+function setSkillBuyButtonEvents() {
+  document.querySelectorAll(".skill-buy-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const skillName = btn.dataset.skill;
+      const skill = todaySkillList.find(s => s.name === skillName);
+
+      if (!skill) return;
+
+      if (gameState.player.level < skill.requiredLevel) {
+        alert("레벨이 부족합니다!");
+        return;
+      }
+
+      if (gameState.player.money < skill.todayPrice) {
+        alert("소지금이 부족합니다!");
+        return;
+      }
+
+      if (gameState.player.skills.includes(skill.name)) {
+        alert("이미 보유한 스킬입니다!");
+        return;
+      }
+
+      gameState.player.money -= skill.todayPrice;
+      gameState.player.skills.push(skill.name);
+      alert(`[${skill.name}] 스킬을 구매했습니다!`);
+      renderSkillShop();
+    });
+  });
+}
 //상점
 // 기존 getLootPriceInfo 함수는 그대로 사용
 function getLootPriceInfo(itemName) {
@@ -2712,6 +2846,7 @@ function updateGameDate() {
     lastDateStr = currentDateString;
     localStorage.setItem("lastDateStr", lastDateStr);
 
+    refreshSkillShopForNewDay();
   }
 
   // 날짜가 바뀌었거나 페이지가 처음 로드되었을 때, 상점 목록을 갱신하여 즉시 UI에 반영
@@ -2732,12 +2867,12 @@ function updateGameDate() {
   if (dateInfoElem) {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
-
+  
   refreshShopItemsForNewDay();
   initShopItems();
   updateShopInventory();
+  renderSkillShop();  
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
-
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
