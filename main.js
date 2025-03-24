@@ -1584,6 +1584,17 @@ function onMonsterDefeated(monsterKey, messageContainer) {
   const monster = monsterData[monsterKey];
   if (!monster) return;
 
+  // ✅ 누적 처치 수 기록 추가
+  if (!gameState.progress.defeatedMonsters) {
+    gameState.progress.defeatedMonsters = {};
+  }
+  const name = monster.name;
+  if (!gameState.progress.defeatedMonsters[name]) {
+    gameState.progress.defeatedMonsters[name] = 1;
+  } else {
+    gameState.progress.defeatedMonsters[name]++;
+  }
+
   // 전리품 드랍 처리: loot 배열에서 드랍할 아이템들을 결정합니다.
   const droppedLoot = getDroppedLoot(monster.loot);
 
@@ -1698,11 +1709,11 @@ function refreshSkillShopForNewDay() {
     // 등장 확률 체크
     if (Math.random() <= skill.appearanceChance) {
       // 잠금 조건 체크
-      // if (checkSkillUnlockCondition(skill.unlockCondition)) {
-      //   const priceFluctuation = Math.floor((Math.random() - 0.5) * skill.variance * 2);
-      //   skill.todayPrice = skill.basePrice + priceFluctuation;
-      //   todaySkillList.push(skill);
-      // }
+      if (checkSkillUnlockCondition(skill.unlockCondition)) {
+        const priceFluctuation = Math.floor((Math.random() - 0.5) * skill.variance * 2);
+        skill.todayPrice = skill.basePrice + priceFluctuation;
+        todaySkillList.push(skill);
+      }
     }
   });
   // console.log(`[${skill.name}] 등장확률: ${skill.appearanceChance}, 등장결과: ${appear}, 잠금해제: ${unlocked}`);
