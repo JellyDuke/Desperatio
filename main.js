@@ -30,7 +30,7 @@ const storeSkillDB = [
     type: "damage",         // 데미지 관련 스킬
     basePrice: 20000,
     variance: 5000,           // 스킬 가격 변동은 여전히 적용 (원하는 경우 조정 가능)
-    appearanceChance: 0.5,  // 50% 확률로 상점에 등장
+    appearanceChance: 1,  // 50% 확률로 상점에 등장
     activation: "random",   // 전투 시 랜덤 발동
     triggerChance: 0.3,     // 약 30% 확률로 발동
     rarity: "common", //회귀도
