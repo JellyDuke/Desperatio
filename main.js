@@ -1743,7 +1743,7 @@ function refreshShopItemsForNewDay() {
     // 💥 저가 반등 확률 및 상승폭 강화
     const reboundThreshold = 50;
     if (basePrice <= reboundThreshold) {
-      const reboundChance = Math.min(1, Math.max(0.3, 1 - basePrice / 100)); // 가격 낮을수록 상승확률 증가
+      const reboundChance = Math.min(1, Math.max(0.8, 1 - basePrice / 100)); // 가격 낮을수록 상승확률 증가
       if (Math.random() < reboundChance) {
         direction = 1;
       }
