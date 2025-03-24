@@ -36,8 +36,8 @@ const storeSkillDB = [
     rarity: "common", //회귀도
     unlockCondition: {
       type: "defeat",     // defeat, useSkill, reachLevel 등
-      target: "오크",  // 특정 몬스터
-      count: 5
+      target: "식물",  // 특정 몬스터
+      count: 3
     }
   },
   {
@@ -57,8 +57,8 @@ const storeSkillDB = [
     triggerChance: 1, 
     rarity: "common", //회귀도
     unlockCondition: {
-      type: "useSkill",     // defeat, useSkill, reachLevel 등
-      target: "강타",  // 특정 몬스터
+      type: "defeat",     // defeat, useSkill, reachLevel 등
+      target: "슬라임",  // 특정 몬스터
       count: 5
     }
   },
@@ -80,7 +80,7 @@ const storeSkillDB = [
     rarity: "common", //회귀도
     unlockCondition: {
       type: "defeat",     // defeat, useSkill, reachLevel 등
-      target: "식물",  // 특정 몬스터
+      target: "오크",  // 특정 몬스터
       count: 5
     }
   }
@@ -1698,11 +1698,11 @@ function refreshSkillShopForNewDay() {
     // 등장 확률 체크
     if (Math.random() <= skill.appearanceChance) {
       // 잠금 조건 체크
-      if (checkSkillUnlockCondition(skill.unlockCondition)) {
-        const priceFluctuation = Math.floor((Math.random() - 0.5) * skill.variance * 2);
-        skill.todayPrice = skill.basePrice + priceFluctuation;
-        todaySkillList.push(skill);
-      }
+      // if (checkSkillUnlockCondition(skill.unlockCondition)) {
+      //   const priceFluctuation = Math.floor((Math.random() - 0.5) * skill.variance * 2);
+      //   skill.todayPrice = skill.basePrice + priceFluctuation;
+      //   todaySkillList.push(skill);
+      // }
     }
   });
   console.log(`[${skill.name}] 등장확률: ${skill.appearanceChance}, 등장결과: ${appear}, 잠금해제: ${unlocked}`);
