@@ -2467,6 +2467,12 @@ function setupSellSelectFunctionality() {
   }
 }
 
+// DOMContentLoaded 시 Sell Select 기능 설정
+document.addEventListener('DOMContentLoaded', () => {
+  setupSellSelectFunctionality();
+});
+
+
 //차트
 document.querySelector(".item-chart-btn").addEventListener("click", () => {
   const chartContainer = document.querySelector(".chart-item");
