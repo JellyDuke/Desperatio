@@ -1705,7 +1705,7 @@ function refreshSkillShopForNewDay() {
       // }
     }
   });
-  console.log(`[${skill.name}] 등장확률: ${skill.appearanceChance}, 등장결과: ${appear}, 잠금해제: ${unlocked}`);
+  // console.log(`[${skill.name}] 등장확률: ${skill.appearanceChance}, 등장결과: ${appear}, 잠금해제: ${unlocked}`);
   console.log("전체 스킬 수:", storeSkillDB.length);
   localStorage.setItem("lastSkillShopDate", todayKey);
   console.log("오늘 상점에 등장한 스킬:", todaySkillList.map(s => s.name));
