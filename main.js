@@ -1757,7 +1757,7 @@ function refreshShopItemsForNewDay() {
       eventText = '💥 폭등';
       isEvent = true;
     } else if (randomEventRoll < 0.01) {
-      eventFluct = 0.5 + Math.random() * 0.4;
+      eventFluct = 0.5 + Math.random() * 0.3;
       direction = -1;
       eventText = '📉 폭락';
       isEvent = true;
