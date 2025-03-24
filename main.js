@@ -1680,6 +1680,10 @@ function checkLevelUp(messageContainer) {
 }
 
 //스킬
+window.addEventListener('DOMContentLoaded', () => {
+  renderSkillShop();
+});
+
 let todaySkillList = [];
 
 function refreshSkillShopForNewDay() {
@@ -1687,7 +1691,7 @@ function refreshSkillShopForNewDay() {
 
   // 이미 갱신한 날짜라면 그대로 유지
   if (localStorage.getItem("lastSkillShopDate") === todayKey) return;
-
+  
   todaySkillList = [];
 
   storeSkillDB.forEach(skill => {
@@ -1701,8 +1705,10 @@ function refreshSkillShopForNewDay() {
       }
     }
   });
-
+  console.log(`[${skill.name}] 등장확률: ${skill.appearanceChance}, 등장결과: ${appear}, 잠금해제: ${unlocked}`);
+  console.log("전체 스킬 수:", storeSkillDB.length);
   localStorage.setItem("lastSkillShopDate", todayKey);
+  console.log("오늘 상점에 등장한 스킬:", todaySkillList.map(s => s.name));
   localStorage.setItem("todaySkillList", JSON.stringify(todaySkillList));
 }
 
@@ -2870,8 +2876,7 @@ function updateGameDate() {
   
   refreshShopItemsForNewDay();
   initShopItems();
-  updateShopInventory();
-  renderSkillShop();  
+  updateShopInventory(); 
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
