@@ -1731,6 +1731,7 @@ function refreshSkillShopForNewDay() {
   localStorage.setItem("lastSkillShopDate", todayKey);
   console.log("오늘 상점에 등장한 스킬:", todaySkillList.map(s => s.name));
   localStorage.setItem("todaySkillList", JSON.stringify(todaySkillList));
+  renderSkillShop();
 }
 
 function checkSkillUnlockCondition(condition) {
