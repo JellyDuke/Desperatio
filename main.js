@@ -1819,9 +1819,9 @@ function renderSkillShop() {
   const skillListElem = document.querySelector(".shop-skill-sell-list");
   skillListElem.innerHTML = "";
 
-  // 등급에 따른 색상 매핑
+  // 등급에 따른 색상 매핑 (기본은 연한 회색)
   const rarityColorMapping = {
-    "common": "#d3d3d3",    // 기본 흰색
+    "common": "#d3d3d3",    // 기본: 연한 회색
     "rare": "#4fc3f7",      // 희귀: 연한 파란색
     "epic": "#ba68c8",      // 에픽: 보라색
     "legendary": "#ffb74d"  // 전설: 주황색
@@ -1830,12 +1830,15 @@ function renderSkillShop() {
   const skillList = JSON.parse(localStorage.getItem("todaySkillList")) || [];
 
   skillList.forEach(skill => {
-    const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#ffffff";
-
+    const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#d3d3d3";
+    // 스킬 해금 여부를 확인합니다.
+    const unlocked = checkSkillUnlockCondition(skill.unlockCondition);
+    
     const skillElem = document.createElement("div");
     skillElem.classList.add("skill-sell-list");
 
-    skillElem.innerHTML = `
+    // 스킬 정보 출력 HTML
+    let innerHTML = `
       <div class="shop-skill-txt">
         <div class="skill-flex-box">
           <div class="skill-name" style="color: ${rarityColor};">${skill.name}</div>
@@ -1855,16 +1858,22 @@ function renderSkillShop() {
           <div>가격:</div><div class="skill-price">${skill.todayPrice?.toLocaleString() || skill.basePrice.toLocaleString()}</div>
         </div>
       </div>
-      <button class="skill-buy-btn" data-skill="${skill.name}">구매</button>
     `;
 
+    // 해금된 스킬은 구매 버튼, 해금되지 않은 스킬은 .skill-unlock div 추가
+    if (unlocked) {
+      innerHTML += `<button class="skill-buy-btn" data-skill="${skill.name}">구매</button>`;
+    } else {
+      innerHTML += `<div class="skill-unlock">해금 조건 미충족</div>`;
+    }
+
+    skillElem.innerHTML = innerHTML;
     skillListElem.appendChild(skillElem);
   });
 
-  // 버튼 이벤트 연결
-  setSkillBuyButtonEvents();  
+  // 구매 버튼 이벤트 연결 (해금되지 않은 스킬은 버튼이 없으므로 무시됨)
+  setSkillBuyButtonEvents();
 }
-
 
 function setSkillBuyButtonEvents() {
   document.querySelectorAll(".skill-buy-btn").forEach(btn => {
