@@ -1576,7 +1576,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
 
     roundNumber++;
     setTimeout(roundFight, 1500);
-  }
+  } 
 
   roundFight();
 }
@@ -1844,6 +1844,7 @@ function renderSkillShop() {
     skillListElem.appendChild(skillElem);
   });
 
+  
   // 버튼 이벤트 연결
   setSkillBuyButtonEvents();
 }
@@ -1875,6 +1876,8 @@ function setSkillBuyButtonEvents() {
       gameState.player.skills.push(skill.name);
       alert(`[${skill.name}] 스킬을 구매했습니다!`);
       renderSkillShop();
+      updateUserStatus();
+      saveGameState();
     });
   });
 }
