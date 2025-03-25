@@ -1754,21 +1754,22 @@ function checkSkillUnlockCondition(condition) {
   }
 }
 function renderSkillShop() {
-  const skillListElem = document.querySelector(".skill-sell-list");
+  const skillListElem = document.querySelector(".shop-item-sell-list");
   skillListElem.innerHTML = "";
 
   const skillList = JSON.parse(localStorage.getItem("todaySkillList")) || [];
 
   skillList.forEach(skill => {
     const skillElem = document.createElement("div");
-    skillElem.classList.add("shop-skill-txt");
+    skillElem.classList.add("skill-sell-list");
 
     skillElem.innerHTML = `
       <div class="shop-skill-txt">
-        <div class="skill-name">${skill.name}</div>
-        <div class="skill-rarity">${skill.rarity}</div>
+        <div class= "skill-flex-box">
+          <div class="skill-name">${skill.name}</div>
+          <div class="skill-rarity">${skill.rarity}</div>
+        </div>
         <div class="skill-description">${skill.description}</div>
-        
         <div class="skill-flex-box-wrap">
           <div>타입:</div><div class="skill-activation">${skill.activation}</div>
         </div>
