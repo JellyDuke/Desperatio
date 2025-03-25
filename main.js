@@ -2570,12 +2570,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sellAllBtn = document.querySelector('.sell-all-btn');
   const checkAllSellContainer = document.querySelector('.check-all-sell');
   const checkBtn = document.querySelector('.check-btn');
-  const cancelBtn = document.querySelector('.cancel-btn');
-
-  console.log('sellAllBtn:', sellAllBtn);
-  console.log('checkAllSellContainer:', checkAllSellContainer);
-  console.log('checkBtn:', checkBtn);
-  console.log('cancelBtn:', cancelBtn);
+  const cancelBtn = document.querySelector('.cancle-btn');
 
   if (sellAllBtn && checkAllSellContainer && checkBtn && cancelBtn) {
     // .sell-all-btn 클릭 시, 확인 UI 보여주기
