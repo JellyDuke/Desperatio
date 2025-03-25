@@ -1779,11 +1779,11 @@ function renderSkillShop() {
         <div class="skill-flex-box-wrap">
           <div>발동 확률:</div><div class="skill-triggerChance">${Math.round(skill.triggerChance * 100)}%</div>
         </div>
-        <div class="skill-flex-box-wrap">
+        <div class="skill-flex-box-wrap price">
           <div>가격:</div><div class="skill-price">${skill.todayPrice?.toLocaleString() || skill.basePrice.toLocaleString()}</div>
         </div>
       </div>
-      <button class="skill-buy-btn price" data-skill="${skill.name}">구매</button>
+      <button class="skill-buy-btn" data-skill="${skill.name}">구매</button>
     `;
 
     skillListElem.appendChild(skillElem);
