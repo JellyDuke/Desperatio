@@ -1458,6 +1458,52 @@ function calculateDamage(attacker) {
   return { damage, isCrit };
 }
 
+// 스킬 효과 적용 함수 (공격 데미지 보정)
+function applyPlayerAttackSkills(baseDamage) {
+  let bonusDamage = 0;
+
+  // 플레이어가 보유한 모든 스킬 순회
+  gameState.player.skills.forEach(skillName => {
+    const skill = storeSkillDB.find(s => s.name === skillName);
+    if (!skill) return;
+
+    // "random" 스킬의 경우 발동 확률에 따라 보너스 데미지 적용
+    if (skill.activation === "random") {
+      if (Math.random() < skill.triggerChance) {
+        const dmgBonus = skill.effects[1]?.damageBonus || 0;
+        bonusDamage += dmgBonus;
+        // 전투 메시지에 스킬 발동 기록
+        const skillMsg = document.createElement('div');
+        skillMsg.textContent = `[스킬 발동] ${skill.name}이(가) 발동하여 ${dmgBonus}의 추가 데미지를 부여합니다.`;
+        // 예를 들어, msgContainer가 전투 로그 컨테이너라면 추가
+        // msgContainer.appendChild(skillMsg);
+        console.log(skillMsg.textContent);
+      }
+    }
+  });
+
+  return baseDamage + bonusDamage;
+}
+
+// 패시브 회복 스킬 적용 함수 (매 라운드 시작 시)
+function applyPassiveHealing() {
+  let totalHealing = 0;
+  gameState.player.skills.forEach(skillName => {
+    const skill = storeSkillDB.find(s => s.name === skillName);
+    if (!skill) return;
+
+    if (skill.activation === "passive") {
+      const healValue = skill.effects[1]?.healthBonus || 0;
+      totalHealing += healValue;
+      // 로그 출력 (UI에 표시하는 방식으로 수정 가능)
+      console.log(`[스킬 발동] ${skill.name}이(가) 발동하여 ${healValue}의 체력을 회복합니다.`);
+    }
+  });
+  // 회복된 체력은 플레이어 체력에 추가 (최대 체력 초과 여부는 별도 처리 가능)
+  gameState.player.health += totalHealing;
+  return totalHealing;
+}
+
 /**
  * 전투 라운드를 진행하는 함수
  * 플레이어와 몬스터가 동시에 공격을 주고받으며, 한 라운드마다 체력을 갱신합니다.
@@ -1475,15 +1521,27 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     msgContainer.appendChild(roundMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 플레이어의 공격 (새 데미지 공식 적용)
-    const { damage: playerDamage, isCrit: playerCrit } = calculateDamage(gameState.player);
+    // 패시브 회복 스킬 적용 (매 라운드 시작 시)
+    const healed = applyPassiveHealing();
+    if (healed > 0) {
+      const healMsg = document.createElement('div');
+      healMsg.textContent = `플레이어가 ${healed}의 체력을 회복했습니다. (패시브 회복)`;
+      msgContainer.appendChild(healMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+      updateHealthBar();
+    }
+
+    // 플레이어 공격: 기본 데미지 계산 후 스킬 효과 적용
+    let { damage: basePlayerDamage, isCrit: playerCrit } = calculateDamage(gameState.player);
+    let finalPlayerDamage = applyPlayerAttackSkills(basePlayerDamage);
+
     const playerAttackMsg = document.createElement('div');
-    playerAttackMsg.textContent = `플레이어가 ${playerCrit ? "치명타로 " : ""}${playerDamage}의 데미지를 입혔습니다.`;
+    playerAttackMsg.textContent = `플레이어가 ${playerCrit ? "치명타로 " : ""}${finalPlayerDamage}의 데미지를 입혔습니다.`;
     msgContainer.appendChild(playerAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-    currentMonsterHealth -= playerDamage;
+    currentMonsterHealth -= finalPlayerDamage;
 
-    // 몬스터의 공격 (몬스터에도 기본 10% 치명타 확률 적용)
+    // 몬스터 공격 (기존 데미지 공식 사용)
     const { damage: monsterDamage, isCrit: monsterCrit } = calculateDamage(monster);
     gameState.player.health -= monsterDamage;
     if (gameState.player.health < 0) {
@@ -1493,6 +1551,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     monsterAttackMsg.textContent = `몬스터가 ${monsterCrit ? "치명타로 " : ""}${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
+    updateHealthBar();
 
     // 전투 결과 판정
     if (currentMonsterHealth <= 0) {
@@ -1500,12 +1559,8 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
       victoryMsg.textContent = monster.victoryMessage;
       msgContainer.appendChild(victoryMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
-
-      // 전리품 및 경험치 지급 처리
       onMonsterDefeated(monsterKey, msgContainer);
-      if (typeof finalCallback === 'function') {
-        finalCallback();
-      }
+      if (typeof finalCallback === 'function') finalCallback();
       return;
     }
 
@@ -1514,11 +1569,8 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
       defeatMsg.textContent = "전투 도중 사망했습니다...";
       msgContainer.appendChild(defeatMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
-
       resetGameExceptSkills();
-      if (typeof finalCallback === 'function') {
-        finalCallback();
-      }
+      if (typeof finalCallback === 'function') finalCallback();
       return;
     }
 
@@ -1528,6 +1580,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
 
   roundFight();
 }
+
 
 //경험치
 /**
