@@ -2568,10 +2568,21 @@ if (moneyElem) {
 // .sell-all-btn 버튼에 이벤트 등록
 document.addEventListener('DOMContentLoaded', () => {
   const sellAllBtn = document.querySelector('.sell-all-btn');
-  if (sellAllBtn) {
+  const checkAllSellContainer = document.querySelector('.check-all-sell');
+  const checkBtn = document.querySelector('.check-btn');
+  
+  if (sellAllBtn && checkAllSellContainer && checkBtn) {
+    // sell-all-btn 클릭 시, 확인 UI 보여주기
     sellAllBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      checkAllSellContainer.style.display = 'flex';
+    });
+    
+    // check-btn 클릭 시, 실제 판매 실행 후 확인 UI 숨기기
+    checkBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       sellAllItems();
+      checkAllSellContainer.style.display = 'none';
     });
   }
 });
