@@ -28,7 +28,7 @@ const storeSkillDB = [
     },
     requiredLevel: 1,       // 최소 1레벨부터 구매/사용 가능
     type: "damage",         // 데미지 관련 스킬
-    basePrice: 0,
+    basePrice: 20000,
     variance: 5000,           // 스킬 가격 변동은 여전히 적용 (원하는 경우 조정 가능)
     appearanceChance: 1,  // 50% 확률로 상점에 등장
     activation: "random",   // 전투 시 랜덤 발동
