@@ -52,7 +52,7 @@ const storeSkillDB = [
     type: "heal",           // 체력 회복 스킬
     basePrice: 120,
     variance: 30,
-    appearanceChance: 0.4,  // 40% 확률
+    appearanceChance: 1,  // 40% 확률
     activation: "passive",   // 별도 입력 없이 자동 적용 (예: 매 라운드 회복)
     triggerChance: 1, 
     rarity: "common", //회귀도
@@ -74,7 +74,7 @@ const storeSkillDB = [
     type: "bleed",          // 출혈 효과 스킬
     basePrice: 150,
     variance: 25,
-    appearanceChance: 0.3,  // 30% 확률
+    appearanceChance: 1,  // 30% 확률
     activation: "random",   // 전투 시 랜덤 발동
     triggerChance: 0.2,      // 약 20% 확률로 발동
     rarity: "common", //회귀도
