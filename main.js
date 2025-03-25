@@ -13,7 +13,8 @@ const itemClassMapping = {
   "실버": "silver",
   "루비": "ruby",
   "사파이어": "sapphire",
-  "다이아몬드": "diamond"
+  "다이아몬드": "diamond",
+  "개구리 다리": "frogleg"
 };
 
 // 상점 스킬 DB (전투 시 스킬 효과 적용 방식 포함)
@@ -230,14 +231,35 @@ const monsterData = {
       "오크의 포효가 전장을 뒤흔들며 공포를 자아냅니다!",
       "당신은 단호하게 전투 태세를 갖추고 대응합니다!"
     ]
+  },
+  frog: {
+    name: "평야 개구리",
+    discoveryMessage: "개구리를 발견했습니다! 전투를 시작합니다...",
+    maxDelay: 25000,
+    health: 15,  
+    deathMessage: "개구리와의 전투에서 패배하여 사망했습니다...",
+    victoryMessage: "개구리를 무찔렀습니다!",
+    militaryLevel: 2,
+    loot: [
+      { item: "개구리의 ", basePrice: 3, variance: 10, dropChance: 0.9 },
+    ],
+    experience: 50,
+    narrativeSteps: [
+      "풀숲이 바스락거립니다... 무언가가 다가오고 있습니다.",
+      "촉촉한 발소리와 함께 평야 개구리가 모습을 드러냅니다!",
+      "개구리가 날렵하게 펄쩍 뛰어올라 당신을 노립니다!",
+      "개구리의 혀가 번개처럼 튀어나와 공격합니다!",
+      "당신은 뒹굴며, 개구리의 움직임에 대비합니다!"
+    ]
   }
   // 필요할 때마다 더 추가...
 };
 
 // [추가된 코드] 각 지역별 몬스터 목록 (중앙 지역은 삭제)
 const regionMonsters = {
-  "왕국 서부": ["plant", "slime"],
-  "왕국 동부": ["orc", "slime"],
+  "왕국 서부 평야": ["plant", "slime","frog"],
+  "왕국 동부 경계": ["slime","orc"],
+  "피안의 숲": ["plant", "slime","frog"],
 };
 
 const gameState = {
@@ -251,7 +273,7 @@ const gameState = {
     governance: 1,
     skills: [],
     inventory: [],
-    location: "왕국 서부",     // 현재 위치 (초기값: "중앙")
+    location: "왕국 서부 평야",     // 현재 위치 (초기값: "중앙")
     isMoving: false,       // 이동 중 여부
     health: 50, // 초기 체력
     bonusHealth: 0, //스킬로 인해 추가 체력
@@ -382,7 +404,7 @@ function resetGameCompletely() {
     governance: 1,
     skills: [],         // 스킬도 초기화
     inventory: [],
-    location: "왕국 서부", // 초기 위치
+    location: "왕국 서부 평야", // 초기 위치
     isMoving: false,
     health: 50,
     bonusHealth: 0,
@@ -522,7 +544,7 @@ function resetGameExceptSkills() {
     governance: 1,
     skills: savedSkills,
     inventory: [],
-    location: "왕국 서부",    // [추가] 위치 초기화
+    location: "왕국 서부 평야",    // [추가] 위치 초기화
     isMoving: false,     // [추가] 이동 상태 초기화
     health: 50,
     money: 0
