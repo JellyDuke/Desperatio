@@ -2572,6 +2572,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const checkBtn = document.querySelector('.check-btn');
   const cancelBtn = document.querySelector('.cancel-btn');
 
+  console.log('sellAllBtn:', sellAllBtn);
+  console.log('checkAllSellContainer:', checkAllSellContainer);
+  console.log('checkBtn:', checkBtn);
+  console.log('cancelBtn:', cancelBtn);
+
   if (sellAllBtn && checkAllSellContainer && checkBtn && cancelBtn) {
     // .sell-all-btn 클릭 시, 확인 UI 보여주기
     sellAllBtn.addEventListener('click', (e) => {
