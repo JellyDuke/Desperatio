@@ -1819,17 +1819,27 @@ function renderSkillShop() {
   const skillListElem = document.querySelector(".shop-skill-sell-list");
   skillListElem.innerHTML = "";
 
+  // 등급에 따른 색상 매핑
+  const rarityColorMapping = {
+    "common": "#ffffff",    // 기본 흰색
+    "rare": "#4fc3f7",      // 희귀: 연한 파란색
+    "epic": "#ba68c8",      // 에픽: 보라색
+    "legendary": "#ffb74d"  // 전설: 주황색
+  };
+
   const skillList = JSON.parse(localStorage.getItem("todaySkillList")) || [];
 
   skillList.forEach(skill => {
+    const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#ffffff";
+
     const skillElem = document.createElement("div");
     skillElem.classList.add("skill-sell-list");
 
     skillElem.innerHTML = `
       <div class="shop-skill-txt">
-        <div class= "skill-flex-box">
-          <div class="skill-name">${skill.name}</div>
-          <div class="skill-rarity">${skill.rarity}</div>
+        <div class="skill-flex-box">
+          <div class="skill-name" style="color: ${rarityColor};">${skill.name}</div>
+          <div class="skill-rarity" style="color: ${rarityColor};">${skill.rarity}</div>
         </div>
         <div class="skill-description">${skill.description}</div>
         <div class="skill-flex-box-wrap">
@@ -1851,10 +1861,10 @@ function renderSkillShop() {
     skillListElem.appendChild(skillElem);
   });
 
-  
   // 버튼 이벤트 연결
   setSkillBuyButtonEvents();  
 }
+
 
 function setSkillBuyButtonEvents() {
   document.querySelectorAll(".skill-buy-btn").forEach(btn => {
