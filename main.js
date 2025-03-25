@@ -1764,7 +1764,7 @@ function renderSkillShop() {
     skillElem.classList.add("shop-skill-txt");
 
     skillElem.innerHTML = `
-      <div class="skill-flex-box">
+      <div class="shop-skill-txt">
         <div class="skill-name">${skill.name}</div>
         <div class="skill-rarity">${skill.rarity}</div>
         <div class="skill-description">${skill.description}</div>
@@ -1781,8 +1781,8 @@ function renderSkillShop() {
         <div class="skill-flex-box-wrap">
           <div>가격:</div><div class="skill-price">${skill.todayPrice?.toLocaleString() || skill.basePrice.toLocaleString()}</div>
         </div>
-        <button class="skill-buy-btn" data-skill="${skill.name}">구매</button>
       </div>
+      <button class="skill-buy-btn" data-skill="${skill.name}">구매</button>
     `;
 
     skillListElem.appendChild(skillElem);
