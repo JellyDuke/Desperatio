@@ -1783,7 +1783,7 @@ function renderSkillShop() {
           <div>가격:</div><div class="skill-price">${skill.todayPrice?.toLocaleString() || skill.basePrice.toLocaleString()}</div>
         </div>
       </div>
-      <button class="skill-buy-btn" data-skill="${skill.name}">구매</button>
+      <button class="skill-buy-btn price" data-skill="${skill.name}">구매</button>
     `;
 
     skillListElem.appendChild(skillElem);
