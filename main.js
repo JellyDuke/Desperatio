@@ -1446,6 +1446,18 @@ function playNarrativeSteps(monster, container, onComplete) {
   nextStep();
 }
 
+function calculateDamage(attacker) {
+  const baseAttack = 10;
+  const strengthBonus = attacker.militaryLevel * 2;
+  const randomFactor = Math.random() * 0.3 + 0.85; // 0.85 ~ 1.15
+  // 만약 attacker에 critChance가 없으면 기본 10% 확률 사용
+  const critChance = (attacker.critChance !== undefined ? attacker.critChance : 0.1);
+  const isCrit = Math.random() < critChance;
+  const critMultiplier = isCrit ? 2 : 1;
+  const damage = Math.floor((baseAttack + strengthBonus) * randomFactor * critMultiplier);
+  return { damage, isCrit };
+}
+
 /**
  * 전투 라운드를 진행하는 함수
  * 플레이어와 몬스터가 동시에 공격을 주고받으며, 한 라운드마다 체력을 갱신합니다.
@@ -1457,33 +1469,31 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
   let roundNumber = 1;
 
   function roundFight() {
-    // 한 라운드 시작 메시지
+    // 라운드 시작 메시지 출력
     const roundMsg = document.createElement('div');
     roundMsg.textContent = `=== Round ${roundNumber} ===`;
     msgContainer.appendChild(roundMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-    // 플레이어의 공격 데미지: 무력레벨 당 3~7의 랜덤 값
-    const playerDamage = gameState.player.militaryLevel * (Math.floor(Math.random() * 5) + 3);
+
+    // 플레이어의 공격 (새 데미지 공식 적용)
+    const { damage: playerDamage, isCrit: playerCrit } = calculateDamage(gameState.player);
     const playerAttackMsg = document.createElement('div');
-    playerAttackMsg.textContent = `플레이어가 ${playerDamage}의 데미지를 입혔습니다.`;
+    playerAttackMsg.textContent = `플레이어가 ${playerCrit ? "치명타로 " : ""}${playerDamage}의 데미지를 입혔습니다.`;
     msgContainer.appendChild(playerAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
-
     currentMonsterHealth -= playerDamage;
 
-    // 몬스터의 공격 데미지: 몬스터 무력레벨 당 3~7의 랜덤 값
-    const monsterDamage = monster.militaryLevel * (Math.floor(Math.random() * 5) + 3);
+    // 몬스터의 공격 (몬스터에도 기본 10% 치명타 확률 적용)
+    const { damage: monsterDamage, isCrit: monsterCrit } = calculateDamage(monster);
     gameState.player.health -= monsterDamage;
-
-    // 체력을 음수가 되지 않도록 0으로 클램프(clamp)
     if (gameState.player.health < 0) {
       gameState.player.health = 0;
     }
-
     const monsterAttackMsg = document.createElement('div');
-    monsterAttackMsg.textContent = `몬스터가 ${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
+    monsterAttackMsg.textContent = `몬스터가 ${monsterCrit ? "치명타로 " : ""}${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
+
     // 전투 결과 판정
     if (currentMonsterHealth <= 0) {
       const victoryMsg = document.createElement('div');
@@ -1491,9 +1501,8 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
       msgContainer.appendChild(victoryMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
 
-      // 올바른 monsterKey를 전달하여 전리품과 경험치를 지급
+      // 전리품 및 경험치 지급 처리
       onMonsterDefeated(monsterKey, msgContainer);
-
       if (typeof finalCallback === 'function') {
         finalCallback();
       }
@@ -1519,6 +1528,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
 
   roundFight();
 }
+
 //경험치
 /**
  * 레벨별 요구 경험치 공식 (원하는 대로 수정 가능)
