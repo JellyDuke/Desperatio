@@ -1821,7 +1821,7 @@ function renderSkillShop() {
 
   // 등급에 따른 색상 매핑
   const rarityColorMapping = {
-    "common": "#ffffff",    // 기본 흰색
+    "common": "#d3d3d3",    // 기본 흰색
     "rare": "#4fc3f7",      // 희귀: 연한 파란색
     "epic": "#ba68c8",      // 에픽: 보라색
     "legendary": "#ffb74d"  // 전설: 주황색
