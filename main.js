@@ -1754,7 +1754,7 @@ function checkSkillUnlockCondition(condition) {
   }
 }
 function renderSkillShop() {
-  const skillListElem = document.querySelector(".shop-item-sell-list");
+  const skillListElem = document.querySelector(".shop-skill-sell-list");
   skillListElem.innerHTML = "";
 
   const skillList = JSON.parse(localStorage.getItem("todaySkillList")) || [];
