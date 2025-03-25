@@ -1459,7 +1459,12 @@ function calculateDamage(attacker) {
 }
 
 // 스킬 효과 적용 함수 (공격 데미지 보정)
-function applyPlayerAttackSkills(baseDamage) {
+function applyPlayerAttackSkills(baseDamage, msgContainer) {
+  // msgContainer가 전달되지 않으면 .kingdom-message-combat를 기본값으로 사용
+  if (!msgContainer) {
+    msgContainer = document.querySelector('.kingdom-message-combat');
+  }
+  
   let bonusDamage = 0;
 
   // 플레이어가 보유한 모든 스킬 순회
@@ -1472,11 +1477,13 @@ function applyPlayerAttackSkills(baseDamage) {
       if (Math.random() < skill.triggerChance) {
         const dmgBonus = skill.effects[1]?.damageBonus || 0;
         bonusDamage += dmgBonus;
-        // 전투 메시지에 스킬 발동 기록
+        // 전투 메시지에 스킬 발동 기록: msgContainer에 메시지 추가
         const skillMsg = document.createElement('div');
         skillMsg.textContent = `[스킬 발동] ${skill.name}이(가) 발동하여 ${dmgBonus}의 추가 데미지를 부여합니다.`;
-        // 예를 들어, msgContainer가 전투 로그 컨테이너라면 추가
-        // msgContainer.appendChild(skillMsg);
+        if (msgContainer) {
+          msgContainer.appendChild(skillMsg);
+          msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
         console.log(skillMsg.textContent);
       }
     }
@@ -1846,7 +1853,7 @@ function renderSkillShop() {
 
   
   // 버튼 이벤트 연결
-  setSkillBuyButtonEvents();
+  setSkillBuyButtonEvents();  
 }
 
 function setSkillBuyButtonEvents() {
