@@ -241,7 +241,7 @@ const monsterData = {
     victoryMessage: "개구리를 무찔렀습니다!",
     militaryLevel: 2,
     loot: [
-      { item: "개구리의 ", basePrice: 3, variance: 10, dropChance: 0.9 },
+      { item: "개구리 다리", basePrice: 3, variance: 10, dropChance: 0.9 },
     ],
     experience: 50,
     narrativeSteps: [
