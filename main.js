@@ -251,6 +251,47 @@ const monsterData = {
       "개구리의 혀가 번개처럼 튀어나와 공격합니다!",
       "당신은 뒹굴며, 개구리의 움직임에 대비합니다!"
     ]
+  },
+  beetle: {
+    name: "갑옷벌레",
+    discoveryMessage: "갑옷벌레가 다가오고 있습니다! 전투를 시작합니다...",
+    maxDelay: 20000,
+    health: 35,
+    deathMessage: "단단한 껍질에 막혀 패배했습니다...",
+    victoryMessage: "갑옷벌레의 껍질을 부쉈습니다!",
+    militaryLevel: 3,
+    loot: [
+      { item: "딱정벌레 껍질", basePrice: 18, variance: 8, dropChance: 0.6 }
+    ],
+    experience: 25,
+    narrativeSteps: [
+      "딱딱한 껍질 소리가 들려옵니다...",
+      "커다란 갑옷벌레가 땅을 기며 다가옵니다...",
+      "단단한 등껍질이 햇빛을 반사합니다...",
+      "벌레가 머리를 숙이며 돌진합니다!",
+      "당신은 약점을 노려 강하게 내려칩니다!"
+    ]
+  },
+  spider: {
+    name: "숲거미",
+    discoveryMessage: "숲의 거미줄 사이에서 거대한 거미가 모습을 드러냅니다...",
+    maxDelay: 25000,
+    health: 28,
+    deathMessage: "거미줄에 갇혀 무기력하게 당했습니다...",
+    victoryMessage: "거미를 베어냈습니다!",
+    militaryLevel: 3,
+    loot: [
+      { item: "끈적한 거미줄", basePrice: 12, variance: 6, dropChance: 0.7 },
+      { item: "거미 송곳니", basePrice: 20, variance: 10, dropChance: 0.2 }
+    ],
+    experience: 35,
+    narrativeSteps: [
+      "끈적한 거미줄이 발에 감깁니다...",
+      "어둠 속에서 붉은 눈동자가 빛납니다...",
+      "거미가 조용히, 그러나 빠르게 접근합니다...",
+      "날카로운 다리와 송곳니가 당신을 노립니다!",
+      "당신은 날렵하게 몸을 돌려 반격합니다!"
+    ]
   }
   // 필요할 때마다 더 추가...
 };
