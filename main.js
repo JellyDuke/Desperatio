@@ -1510,7 +1510,49 @@ function applyPassiveHealing() {
   gameState.player.health += totalHealing;
   return totalHealing;
 }
+// 출혈 효과를 매 턴 적용하는 함수
+function applyBleedEffect(target, msgContainer) {
+  if (target.bleed && target.bleed.rounds > 0) {
+    // 출혈 데미지를 대상에게 적용
+    target.hp -= target.bleed.damage;
+    if (target.hp < 0) target.hp = 0;
 
+    // 메시지 출력
+    const bleedMsg = document.createElement('div');
+    bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받았습니다. 남은 HP: ${target.hp}`;
+    if (msgContainer) {
+      msgContainer.appendChild(bleedMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+    
+    // 남은 효과 턴 감소
+    target.bleed.rounds--;
+    if (target.bleed.rounds <= 0) {
+      delete target.bleed; // 효과 종료 시 제거
+    }
+  }
+}
+// 예시: 강타 스킬과 별도로 "출혈" 스킬 발동 처리 (단, 효과 수치는 예시)
+function tryApplyBleedSkill(monster, msgContainer) {
+  const bleedSkill = storeSkillDB.find(s => s.name === "출혈");
+  if (!bleedSkill) return;
+  
+  // 출혈 스킬이 random인 경우 triggerChance에 따라 발동
+  if (bleedSkill.activation === "random" && Math.random() < bleedSkill.triggerChance) {
+    // 예를 들어, 레벨 1일 때 bleedDamage: 3, 지속 3턴 (이 값은 데이터에 맞게 조정)
+    const bleedDamage = bleedSkill.effects[1]?.bleedDamage || 0;
+    // bleed 효과가 이미 적용되어 있다면 지속 턴을 갱신하거나 중첩 방식으로 처리할 수 있습니다.
+    monster.bleed = { damage: bleedDamage, rounds: 3 };
+    
+    const skillMsg = document.createElement('div');
+    skillMsg.textContent = `[스킬 발동] ${bleedSkill.name}이(가) 발동하여 ${bleedDamage}의 추가 피해를 3턴 동안 부여합니다.`;
+    if (msgContainer) {
+      msgContainer.appendChild(skillMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+    console.log(skillMsg.textContent);
+  }
+}
 /**
  * 전투 라운드를 진행하는 함수
  * 플레이어와 몬스터가 동시에 공격을 주고받으며, 한 라운드마다 체력을 갱신합니다.
@@ -1522,45 +1564,37 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
   let roundNumber = 1;
 
   function roundFight() {
-    // 라운드 시작 메시지 출력
     const roundMsg = document.createElement('div');
     roundMsg.textContent = `=== Round ${roundNumber} ===`;
     msgContainer.appendChild(roundMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    // 패시브 회복 스킬 적용 (매 라운드 시작 시)
-    const healed = applyPassiveHealing();
-    if (healed > 0) {
-      const healMsg = document.createElement('div');
-      healMsg.textContent = `플레이어가 ${healed}의 체력을 회복했습니다. (패시브 회복)`;
-      msgContainer.appendChild(healMsg);
-      msgContainer.scrollTop = msgContainer.scrollHeight;
-      updateHealthBar();
-    }
+    // 매 라운드 시작 시, 출혈 효과 적용 (있다면)
+    applyBleedEffect(monster, msgContainer);
 
-    // 플레이어 공격: 기본 데미지 계산 후 스킬 효과 적용
+    // 플레이어 공격
     let { damage: basePlayerDamage, isCrit: playerCrit } = calculateDamage(gameState.player);
-    let finalPlayerDamage = applyPlayerAttackSkills(basePlayerDamage);
-
+    // 플레이어 공격 시 "출혈" 스킬 발동 시도 (단, 조건에 따라 한 번만 적용)
+    tryApplyBleedSkill(monster, msgContainer);
+    // 스킬 보정이 적용된 최종 데미지 계산
+    let finalPlayerDamage = applyPlayerAttackSkills(basePlayerDamage, msgContainer);
     const playerAttackMsg = document.createElement('div');
     playerAttackMsg.textContent = `플레이어가 ${playerCrit ? "치명타로 " : ""}${finalPlayerDamage}의 데미지를 입혔습니다.`;
     msgContainer.appendChild(playerAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
     currentMonsterHealth -= finalPlayerDamage;
 
-    // 몬스터 공격 (기존 데미지 공식 사용)
+    // 몬스터 공격
     const { damage: monsterDamage, isCrit: monsterCrit } = calculateDamage(monster);
     gameState.player.health -= monsterDamage;
-    if (gameState.player.health < 0) {
-      gameState.player.health = 0;
-    }
+    if (gameState.player.health < 0) gameState.player.health = 0;
     const monsterAttackMsg = document.createElement('div');
     monsterAttackMsg.textContent = `몬스터가 ${monsterCrit ? "치명타로 " : ""}${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
     updateHealthBar();
 
-    // 전투 결과 판정
+    // 전투 종료 판정
     if (currentMonsterHealth <= 0) {
       const victoryMsg = document.createElement('div');
       victoryMsg.textContent = monster.victoryMessage;
@@ -1570,7 +1604,6 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
       if (typeof finalCallback === 'function') finalCallback();
       return;
     }
-
     if (gameState.player.health <= 0) {
       const defeatMsg = document.createElement('div');
       defeatMsg.textContent = "전투 도중 사망했습니다...";
@@ -1583,11 +1616,9 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
 
     roundNumber++;
     setTimeout(roundFight, 1500);
-  } 
-
+  }
   roundFight();
 }
-
 
 //경험치
 /**
