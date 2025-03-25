@@ -2570,22 +2570,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const sellAllBtn = document.querySelector('.sell-all-btn');
   const checkAllSellContainer = document.querySelector('.check-all-sell');
   const checkBtn = document.querySelector('.check-btn');
-  
-  if (sellAllBtn && checkAllSellContainer && checkBtn) {
-    // sell-all-btn 클릭 시, 확인 UI 보여주기
+  const cancelBtn = document.querySelector('.cancel-btn');
+
+  if (sellAllBtn && checkAllSellContainer && checkBtn && cancelBtn) {
+    // .sell-all-btn 클릭 시, 확인 UI 보여주기
     sellAllBtn.addEventListener('click', (e) => {
       e.preventDefault();
       checkAllSellContainer.style.display = 'flex';
     });
     
-    // check-btn 클릭 시, 실제 판매 실행 후 확인 UI 숨기기
+    // .check-btn 클릭 시, 실제 판매 실행 후 확인 UI 숨기기
     checkBtn.addEventListener('click', (e) => {
       e.preventDefault();
       sellAllItems();
       checkAllSellContainer.style.display = 'none';
     });
+    
+    // .cancel-btn 클릭 시, 확인 UI 숨기기
+    cancelBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      checkAllSellContainer.style.display = 'none';
+    });
   }
 });
+
 let selectedSellItem = null; // 현재 판매할 아이템을 저장할 전역 변수
 
 
