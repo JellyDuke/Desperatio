@@ -1819,25 +1819,24 @@ function renderSkillShop() {
   const skillListElem = document.querySelector(".shop-skill-sell-list");
   skillListElem.innerHTML = "";
 
-  // 등급에 따른 색상 매핑 (기본은 연한 회색)
+  // 등급에 따른 색상 매핑 (기본(common)은 연한 회색)
   const rarityColorMapping = {
-    "common": "#d3d3d3",    // 기본: 연한 회색
-    "rare": "#4fc3f7",      // 희귀: 연한 파란색
-    "epic": "#ba68c8",      // 에픽: 보라색
-    "legendary": "#ffb74d"  // 전설: 주황색
+    "common": "#d3d3d3",    // 연한 회색
+    "rare": "#4fc3f7",      // 연한 파란색
+    "epic": "#ba68c8",      // 보라색
+    "legendary": "#ffb74d"  // 주황색
   };
 
-  const skillList = JSON.parse(localStorage.getItem("todaySkillList")) || [];
-
+  // 모든 스킬을 표시하도록 storeSkillDB 전체를 사용합니다.
+  const skillList = storeSkillDB; 
   skillList.forEach(skill => {
     const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#d3d3d3";
-    // 스킬 해금 여부를 확인합니다.
+    // 해금 여부는 checkSkillUnlockCondition 함수로 판단 (true이면 해금된 것)
     const unlocked = checkSkillUnlockCondition(skill.unlockCondition);
-    
+
     const skillElem = document.createElement("div");
     skillElem.classList.add("skill-sell-list");
 
-    // 스킬 정보 출력 HTML
     let innerHTML = `
       <div class="shop-skill-txt">
         <div class="skill-flex-box">
@@ -1860,7 +1859,7 @@ function renderSkillShop() {
       </div>
     `;
 
-    // 해금된 스킬은 구매 버튼, 해금되지 않은 스킬은 .skill-unlock div 추가
+    // 해금되었으면 구매 버튼, 해금되지 않은 경우에는 .skill-unlock div 추가
     if (unlocked) {
       innerHTML += `<button class="skill-buy-btn" data-skill="${skill.name}">구매</button>`;
     } else {
