@@ -1651,14 +1651,16 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     const { damage: monsterDamage, isCrit: monsterCrit } = calculateDamage(monster);
     gameState.player.health -= monsterDamage;
     if (gameState.player.health < 0) gameState.player.health = 0;
+    
     const monsterAttackMsg = document.createElement('div');
     monsterAttackMsg.textContent = `몬스터가 ${monsterCrit ? "치명타로 " : ""}${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
     updateHealthBar();
-
+    
     // 전투 종료 판정
     if (currentMonsterHealth <= 0) {
+      console.log("몬스터 체력 0 이하 → 승리 처리");
       const victoryMsg = document.createElement('div');
       victoryMsg.textContent = monster.victoryMessage;
       msgContainer.appendChild(victoryMsg);
@@ -1668,6 +1670,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
       return;
     }
     if (gameState.player.health <= 0) {
+      console.log("플레이어 체력 0 이하 → 사망 처리");
       const defeatMsg = document.createElement('div');
       defeatMsg.textContent = "전투 도중 사망했습니다...";
       msgContainer.appendChild(defeatMsg);
