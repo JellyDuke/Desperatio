@@ -2398,7 +2398,7 @@ function refreshShopItemsForNewDay() {
     }
 
     // 💡 회귀: 기준 가격에서 멀수록 변동 폭 약화
-    const regressionFactor = 1 + Math.abs(originalBase - basePrice) / originalBase;
+    const regressionFactor = 1 + 0.25 + Math.abs(originalBase - basePrice) / originalBase;
     const change = Math.floor(basePrice * rate * direction * eventFluct * volatility / regressionFactor);
     item.basePrice = Math.max(24, basePrice + change);
 
