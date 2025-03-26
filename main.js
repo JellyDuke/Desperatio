@@ -2347,7 +2347,7 @@ function refreshShopItemsForNewDay() {
     const basePrice = item.basePrice;
     const originalBase = item.originalBasePrice || basePrice;
 
-    let direction = Math.random() < 0.5 ? -1 : 1;
+    let direction = Math.random() < 0.48 ? -1 : 1;
     let eventFluct = 1;
     let eventText = '';
     let isEvent = false;
@@ -2355,7 +2355,7 @@ function refreshShopItemsForNewDay() {
     // 💥 저가 반등 확률 및 상승폭 강화
     const reboundThreshold = 50;
     if (basePrice <= reboundThreshold) {
-      const reboundChance = Math.min(1, Math.max(0.6, 1 - basePrice / 100)); // 가격 낮을수록 상승확률 증가
+      const reboundChance = Math.min(1, Math.max(0.9, 1 - basePrice / 100)); // 가격 낮을수록 상승확률 증가
       if (Math.random() < reboundChance) {
         direction = 1;
       }
