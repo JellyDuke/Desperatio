@@ -1516,7 +1516,7 @@ function upgradeSkill(skillName) {
 }
 
 
-function  renderOwnedSkills() {
+function renderOwnedSkills() {
   // .card-list 요소를 찾습니다.
   const cardList = document.querySelector('.card-list-skill');
   if (!cardList) return;
