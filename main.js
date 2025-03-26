@@ -1577,12 +1577,12 @@ function applyPassiveHealing() {
 function applyBleedEffect(target, msgContainer) {
   if (target.bleed && target.bleed.rounds > 0) {
     // 출혈 데미지를 대상에게 적용
-    target.hp -= target.bleed.damage;
-    if (target.hp < 0) target.hp = 0;
+    target.health -= target.bleed.damage;
+    if (target.health < 0) target.health = 0;
 
     // 메시지 출력
     const bleedMsg = document.createElement('div');
-    bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받았습니다. 남은 HP: ${target.hp}`;
+    bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받았습니다. 남은 체력: ${target.health}`;
     if (msgContainer) {
       msgContainer.appendChild(bleedMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -1651,7 +1651,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     const { damage: monsterDamage, isCrit: monsterCrit } = calculateDamage(monster);
     gameState.player.health -= monsterDamage;
     if (gameState.player.health < 0) gameState.player.health = 0;
-    
+
     const monsterAttackMsg = document.createElement('div');
     monsterAttackMsg.textContent = `몬스터가 ${monsterCrit ? "치명타로 " : ""}${monsterDamage}의 데미지를 주었습니다. 남은 플레이어 체력: ${gameState.player.health}`;
     msgContainer.appendChild(monsterAttackMsg);
