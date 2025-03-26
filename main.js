@@ -1402,27 +1402,37 @@ function renderOwnedSkills() {
     legendary: "#ffb74d"     // 주황색
   };
 
-  // 플레이어가 보유한 스킬 목록 (예: ["강타", ...])
-  // gameState.player.skills 배열에 스킬 이름이 저장되어 있다고 가정
+  // 플레이어가 보유한 스킬 목록 (gameState.player.skills 배열에 스킬 이름이 저장되어 있다고 가정)
   gameState.player.skills.forEach(skillName => {
     // storeSkillDB에서 해당 스킬 정보를 찾습니다.
     const skillData = storeSkillDB.find(s => s.name === skillName);
-    if (!skillData) return; // 데이터가 없으면 건너뜁니다.
+    if (!skillData) return;
 
-    // 스킬 카드 최상위 컨테이너: .skill-wrap 생성
+    // 스킬 카드 최상위 컨테이너: .card-wrap 생성
     const cardWrap = document.createElement('div');
     cardWrap.classList.add('skill-wrap');
 
-    // 스킬 등급을 소문자로 변환하여 색상을 결정합니다.
+    // 스킬 등급 색상 결정 (소문자로 변환)
     const rarityKey = (skillData.rarity || "common").toLowerCase();
     const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
 
-    // 스킬 효과(현재 1레벨 효과)를 문자열로 변환 (원하는 방식으로 포매팅 가능)
-    const effectText = Object.entries(skillData.effects[1] || {})
+    // 현재 효과 (1레벨) 텍스트
+    const currentEffect = skillData.effects[1] || {};
+    const effectText = Object.entries(currentEffect)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
 
-    // 내부 HTML 구성 (예: 스킬 이름, 등급, 설명, 필요 레벨, 발동 방식, 발동 확률, 효과)
+    // 다음 강화 시 효과 (레벨 2) 텍스트, 만약 있다면
+    let nextUpgradeText = "";
+    if (skillData.effects[2]) {
+      const nextEffect = skillData.effects[2];
+      nextUpgradeText = Object.entries(nextEffect)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ");
+      nextUpgradeText = ` / 다음 강화: ${nextUpgradeText}`;
+    }
+
+    // 내부 HTML 구성: 스킬 이름, 등급, 상세 설명, 필요 레벨, 발동 방식, 발동 확률, 효과 및 다음 강화 효과
     cardWrap.innerHTML = `
         <div class="skill-title" style="color: ${rarityColor};">
           ${skillData.name} <span class="skill-rarity" style="color: ${rarityColor};">(${skillData.rarity})</span>
@@ -1432,13 +1442,14 @@ function renderOwnedSkills() {
           <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
           <p class="skill-activation">발동 방식: ${skillData.activation}</p>
           <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
-          <p class="skill-effects">${effectText}</p>
+          <p class="skill-effects">효과: ${effectText}${nextUpgradeText}</p>
         </div>
     `;
 
     cardList.appendChild(cardWrap);
   });
 }
+
 
 
 
@@ -1680,10 +1691,10 @@ function applyBleedEffect(target, msgContainer) {
 }
 
 // 출혈 스킬 발동을 시도하는 함수 (플레이어 공격 시점에 호출)
-function tryApplyBleedSkill(monster, msgContainer) {
+function tryApplyBleedSkill(monster, msgContainer) {  
   // 플레이어가 "출혈" 스킬을 가지고 있는지 확인
   if (!gameState.player.skills.includes("출혈")) return;
-  
+
   const bleedSkill = storeSkillDB.find(s => s.name === "출혈");
   if (!bleedSkill) return;
 
