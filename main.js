@@ -1388,6 +1388,114 @@ function initLocationList() {
 
 //스킬
 
+function renderEnforceList() {
+  const enforceListElem = document.querySelector('.card-enforce-list');
+  if (!enforceListElem) return;
+  enforceListElem.innerHTML = ''; // 기존 내용 초기화
+
+  // 플레이어가 보유한 스킬은 객체 배열로 가정: [{ name: "강타", level: 1 }, ...]
+  // storeSkillDB에 있는 해당 스킬 정보를 참고하여, 최대 강화 단계보다 낮은 스킬만 표시합니다.
+  gameState.player.skills.forEach(skill => {
+    // storeSkillDB에서 해당 스킬 데이터를 찾습니다.
+    const skillData = storeSkillDB.find(s => s.name === skill.name);
+    if (!skillData) return;
+
+    // 최대 강화 단계는 effects 객체의 키 수 (예: {1: {...}, 2: {...}, 3: {...}}이면 최대는 3)
+    const maxLevel = Object.keys(skillData.effects).length;
+    if (skill.level >= maxLevel) {
+      // 이미 최대 강화라면 표시하지 않습니다.
+      return;
+    }
+
+    // .card-enforce-wrap 요소 생성 (각 스킬 카드)
+    const cardWrap = document.createElement('div');
+    cardWrap.classList.add('card-enforce-wrap');
+
+    // 스킬 이름과 현재 강화 단계 표시 (예: "강타 (강화 단계: 1)")
+    const skillInfo = document.createElement('div');
+    skillInfo.classList.add('skill-info');
+    // 스킬 등급에 따른 색상 매핑 (예시)
+    const rarityColorMapping = {
+      common: "#d3d3d3",      // 기본: 연한 회색
+      rare: "#4fc3f7",        // 희귀: 연한 파란색
+      epic: "#ba68c8",        // 에픽: 보라색
+      legendary: "#ffb74d"     // 전설: 주황색
+    };
+    const rarityKey = (skillData.rarity || "common").toLowerCase();
+    const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
+
+    // 스킬 이름과 강화 단계에 등급별 색상 적용
+    skillInfo.innerHTML = `<strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skill.level})`;
+
+    // 강화 버튼 생성
+    const enforceBtn = document.createElement('button');
+    enforceBtn.classList.add('enforce-btn');
+    enforceBtn.textContent = '강화하기';
+    // data-skill 속성에 스킬 이름을 저장 (강화 로직에서 참조)
+    enforceBtn.dataset.skill = skillData.name;
+
+    // 강화 버튼 클릭 시, upgradeSkill 함수를 호출 (나중에 구현)
+    enforceBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      upgradeSkill(skillData.name);
+    });
+
+    // 카드에 스킬 정보와 버튼 추가
+    cardWrap.appendChild(skillInfo);
+    cardWrap.appendChild(enforceBtn);
+
+    // 생성된 카드 요소를 .card-enforce-list에 추가
+    enforceListElem.appendChild(cardWrap);
+  });
+}
+
+function upgradeSkill(skillName) {
+  // 플레이어 보유 스킬은 { name, level } 형태로 저장되어 있어야 합니다.
+  const playerSkill = gameState.player.skills.find(s => s.name === skillName);
+  if (!playerSkill) {
+    alert("해당 스킬을 보유하고 있지 않습니다.");
+    return;
+  }
+  
+  // storeSkillDB에서 스킬 데이터를 찾습니다.
+  const skillData = storeSkillDB.find(s => s.name === skillName);
+  if (!skillData) {
+    alert("스킬 데이터가 존재하지 않습니다.");
+    return;
+  }
+  
+  // 최대 강화 단계는 effects 객체의 키 수로 판단합니다.
+  const currentLevel = playerSkill.level;
+  const maxLevel = Object.keys(skillData.effects).length;
+  
+  if (currentLevel >= maxLevel) {
+    alert("이미 최대 강화 단계입니다.");
+    return;
+  }
+  
+  // (옵션) 강화 비용 처리 로직 추가 가능
+  
+  // 스킬 강화: 현재 강화 단계 1 증가
+  playerSkill.level++;
+  
+  // 강화 메시지를 전투 로그 영역에 출력
+  const msgContainer = document.querySelector('.kingdom-message-combat');
+  if (msgContainer) {
+    const upgradeMsg = document.createElement('div');
+    upgradeMsg.textContent = `${skillName} 스킬이 강화되었습니다! 현재 강화 단계: ${playerSkill.level}`;
+    upgradeMsg.style.color = "#32cd32"; // 강화 메시지는 연두색(Lime Green)으로 표시
+    msgContainer.appendChild(upgradeMsg);
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+  }
+  
+  console.log(`${skillName} upgraded to level ${playerSkill.level}`);
+  
+  // UI 업데이트: 보유 스킬 목록과 강화 가능 목록 갱신
+  renderEnforceList();
+  renderOwnedSkills();
+}
+
+
 function renderOwnedSkills() {
   // .card-list 요소를 찾습니다.
   const cardList = document.querySelector('.card-list-skill');
@@ -1448,7 +1556,9 @@ function renderOwnedSkills() {
     `;
 
     cardList.appendChild(cardWrap);
+    
   });
+  renderEnforceList()
 }
 
 
@@ -1996,6 +2106,7 @@ function refreshSkillShopForNewDay() {
   localStorage.setItem("todaySkillList", JSON.stringify(todaySkillList));
   renderSkillShop();
   renderOwnedSkills();
+  renderEnforceList()
 }
 
 function checkSkillUnlockCondition(condition) {
@@ -2074,6 +2185,8 @@ function renderSkillShop() {
 
   // 구매 버튼 이벤트 연결 (해금되지 않은 스킬은 버튼이 없으므로 무시됨)
   setSkillBuyButtonEvents();
+  renderOwnedSkills();
+  renderEnforceList()
 }
 
 function setSkillBuyButtonEvents() {
