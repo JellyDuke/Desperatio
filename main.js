@@ -2201,7 +2201,12 @@ function renderSkillShop() {
   renderEnforceList()
   
 }
-
+function updateTodaySkillList() {
+  // storeSkillDB에 있는 모든 스킬 정보를 오늘의 스킬 목록으로 저장합니다.
+  // (여기서는 가격 등 랜덤 요소는 storeSkillDB를 기준으로 이미 생성된 값을 그대로 사용한다고 가정)
+  localStorage.setItem("todaySkillList", JSON.stringify(storeSkillDB));
+  renderSkillShop();
+}
 function setSkillBuyButtonEvents() {
   document.querySelectorAll(".skill-buy-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -2229,6 +2234,8 @@ function setSkillBuyButtonEvents() {
       gameState.player.money -= skill.todayPrice;
       gameState.player.skills.push({ name: skillName, level: 1 });
       alert(`[${skill.name}] 스킬을 구매했습니다!`);
+
+      updateTodaySkillList() 
       renderSkillShop();
       updateUserStatus();
       saveGameState();
