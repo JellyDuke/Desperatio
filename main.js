@@ -243,7 +243,7 @@ const monsterData = {
     loot: [
       { item: "개구리 다리", basePrice: 3, variance: 10, dropChance: 0.9 },
     ],
-    experience: 50,
+    experience: 17,
     narrativeSteps: [
       "풀숲이 바스락거립니다... 무언가가 다가오고 있습니다.",
       "촉촉한 발소리와 함께 평야 개구리가 모습을 드러냅니다!",
@@ -1602,9 +1602,10 @@ function applyBleedEffect(target, msgContainer) {
     target.health -= target.bleed.damage;
     if (target.health < 0) target.health = 0;
 
-    // 메시지 출력
+    // 메시지 출력 - bleed 효과 메시지에 색상 적용 (오렌지레드)
     const bleedMsg = document.createElement('div');
     bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받습니다. 몬스터의 남은 체력: ${target.health}`;
+    bleedMsg.style.color = "#ff4500"; // 오렌지레드
     if (msgContainer) {
       msgContainer.appendChild(bleedMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -1617,20 +1618,23 @@ function applyBleedEffect(target, msgContainer) {
     }
   }
 }
-// 예시: 강타 스킬과 별도로 "출혈" 스킬 발동 처리 (단, 효과 수치는 예시)
+
+// 출혈 스킬 발동을 시도하는 함수 (플레이어 공격 시점에 호출)
 function tryApplyBleedSkill(monster, msgContainer) {
   const bleedSkill = storeSkillDB.find(s => s.name === "출혈");
   if (!bleedSkill) return;
   
   // 출혈 스킬이 random인 경우 triggerChance에 따라 발동
   if (bleedSkill.activation === "random" && Math.random() < bleedSkill.triggerChance) {
-    // 예를 들어, 레벨 1일 때 bleedDamage: 3, 지속 3턴 (이 값은 데이터에 맞게 조정)
+    // 예를 들어, 레벨 1일 때 bleedDamage: 3, 지속 3턴 (값은 데이터에 따라 조정)
     const bleedDamage = bleedSkill.effects[1]?.bleedDamage || 0;
-    // bleed 효과가 이미 적용되어 있다면 지속 턴을 갱신하거나 중첩 방식으로 처리할 수 있습니다.
+    // bleed 효과를 부여 (이미 적용되어 있다면, 덮어쓰거나 지속 턴을 갱신하는 로직 추가 가능)
     monster.bleed = { damage: bleedDamage, rounds: 3 };
     
+    // 스킬 발동 메시지 출력 - 출혈 스킬 메시지에 색상 적용 (오렌지레드)
     const skillMsg = document.createElement('div');
     skillMsg.textContent = `[스킬 발동] ${bleedSkill.name}이(가) 발동하여 ${bleedDamage}의 추가 피해를 3턴 동안 부여합니다.`;
+    skillMsg.style.color = "#ff4500"; // 오렌지레드
     if (msgContainer) {
       msgContainer.appendChild(skillMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
