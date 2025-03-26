@@ -1409,9 +1409,9 @@ function renderOwnedSkills() {
     const skillData = storeSkillDB.find(s => s.name === skillName);
     if (!skillData) return; // 데이터가 없으면 건너뜁니다.
 
-    // 스킬 카드 최상위 컨테이너: .card-wrap 생성
+    // 스킬 카드 최상위 컨테이너: .skill-wrap 생성
     const cardWrap = document.createElement('div');
-    cardWrap.classList.add('card-wrap');
+    cardWrap.classList.add('skill-wrap');
 
     // 스킬 등급을 소문자로 변환하여 색상을 결정합니다.
     const rarityKey = (skillData.rarity || "common").toLowerCase();
@@ -1424,7 +1424,6 @@ function renderOwnedSkills() {
 
     // 내부 HTML 구성 (예: 스킬 이름, 등급, 설명, 필요 레벨, 발동 방식, 발동 확률, 효과)
     cardWrap.innerHTML = `
-      <div class="skill-wrap">
         <div class="skill-title" style="color: ${rarityColor};">
           ${skillData.name} <span class="skill-rarity" style="color: ${rarityColor};">(${skillData.rarity})</span>
         </div>
@@ -1433,9 +1432,8 @@ function renderOwnedSkills() {
           <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
           <p class="skill-activation">발동 방식: ${skillData.activation}</p>
           <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
-          <p class="skill-effects">효과: ${effectText}</p>
+          <p class="skill-effects">${effectText}</p>
         </div>
-      </div>
     `;
 
     cardList.appendChild(cardWrap);
@@ -1683,6 +1681,9 @@ function applyBleedEffect(target, msgContainer) {
 
 // 출혈 스킬 발동을 시도하는 함수 (플레이어 공격 시점에 호출)
 function tryApplyBleedSkill(monster, msgContainer) {
+  // 플레이어가 "출혈" 스킬을 가지고 있는지 확인
+  if (!gameState.player.skills.includes("출혈")) return;
+  
   const bleedSkill = storeSkillDB.find(s => s.name === "출혈");
   if (!bleedSkill) return;
 
