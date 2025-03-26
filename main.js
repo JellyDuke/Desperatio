@@ -1582,7 +1582,7 @@ function applyBleedEffect(target, msgContainer) {
 
     // 메시지 출력
     const bleedMsg = document.createElement('div');
-    bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받았습니다. 남은 체력: ${target.health}`;
+    bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받습니다. 몬스터의 남은 체력: ${target.health}`;
     if (msgContainer) {
       msgContainer.appendChild(bleedMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
