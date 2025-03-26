@@ -1439,7 +1439,7 @@ function renderEnforceList() {
 
     // .card-enforce-wrap 요소 생성 (각 스킬 카드)
     const cardWrap = document.createElement('div');
-    cardWrap.classList.add('card-enforce-wrap');
+    cardWrap.classList.add('enforce-list');
 
     // 스킬 등급에 따른 색상 결정
     const rarityKey = (skillData.rarity || "common").toLowerCase();
@@ -1449,7 +1449,7 @@ function renderEnforceList() {
     const skillInfo = document.createElement('div');
     skillInfo.classList.add('skill-info');
     // 여기서 스킬 이름과 강화 단계를 등급별 색상으로 표시
-    skillInfo.innerHTML = `<strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skillObj.level})`;
+    skillInfo.innerHTML = `<div class="card-enforce-wrap"><strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skillObj.level})</div>`;
 
     // 강화 버튼 생성
     const enforceBtn = document.createElement('button');
