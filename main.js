@@ -1389,7 +1389,7 @@ function initLocationList() {
 
 function renderOwnedSkills() {
   // .card-list 요소를 찾습니다.
-  const cardList = document.querySelector('.card-list');
+  const cardList = document.querySelector('.card-list-skill');
   if (!cardList) return;
   cardList.innerHTML = '';
 
