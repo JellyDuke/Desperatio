@@ -55,7 +55,7 @@ const storeSkillDB = [
     variance: 10000,
     appearanceChance: 1,  // 40% 확률
     activation: "passive",   // 별도 입력 없이 자동 적용 (예: 매 라운드 회복)
-    triggerChance: 1, 
+    triggerChance: 1,
     rarity: "common", //회귀도
     unlockCondition: {
       type: "defeat",     // defeat, useSkill, reachLevel 등
@@ -236,7 +236,7 @@ const monsterData = {
     name: "평야 개구리",
     discoveryMessage: "개구리를 발견했습니다! 전투를 시작합니다...",
     maxDelay: 25000,
-    health: 15,  
+    health: 15,
     deathMessage: "개구리와의 전투에서 패배하여 사망했습니다...",
     victoryMessage: "개구리를 무찔렀습니다!",
     militaryLevel: 2,
@@ -298,9 +298,9 @@ const monsterData = {
 
 // [추가된 코드] 각 지역별 몬스터 목록 (중앙 지역은 삭제)
 const regionMonsters = {
-  "왕국 서부 평야": ["plant", "slime","frog"],
-  "왕국 동부 경계": ["slime","orc"],
-  "피안의 숲": ["plant", "slime","frog"],
+  "왕국 서부 평야": ["plant", "slime", "frog"],
+  "왕국 동부 경계": ["slime", "orc"],
+  "피안의 숲": ["plant", "slime", "frog"],
 };
 
 const gameState = {
@@ -1455,9 +1455,12 @@ function startNarrativeCombat(monsterKey, msgContainer, finalCallback, isAmbush 
   if (gameState.player.isMoving && !isAmbush) {
     return;
   }
-
   const monster = monsterData[monsterKey];
   if (!monster) return;
+
+  // 새로운 전투 시작 시, 이전 bleed 효과 초기화
+  delete monster.bleed;
+  monster.health = monster.health; // (필요하다면 hp를 다시 초기화)
 
   const initialMessage = isAmbush
     ? `${monster.name}에게 기습당했습니다!`
@@ -1528,7 +1531,7 @@ function applyPlayerAttackSkills(baseDamage, msgContainer) {
   if (!msgContainer) {
     msgContainer = document.querySelector('.kingdom-message-combat');
   }
-  
+
   let bonusDamage = 0;
 
   // 스킬 종류별 색상 매핑 (우선순위 적용)
@@ -1611,7 +1614,7 @@ function applyBleedEffect(target, msgContainer) {
       msgContainer.appendChild(bleedMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
-    
+
     // 남은 효과 턴 감소
     target.bleed.rounds--;
     if (target.bleed.rounds <= 0) {
@@ -1624,14 +1627,14 @@ function applyBleedEffect(target, msgContainer) {
 function tryApplyBleedSkill(monster, msgContainer) {
   const bleedSkill = storeSkillDB.find(s => s.name === "출혈");
   if (!bleedSkill) return;
-  
+
   // 출혈 스킬이 random인 경우 triggerChance에 따라 발동
   if (bleedSkill.activation === "random" && Math.random() < bleedSkill.triggerChance) {
     // 예를 들어, 레벨 1일 때 bleedDamage: 3, 지속 3턴 (값은 데이터에 따라 조정)
     const bleedDamage = bleedSkill.effects[1]?.bleedDamage || 0;
     // bleed 효과를 부여 (이미 적용되어 있다면, 덮어쓰거나 지속 턴을 갱신하는 로직 추가 가능)
     monster.bleed = { damage: bleedDamage, rounds: 3 };
-    
+
     // 스킬 발동 메시지 출력 - 출혈 스킬 메시지에 색상 적용 (오렌지레드)
     const skillMsg = document.createElement('div');
     skillMsg.textContent = `[스킬 발동] ${bleedSkill.name}이(가) 발동하여 ${bleedDamage}의 추가 피해를 3턴 동안 부여합니다.`;
@@ -1684,7 +1687,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
     msgContainer.appendChild(monsterAttackMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
     updateHealthBar();
-    
+
     // 전투 종료 판정
     if (currentMonsterHealth <= 0) {
       console.log("몬스터 체력 0 이하 → 승리 처리");
@@ -1898,7 +1901,7 @@ function refreshSkillShopForNewDay() {
 
   // 이미 갱신한 날짜라면 그대로 유지
   if (localStorage.getItem("lastSkillShopDate") === todayKey) return;
-  
+
   todaySkillList = [];
 
   storeSkillDB.forEach(skill => {
@@ -1952,7 +1955,7 @@ function renderSkillShop() {
   };
 
   // 모든 스킬을 표시하도록 storeSkillDB 전체를 사용합니다.
-  const skillList = storeSkillDB; 
+  const skillList = storeSkillDB;
   skillList.forEach(skill => {
     const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#d3d3d3";
     // 해금 여부는 checkSkillUnlockCondition 함수로 판단 (true이면 해금된 것)
@@ -2702,14 +2705,14 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       checkAllSellContainer.style.display = 'flex';
     });
-    
+
     // .check-btn 클릭 시, 실제 판매 실행 후 확인 UI 숨기기
     checkBtn.addEventListener('click', (e) => {
       e.preventDefault();
       sellAllItems();
       checkAllSellContainer.style.display = 'none';
     });
-    
+
     // .cancel-btn 클릭 시, 확인 UI 숨기기
     cancelBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -3122,10 +3125,10 @@ function updateGameDate() {
   if (dateInfoElem) {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
-  
+
   refreshShopItemsForNewDay();
   initShopItems();
-  updateShopInventory(); 
+  updateShopInventory();
   gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
