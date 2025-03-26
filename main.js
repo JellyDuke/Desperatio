@@ -1595,6 +1595,7 @@ function applyPassiveHealing() {
   gameState.player.health += totalHealing;
   return totalHealing;
 }
+
 // 출혈 효과를 매 턴 적용하는 함수
 function applyBleedEffect(target, msgContainer) {
   if (target.bleed && target.bleed.rounds > 0) {
