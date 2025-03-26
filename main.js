@@ -1522,13 +1522,29 @@ function calculateDamage(attacker) {
 }
 
 // 스킬 효과 적용 함수 (공격 데미지 보정)
+// 스킬 효과 적용 함수 (공격 데미지 보정)
 function applyPlayerAttackSkills(baseDamage, msgContainer) {
-  // msgContainer가 전달되지 않으면 .kingdom-message-combat를 기본값으로 사용
+  // msgContainer가 전달되지 않으면 기본 영역 사용
   if (!msgContainer) {
     msgContainer = document.querySelector('.kingdom-message-combat');
   }
   
   let bonusDamage = 0;
+
+  // 스킬 종류별 색상 매핑 (우선순위 적용)
+  const skillTypeColorMapping = {
+    "damage": "#ff6347", // 토마토 레드 (예: 강타)
+    "heal": "#7CFC00",   // 연두색 (예: 회복)
+    "bleed": "#ff4500"   // 오렌지레드 (예: 출혈)
+  };
+
+  // 등급별 색상 매핑 (기본: 연한 회색)
+  const rarityColorMapping = {
+    "common": "#d3d3d3",
+    "rare": "#4fc3f7",
+    "epic": "#ba68c8",
+    "legendary": "#ffb74d"
+  };
 
   // 플레이어가 보유한 모든 스킬 순회
   gameState.player.skills.forEach(skillName => {
@@ -1540,13 +1556,18 @@ function applyPlayerAttackSkills(baseDamage, msgContainer) {
       if (Math.random() < skill.triggerChance) {
         const dmgBonus = skill.effects[1]?.damageBonus || 0;
         bonusDamage += dmgBonus;
-        // 전투 메시지에 스킬 발동 기록: msgContainer에 메시지 추가
+        // 우선, 스킬 종류에 따른 색상 선택 (존재하면)
+        let msgColor = skillTypeColorMapping[skill.type];
+        // 스킬 종류 색상이 없으면, 등급 색상 사용 (소문자로 변환)
+        if (!msgColor) {
+          msgColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#ffffff";
+        }
+        // 스킬 발동 메시지 생성
         const skillMsg = document.createElement('div');
         skillMsg.textContent = `[스킬 발동] ${skill.name}이(가) 발동하여 ${dmgBonus}의 추가 데미지를 부여합니다.`;
-        if (msgContainer) {
-          msgContainer.appendChild(skillMsg);
-          msgContainer.scrollTop = msgContainer.scrollHeight;
-        }
+        skillMsg.style.color = msgColor;
+        msgContainer.appendChild(skillMsg);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
         console.log(skillMsg.textContent);
       }
     }
@@ -1554,6 +1575,7 @@ function applyPlayerAttackSkills(baseDamage, msgContainer) {
 
   return baseDamage + bonusDamage;
 }
+
 
 // 패시브 회복 스킬 적용 함수 (매 라운드 시작 시)
 function applyPassiveHealing() {
