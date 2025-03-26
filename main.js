@@ -1429,7 +1429,7 @@ function renderOwnedSkills() {
       nextUpgradeText = Object.entries(nextEffect)
         .map(([key, value]) => `${key}: ${value}`)
         .join(", ");
-      nextUpgradeText = ` / 다음 강화: ${nextUpgradeText}`;
+      nextUpgradeText = `다음 강화: ${nextUpgradeText}`;
     }
 
     // 내부 HTML 구성: 스킬 이름, 등급, 상세 설명, 필요 레벨, 발동 방식, 발동 확률, 효과 및 다음 강화 효과
