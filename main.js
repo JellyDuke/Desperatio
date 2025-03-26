@@ -1404,48 +1404,58 @@ function renderEnforceList() {
   if (!enforceListElem) return;
   enforceListElem.innerHTML = ''; // 기존 내용 초기화
 
-  // 플레이어가 보유한 스킬은 객체 배열로 가정: [{ name: "강타", level: 1 }, ...]
-  // storeSkillDB에 있는 해당 스킬 정보를 참고하여, 최대 강화 단계보다 낮은 스킬만 표시합니다.
-  gameState.player.skills.forEach(skill => {
-    // storeSkillDB에서 해당 스킬 데이터를 찾습니다.
-    const skillData = storeSkillDB.find(s => s.name === skill.name);
+  // 플레이어 보유 스킬을 객체 배열로 가정: [{ name: "강타", level: 1 }, ...]
+  // 강화 가능한 스킬만 필터링 (storeSkillDB 기준 최대 강화 단계보다 낮은 스킬)
+  const enforceableSkills = gameState.player.skills.filter(skillObj => {
+    const skillData = storeSkillDB.find(s => s.name === skillObj.name);
+    if (!skillData) return false;
+    const maxLevel = Object.keys(skillData.effects).length;
+    return skillObj.level < maxLevel;
+  });
+
+  // 강화 가능한 스킬이 하나도 없다면 메시지 표시
+  if (enforceableSkills.length === 0) {
+    const noSkillMsg = document.createElement('div');
+    noSkillMsg.classList.add("no-skills");
+    noSkillMsg.textContent = "강화 가능한 스킬이 없습니다.";
+    enforceListElem.appendChild(noSkillMsg);
+    return;
+  }
+
+  // 등급별 색상 매핑 (기본 common은 연한 회색)
+  const rarityColorMapping = {
+    common: "#d3d3d3",
+    rare: "#4fc3f7",
+    epic: "#ba68c8",
+    legendary: "#ffb74d"
+  };
+
+  enforceableSkills.forEach(skillObj => {
+    const skillData = storeSkillDB.find(s => s.name === skillObj.name);
     if (!skillData) return;
 
-    // 최대 강화 단계는 effects 객체의 키 수 (예: {1: {...}, 2: {...}, 3: {...}}이면 최대는 3)
     const maxLevel = Object.keys(skillData.effects).length;
-    if (skill.level >= maxLevel) {
-      // 이미 최대 강화라면 표시하지 않습니다.
-      return;
-    }
+    if (skillObj.level >= maxLevel) return; // 최대 강화이면 표시하지 않음
 
     // .card-enforce-wrap 요소 생성 (각 스킬 카드)
     const cardWrap = document.createElement('div');
-    cardWrap.classList.add('enforce-list');
+    cardWrap.classList.add('card-enforce-wrap');
 
-    // 스킬 이름과 현재 강화 단계 표시 (예: "강타 (강화 단계: 1)")
-    const skillInfo = document.createElement('div');
-    skillInfo.classList.add('skill-info');
-    // 스킬 등급에 따른 색상 매핑 (예시)
-    const rarityColorMapping = {
-      common: "#d3d3d3",      // 기본: 연한 회색
-      rare: "#4fc3f7",        // 희귀: 연한 파란색
-      epic: "#ba68c8",        // 에픽: 보라색
-      legendary: "#ffb74d"     // 전설: 주황색
-    };
+    // 스킬 등급에 따른 색상 결정
     const rarityKey = (skillData.rarity || "common").toLowerCase();
     const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
 
-    // 스킬 이름과 강화 단계에 등급별 색상 적용
-    skillInfo.innerHTML = `<div class="card-enforce-wrap"><strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skill.level})</div>`;
+    // 스킬 이름과 현재 강화 단계 표시
+    const skillInfo = document.createElement('div');
+    skillInfo.classList.add('skill-info');
+    // 여기서 스킬 이름과 강화 단계를 등급별 색상으로 표시
+    skillInfo.innerHTML = `<strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skillObj.level})`;
 
     // 강화 버튼 생성
     const enforceBtn = document.createElement('button');
     enforceBtn.classList.add('enforce-btn');
     enforceBtn.textContent = '강화하기';
-    // data-skill 속성에 스킬 이름을 저장 (강화 로직에서 참조)
     enforceBtn.dataset.skill = skillData.name;
-
-    // 강화 버튼 클릭 시, upgradeSkill 함수를 호출 (나중에 구현)
     enforceBtn.addEventListener('click', (e) => {
       e.preventDefault();
       upgradeSkill(skillData.name);
@@ -1454,11 +1464,10 @@ function renderEnforceList() {
     // 카드에 스킬 정보와 버튼 추가
     cardWrap.appendChild(skillInfo);
     cardWrap.appendChild(enforceBtn);
-
-    // 생성된 카드 요소를 .card-enforce-list에 추가
     enforceListElem.appendChild(cardWrap);
   });
 }
+
 
 function upgradeSkill(skillName) {
   // 플레이어 보유 스킬은 { name, level } 형태로 저장되어 있어야 합니다.
@@ -1507,11 +1516,20 @@ function upgradeSkill(skillName) {
 }
 
 
-function renderOwnedSkills() {
+function  renderOwnedSkills() {
   // .card-list 요소를 찾습니다.
   const cardList = document.querySelector('.card-list-skill');
   if (!cardList) return;
   cardList.innerHTML = '';
+
+  // 플레이어 스킬이 없으면 메시지 표시
+  if (!gameState.player.skills || gameState.player.skills.length === 0) {
+    const noSkillMsg = document.createElement('div');
+    noSkillMsg.classList.add("no-skills");
+    noSkillMsg.textContent = "보유 스킬이 없습니다.";
+    cardList.appendChild(noSkillMsg);
+    return;
+  }
 
   // 등급별 색상 매핑
   const rarityColorMapping = {
