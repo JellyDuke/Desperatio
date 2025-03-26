@@ -1420,7 +1420,7 @@ function renderEnforceList() {
 
     // .card-enforce-wrap 요소 생성 (각 스킬 카드)
     const cardWrap = document.createElement('div');
-    cardWrap.classList.add('card-enforce-wrap');
+    cardWrap.classList.add('enforce-list');
 
     // 스킬 이름과 현재 강화 단계 표시 (예: "강타 (강화 단계: 1)")
     const skillInfo = document.createElement('div');
@@ -1436,7 +1436,7 @@ function renderEnforceList() {
     const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
 
     // 스킬 이름과 강화 단계에 등급별 색상 적용
-    skillInfo.innerHTML = `<strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skill.level})`;
+    skillInfo.innerHTML = `<div class="card-enforce-wrap"><strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skill.level})</div>`;
 
     // 강화 버튼 생성
     const enforceBtn = document.createElement('button');
@@ -2026,6 +2026,7 @@ function onMonsterDefeated(monsterKey, messageContainer) {
   updateInventory();
   checkLevelUp(messageContainer);
   saveGameState();
+  renderOwnedSkills()
 }
 
 
@@ -2198,6 +2199,7 @@ function renderSkillShop() {
   setSkillBuyButtonEvents();
   renderOwnedSkills();
   renderEnforceList()
+  
 }
 
 function setSkillBuyButtonEvents() {
@@ -2218,7 +2220,8 @@ function setSkillBuyButtonEvents() {
         return;
       }
 
-      if (gameState.player.skills.includes(skill.name)) {
+      // 수정된 부분: 이미 보유한 스킬 확인 (객체 배열이므로 some 사용)
+      if (gameState.player.skills.some(s => s.name === skill.name)) {
         alert("이미 보유한 스킬입니다!");
         return;
       }
@@ -2229,7 +2232,7 @@ function setSkillBuyButtonEvents() {
       renderSkillShop();
       updateUserStatus();
       saveGameState();
-      renderOwnedSkills()
+      renderOwnedSkills();
     });
   });
 }
