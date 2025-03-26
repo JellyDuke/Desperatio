@@ -2,7 +2,18 @@
  * 데이터 구조 & 게임 상태
  ********************************************************/
 //DB
-
+document.addEventListener('DOMContentLoaded', () => {
+  const adminMoneyBtn = document.querySelector('.admin-money-btn');
+  if (adminMoneyBtn) {
+    adminMoneyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      gameState.player.money += 2000000;
+      updateUserStatus();  // UI 업데이트: 소지금 등 반영
+      saveGameState();     // 게임 상태 저장
+      alert("2백만 골드가 지급되었습니다.");
+    });
+  }
+});
 const itemClassMapping = {
   "잎파리": "leaf",
   "슬라임 젤리": "jelly",
@@ -2213,7 +2224,7 @@ function setSkillBuyButtonEvents() {
       }
 
       gameState.player.money -= skill.todayPrice;
-      gameState.player.skills.push(skill.name);
+      gameState.player.skills.push({ name: skillName, level: 1 });
       alert(`[${skill.name}] 스킬을 구매했습니다!`);
       renderSkillShop();
       updateUserStatus();
