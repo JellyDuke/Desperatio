@@ -1517,12 +1517,11 @@ function upgradeSkill(skillName) {
 
 
 function renderOwnedSkills() {
-  // .card-list 요소를 찾습니다.
   const cardList = document.querySelector('.card-list-skill');
   if (!cardList) return;
   cardList.innerHTML = '';
 
-  // 플레이어 스킬이 없으면 메시지 표시
+  // 플레이어 스킬 배열이 비어있다면
   if (!gameState.player.skills || gameState.player.skills.length === 0) {
     const noSkillMsg = document.createElement('div');
     noSkillMsg.classList.add("no-skills");
@@ -1533,33 +1532,34 @@ function renderOwnedSkills() {
 
   // 등급별 색상 매핑
   const rarityColorMapping = {
-    common: "#d3d3d3",      // 연한 회색
-    rare: "#4fc3f7",        // 연한 파란색
-    epic: "#ba68c8",        // 보라색
-    legendary: "#ffb74d"     // 주황색
+    common: "#d3d3d3",
+    rare: "#4fc3f7",
+    epic: "#ba68c8",
+    legendary: "#ffb74d"
   };
 
-  // 플 레이어가 보유한 스킬 목록 (gameState.player.skills 배열에 스킬 이름이 저장되어 있다고 가정)
-  gameState.player.skills.forEach(skillName => {
+  // 스킬은 { name: "강타", level: 1 } 형태로 저장되어 있다고 가정
+  gameState.player.skills.forEach(skillObj => {
+    // skillObj는 { name: "...", level: ... }
     // storeSkillDB에서 해당 스킬 정보를 찾습니다.
-    const skillData = storeSkillDB.find(s => s.name === skillName);
+    const skillData = storeSkillDB.find(s => s.name === skillObj.name);
     if (!skillData) return;
 
-    // 스킬 카드 최상위 컨테이너: .card-wrap 생성
+    // 스킬 카드 컨테이너
     const cardWrap = document.createElement('div');
     cardWrap.classList.add('skill-wrap');
 
-    // 스킬 등급 색상 결정 (소문자로 변환)
+    // 등급별 색상
     const rarityKey = (skillData.rarity || "common").toLowerCase();
     const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
 
-    // 현재 효과 (1레벨) 텍스트
+    // 현재 효과(1레벨) 텍스트
     const currentEffect = skillData.effects[1] || {};
     const effectText = Object.entries(currentEffect)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
 
-    // 다음 강화 시 효과 (레벨 2) 텍스트, 만약 있다면
+    // 다음 강화 시 효과(레벨 2) 텍스트
     let nextUpgradeText = "";
     if (skillData.effects[2]) {
       const nextEffect = skillData.effects[2];
@@ -1569,26 +1569,32 @@ function renderOwnedSkills() {
       nextUpgradeText = `다음 강화: ${nextUpgradeText}`;
     }
 
-    // 내부 HTML 구성: 스킬 이름, 등급, 상세 설명, 필요 레벨, 발동 방식, 발동 확률, 효과 및 다음 강화 효과
+    // HTML 구성 (스킬 레벨 표시 추가)
     cardWrap.innerHTML = `
-        <div class="skill-title" style="color: ${rarityColor};">
-          ${skillData.name} <span class="skill-rarity" style="color: ${rarityColor};">(${skillData.rarity})</span>
-        </div>
-        <div class="skill-detail">
-          <p class="skill-description">${skillData.description}</p>
-          <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
-          <p class="skill-activation">발동 방식: ${skillData.activation}</p>
-          <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
-          <p class="skill-effects">${effectText}</p>
-          <p class="skill-effects">${nextUpgradeText}</p>
-        </div>
+      <div class="skill-title" style="color: ${rarityColor};">
+        ${skillData.name} 
+        <span class="skill-rarity" style="color: ${rarityColor};">
+          (${skillData.rarity})
+        </span>
+      </div>
+      <div class="skill-detail">
+        <p class="skill-description">${skillData.description}</p>
+        <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
+        <p class="skill-activation">발동 방식: ${skillData.activation}</p>
+        <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
+        <p class="skill-effects">${effectText}</p>
+        <p class="skill-effects">${nextUpgradeText}</p>
+        <p class="skill-level">보유 스킬 레벨: ${skillObj.level}</p>
+      </div>
     `;
 
     cardList.appendChild(cardWrap);
-    
   });
-  renderEnforceList()
+
+  // 보유 스킬 목록 렌더링 후 강화 목록도 갱신
+  renderEnforceList();
 }
+
 
 
 
