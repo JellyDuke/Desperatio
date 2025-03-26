@@ -2049,6 +2049,10 @@ function checkLevelUp(messageContainer) {
       updateUserClass();
       updateUserStatus();
 
+       // 레벨업 후 스킬 해금 조건이 바뀌었을 수 있으므로 UI 갱신
+       updateTodaySkillList();
+       renderSkillShop();
+
       // 플레이어 최대 체력 갱신: 초기 50에서 레벨당 1.3배씩 증가
       player.health = Math.floor(50 * Math.pow(1.3, player.level - 1));
 
@@ -2139,11 +2143,12 @@ function checkSkillUnlockCondition(condition) {
     default:
       return false;
   }
+  
 }
+
 function renderSkillShop() {
   const skillListElem = document.querySelector(".shop-skill-sell-list");
   skillListElem.innerHTML = "";
-
   // 등급에 따른 색상 매핑 (기본(common)은 연한 회색)
   const rarityColorMapping = {
     "common": "#d3d3d3",    // 연한 회색
@@ -2158,7 +2163,7 @@ function renderSkillShop() {
     const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#d3d3d3";
     // 해금 여부는 checkSkillUnlockCondition 함수로 판단 (true이면 해금된 것)
     const unlocked = checkSkillUnlockCondition(skill.unlockCondition);
-
+    
     const skillElem = document.createElement("div");
     skillElem.classList.add("skill-sell-list");
 
