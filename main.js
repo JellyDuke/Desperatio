@@ -963,10 +963,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initGameStart(); //게임 새 시작시
   initExport(); // 게임 내보내기
   initLoad(); //게임 불러오기
-  showMessageGuideOnHover() //mouse hover	
-  updateInventory() //인벤토리
+  showMessageGuideOnHover(); //mouse hover	
+  updateInventory(); //인벤토리
   updateCombatPopupUI();// 팝업 UI에 현재 위치와 몬스터 표시
   initLocationList();// 동적 이동
+  renderOwnedSkills(); //보유스킬
 });
 
 document.addEventListener('DOMContentLoaded', () => {
