@@ -1402,7 +1402,7 @@ function renderOwnedSkills() {
     legendary: "#ffb74d"     // 주황색
   };
 
-  // 플레이어가 보유한 스킬 목록 (gameState.player.skills 배열에 스킬 이름이 저장되어 있다고 가정)
+  // 플 레이어가 보유한 스킬 목록 (gameState.player.skills 배열에 스킬 이름이 저장되어 있다고 가정)
   gameState.player.skills.forEach(skillName => {
     // storeSkillDB에서 해당 스킬 정보를 찾습니다.
     const skillData = storeSkillDB.find(s => s.name === skillName);
@@ -1442,7 +1442,8 @@ function renderOwnedSkills() {
           <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
           <p class="skill-activation">발동 방식: ${skillData.activation}</p>
           <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
-          <p class="skill-effects">효과: ${effectText}${nextUpgradeText}</p>
+          <p class="skill-effects">${effectText}</p>
+          <p class="skill-effects">${nextUpgradeText}</p>
         </div>
     `;
 
