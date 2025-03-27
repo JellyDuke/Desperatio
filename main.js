@@ -1888,7 +1888,7 @@ function applyBleedEffect(target, msgContainer) {
 
     // 메시지 출력 - bleed 효과 메시지에 색상 적용 (오렌지레드)
     const bleedMsg = document.createElement('div');
-    bleedMsg.textContent = `[스킬 발동] 출혈이(가) 발동하여 3라운동안 몬스터가 ${target.bleed.damage}의 추가 피해를 받습니다. 몬스터의 남은 체력: ${target.health}`;
+    bleedMsg.textContent = `[스킬 발동] 출혈이(가) 발동하여 3라운동안 몬스터가 ${target.bleed.damage}의 추가 피해를 받습니다.`;
     bleedMsg.style.color = "#ff4500"; // 오렌지레드
     if (msgContainer) {
       msgContainer.appendChild(bleedMsg);
@@ -1925,7 +1925,7 @@ function tryApplyBleedSkill(monster, msgContainer) {
     // 초기 메시지는 제거합니다.
     // (매 턴 applyBleedEffect에서 출혈 효과 메시지를 출력합니다.)
     console.log(`[스킬 발동] ${bleedSkill.name} 발동 - ${bleedDamage}의 추가 피해, 3턴 지속`);
-  }
+  } 
 }
 /**
  * 전투 라운드를 진행하는 함수
