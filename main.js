@@ -1470,7 +1470,7 @@ function renderEnforceList() {
 
 
 function upgradeSkill(skillName) {
-  // 플레이어 보유 스킬은 { name, level } 형태로 저장되어 있다고 가정
+  // 플레이어 보유 스킬은 { name, level } 형태로 저장되어 있다고 가정합니다.
   const playerSkill = gameState.player.skills.find(s => s.name === skillName);
   if (!playerSkill) {
     alert("해당 스킬을 보유하고 있지 않습니다.");
@@ -1484,43 +1484,62 @@ function upgradeSkill(skillName) {
     return;
   }
   
-  // 예시: 강화 비용을 원래 스킬 basePrice에 2의 현재 강화 단계(power)를 곱해서 계산합니다.
-  // 예를 들어, basePrice가 20,000원이고 현재 강화 단계가 1라면 비용은 20,000 × 2^1 = 40,000원,
-  // 다음 강화 시에는 20,000 × 2^2 = 80,000원, 그 다음은 20,000 × 2^3 = 160,000원 등이 됩니다.
-  const upgradeCost = skillData.basePrice * Math.pow(2, playerSkill.level);
-
-  gameState.player.money = Number(gameState.player.money) || 0; // 소지금이 올바른 숫자인지 보장
-  // (옵션) 강화석이 있다면, 강화석 사용 여부에 따라 비용을 대체할 수 있습니다.
-  // 여기서는 단순히 돈으로 구매하는 로직을 사용합니다.
+  const currentLevel = playerSkill.level;
+  const maxLevel = Object.keys(skillData.effects).length;
+  
+  if (currentLevel >= maxLevel) {
+    alert("이미 최대 강화 단계입니다.");
+    return;
+  }
+  
+  // 강화 비용 계산: basePrice × 2^(현재 강화 단계)
+  const upgradeCost = skillData.basePrice * Math.pow(2, currentLevel);
+  
+  // 소지금이 올바른 숫자인지 강제 변환
+  gameState.player.money = Number(gameState.player.money) || 0;
   if (gameState.player.money < upgradeCost) {
     alert(`강화 비용이 부족합니다. 필요한 금액: ${upgradeCost.toLocaleString()}원`);
     return;
   }
   
-  // 강화 비용 차감
+  // 강화 비용 차감 (강화 성공/실패 여부와 상관없이 차감)
   gameState.player.money -= upgradeCost;
   
-  // 스킬 강화: 현재 강화 단계 1 증가
-  playerSkill.level++;
-  
-  // 강화 성공 메시지 출력 (전투 로그 영역 예시)
-  const msgContainer = document.querySelector('.kingdom-message-combat');
-  if (msgContainer) {
-    const upgradeMsg = document.createElement('div');
-    upgradeMsg.textContent = `${skillName} 스킬이 강화되었습니다! 현재 강화 단계: ${playerSkill.level} (강화 비용: ${upgradeCost.toLocaleString()}원)`;
-    upgradeMsg.style.color = "#32cd32"; // 연두색: 강화 성공 메시지
-    msgContainer.appendChild(upgradeMsg);
-    msgContainer.scrollTop = msgContainer.scrollHeight;
+  // 랜덤 성공 확률: 0.3 ~ 0.9 사이
+  const successRate = 0.3 + Math.random() * 0.6;
+  if (Math.random() < successRate) {
+    // 강화 성공: 현재 강화 단계 증가
+    playerSkill.level++;
+    
+    const msgContainer = document.querySelector('.kingdom-message-combat');
+    if (msgContainer) {
+      const upgradeMsg = document.createElement('div');
+      upgradeMsg.textContent = `${skillName} 스킬 강화 성공! 현재 강화 단계: ${playerSkill.level} (비용: ${upgradeCost.toLocaleString()}원, 성공 확률: ${(successRate*100).toFixed(1)}%)`;
+      upgradeMsg.style.color = "#32cd32"; // 연두색: 성공 메시지
+      msgContainer.appendChild(upgradeMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+    console.log(`${skillName} upgraded to level ${playerSkill.level}`);
+  } else {
+    // 강화 실패: 강화 단계 변화 없음
+    const msgContainer = document.querySelector('.kingdom-message-combat');
+    if (msgContainer) {
+      const failMsg = document.createElement('div');
+      failMsg.textContent = `${skillName} 스킬 강화 실패! (비용: ${upgradeCost.toLocaleString()}원, 성공 확률: ${(successRate*100).toFixed(1)}%)`;
+      failMsg.style.color = "#ff0000"; // 빨간색: 실패 메시지
+      msgContainer.appendChild(failMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+    console.log(`${skillName} upgrade failed.`);
   }
   
-  console.log(`${skillName} upgraded to level ${playerSkill.level}`);
-  
-  // UI 업데이트: 보유 스킬 목록과 강화 목록 갱신, 그리고 유저 상태 업데이트
-  renderOwnedSkills();
+  // UI 업데이트
   renderEnforceList();
+  renderOwnedSkills();
   updateUserStatus();
   saveGameState();
 }
+
 
 
 
