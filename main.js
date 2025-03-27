@@ -1888,7 +1888,7 @@ function applyBleedEffect(target, msgContainer) {
 
     // 메시지 출력 - bleed 효과 메시지에 색상 적용 (오렌지레드)
     const bleedMsg = document.createElement('div');
-    bleedMsg.textContent = `출혈 효과로 ${target.bleed.damage}의 추가 피해를 받습니다. 몬스터의 남은 체력: ${target.health}`;
+    bleedMsg.textContent = `[스킬 발동] 출혈이(가) 발동하여 3라운동안 몬스터가 ${target.bleed.damage}의 추가 피해를 받습니다. 몬스터의 남은 체력: ${target.health}`;
     bleedMsg.style.color = "#ff4500"; // 오렌지레드
     if (msgContainer) {
       msgContainer.appendChild(bleedMsg);
@@ -1904,7 +1904,7 @@ function applyBleedEffect(target, msgContainer) {
 }
 
 // 출혈 스킬 발동을 시도하는 함수 (플레이어 공격 시점에 호출)
-function tryApplyBleedSkill(monster, msgContainer) {
+function tryApplyBleedSkill(monster, msgContainer) {  
   // 플레이어가 "출혈" 스킬을 가지고 있는지 객체 배열에서 찾기
   const playerBleedSkill = gameState.player.skills.find(s => s.name === "출혈");
   if (!playerBleedSkill) return;
@@ -1922,18 +1922,11 @@ function tryApplyBleedSkill(monster, msgContainer) {
     // bleed 효과를 부여 (예: 지속 3턴)
     monster.bleed = { damage: bleedDamage, rounds: 3 };
 
-    // 스킬 발동 메시지 생성 및 UI 출력 (오렌지레드)
-    const skillMsg = document.createElement('div');
-    skillMsg.textContent = `[스킬 발동] ${bleedSkill.name}이(가) 발동하여 ${bleedDamage}의 추가 피해를 3턴 동안 부여합니다.`;
-    skillMsg.style.color = "#ff4500";
-    if (msgContainer) {
-      msgContainer.appendChild(skillMsg);
-      msgContainer.scrollTop = msgContainer.scrollHeight;
-    }
-    console.log(skillMsg.textContent);
+    // 초기 메시지는 제거합니다.
+    // (매 턴 applyBleedEffect에서 출혈 효과 메시지를 출력합니다.)
+    console.log(`[스킬 발동] ${bleedSkill.name} 발동 - ${bleedDamage}의 추가 피해, 3턴 지속`);
   }
 }
-
 /**
  * 전투 라운드를 진행하는 함수
  * 플레이어와 몬스터가 동시에 공격을 주고받으며, 한 라운드마다 체력을 갱신합니다.
@@ -3384,13 +3377,10 @@ let lastDateStr = localStorage.getItem("lastDateStr") || "";
 
 // 날짜 업데이트 함수 (1분 = 1일 가정)
 function updateGameDate() {
-  // 1. baseTime을 localStorage에서 가져오거나 현재 시간(Date.now())을 사용 (1분 = 1일 가정)
   const baseTime = Number(localStorage.getItem("baseRealTime") || Date.now());
-  
-  // 2. 현재 경과한 '분' (게임에서는 하루로 간주)을 계산
-  const currentMinutes = Math.floor((Date.now() - baseTime) / (1000 * 60));
+  const currentMinutes = Math.floor((Date.now() - baseTime) / (1000 * 60)); // 1분 = 1일
 
-  // 3. 이전에 기록된 '분'(lastMinutes)과 비교하여 경과한 '일수'(분) 차이를 계산하고, 그에 따라 자원 변화 적용
+  // 지난 '일수(분)' 차이를 계산해서 자원 변화 적용
   const diffDays = currentMinutes - lastMinutes;
   if (diffDays > 0) {
     for (let i = 0; i < diffDays; i++) {
@@ -3400,7 +3390,6 @@ function updateGameDate() {
     localStorage.setItem("lastMinutes", lastMinutes);
   }
 
-  // 4. 기본 날짜(baseDate)가 localStorage에 없으면 기본값으로 설정, 있으면 파싱하여 사용
   let baseDate = localStorage.getItem("baseDate");
   if (!baseDate) {
     baseDate = { year: 24, month: 4, day: 12 };
@@ -3409,11 +3398,9 @@ function updateGameDate() {
     baseDate = JSON.parse(baseDate);
   }
 
-  // 5. 경과한 '분'(일수)를 기준으로 새로운 날짜 계산
   let newDay = baseDate.day + currentMinutes;
   let newMonth = baseDate.month;
   let newYear = baseDate.year;
-  // 한 달은 30일, 한 해는 12개월로 가정하여 계산
   while (newDay > 30) {
     newDay -= 30;
     newMonth++;
@@ -3423,20 +3410,20 @@ function updateGameDate() {
     }
   }
 
-  // 6. 계산된 날짜를 gameState.currentDate에 반영하고 저장
-  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
-  saveGameState();
+  const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
+  // 날짜가 바뀌었으면, dateTextDisplayed를 false로 재설정
+  if (currentDateString !== lastDateStr) {
+    dateTextDisplayed = false;
+    lastDateStr = currentDateString;
+    localStorage.setItem("lastDateStr", lastDateStr);
 
-  // 7. 날짜 관련 UI 업데이트: 
-  //    - 왕국 메시지 영역(.kingdom-message-news)과 날짜 정보 영역(.date-info)이 있을 경우에만 업데이트합니다.
-  const kingdomMsgElem = document.querySelector('.kingdom-message-news');
-  if (kingdomMsgElem) {
-    // 현재 날짜를 문자열로 구성
-    const currentDateString = `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
-    // 이전에 기록된 날짜(lastDateStr)와 비교하여 변경되었으면 UI 업데이트
-    if (currentDateString !== lastDateStr) {
-      lastDateStr = currentDateString;
-      localStorage.setItem("lastDateStr", lastDateStr);
+    refreshSkillShopForNewDay();
+  }
+
+  // 날짜가 바뀌었거나 페이지가 처음 로드되었을 때, 상점 목록을 갱신하여 즉시 UI에 반영
+  if (!dateTextDisplayed) {
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
       const newTxtDiv = document.createElement('div');
       newTxtDiv.classList.add('txt');
       newTxtDiv.style.color = '#78ca86';
@@ -3444,18 +3431,18 @@ function updateGameDate() {
       kingdomMsgElem.appendChild(newTxtDiv);
       scrollToBottom(kingdomMsgElem);
     }
+    dateTextDisplayed = true;
   }
 
-  // 8. 날짜 정보를 date-info 영역에 업데이트 (존재할 경우)
   const dateInfoElem = document.querySelector('.date-info');
   if (dateInfoElem) {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
 
-  // 9. 상점 및 자원 관련 UI 업데이트 (상점 아이템, 인벤토리, 왕국 현황 등)
   refreshShopItemsForNewDay();
   initShopItems();
   updateShopInventory();
+  gameState.currentDate = { year: newYear, month: newMonth, day: newDay };
   updateKingdomStatus(gameState.kingdom);
   saveGameState();
 }
