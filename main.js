@@ -1451,6 +1451,11 @@ function renderEnforceList() {
     // 여기서 스킬 이름과 강화 단계를 등급별 색상으로 표시
     skillInfo.innerHTML = `<div class="card-enforce-wrap"><strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skillObj.level})</div>`;
 
+    const upgradeCost = skillData.basePrice * Math.pow(2, skillObj.level);
+    const costInfo = document.createElement('p');
+    costInfo.classList.add('skill-upgrade-cost');
+    costInfo.textContent = `강화 비용: ${upgradeCost.toLocaleString()}원`;
+
     // 강화 버튼 생성
     const enforceBtn = document.createElement('button');
     enforceBtn.classList.add('enforce-btn');
