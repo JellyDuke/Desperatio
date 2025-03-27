@@ -1470,7 +1470,7 @@ function renderEnforceList() {
 
 
 function upgradeSkill(skillName) {
-  // 플레이어 보유 스킬은 { name, level } 형태로 저장되어 있어야 합니다.
+  // 플레이어 보유 스킬은 { name, level } 형태로 저장되어 있다고 가정
   const playerSkill = gameState.player.skills.find(s => s.name === skillName);
   if (!playerSkill) {
     alert("해당 스킬을 보유하고 있지 않습니다.");
@@ -1484,36 +1484,43 @@ function upgradeSkill(skillName) {
     return;
   }
   
-  // 최대 강화 단계는 effects 객체의 키 수로 판단합니다.
-  const currentLevel = playerSkill.level;
-  const maxLevel = Object.keys(skillData.effects).length;
+  // 예시: 강화 비용을 원래 스킬 basePrice에 2의 현재 강화 단계(power)를 곱해서 계산합니다.
+  // 예를 들어, basePrice가 20,000원이고 현재 강화 단계가 1라면 비용은 20,000 × 2^1 = 40,000원,
+  // 다음 강화 시에는 20,000 × 2^2 = 80,000원, 그 다음은 20,000 × 2^3 = 160,000원 등이 됩니다.
+  const upgradeCost = skillData.basePrice * Math.pow(2, playerSkill.level);
   
-  if (currentLevel >= maxLevel) {
-    alert("이미 최대 강화 단계입니다.");
+  // (옵션) 강화석이 있다면, 강화석 사용 여부에 따라 비용을 대체할 수 있습니다.
+  // 여기서는 단순히 돈으로 구매하는 로직을 사용합니다.
+  if (gameState.player.money < upgradeCost) {
+    alert(`강화 비용이 부족합니다. 필요한 금액: ${upgradeCost.toLocaleString()}원`);
     return;
   }
   
-  // (옵션) 강화 비용 처리 로직 추가 가능
+  // 강화 비용 차감
+  gameState.player.money -= upgradeCost;
   
   // 스킬 강화: 현재 강화 단계 1 증가
   playerSkill.level++;
   
-  // 강화 메시지를 전투 로그 영역에 출력
+  // 강화 성공 메시지 출력 (전투 로그 영역 예시)
   const msgContainer = document.querySelector('.kingdom-message-combat');
   if (msgContainer) {
     const upgradeMsg = document.createElement('div');
-    upgradeMsg.textContent = `${skillName} 스킬이 강화되었습니다! 현재 강화 단계: ${playerSkill.level}`;
-    upgradeMsg.style.color = "#32cd32"; // 강화 메시지는 연두색(Lime Green)으로 표시
+    upgradeMsg.textContent = `${skillName} 스킬이 강화되었습니다! 현재 강화 단계: ${playerSkill.level} (강화 비용: ${upgradeCost.toLocaleString()}원)`;
+    upgradeMsg.style.color = "#32cd32"; // 연두색: 강화 성공 메시지
     msgContainer.appendChild(upgradeMsg);
     msgContainer.scrollTop = msgContainer.scrollHeight;
   }
   
   console.log(`${skillName} upgraded to level ${playerSkill.level}`);
   
-  // UI 업데이트: 보유 스킬 목록과 강화 가능 목록 갱신
-  renderEnforceList();
+  // UI 업데이트: 보유 스킬 목록과 강화 목록 갱신, 그리고 유저 상태 업데이트
   renderOwnedSkills();
+  renderEnforceList();
+  updateUserStatus();
+  saveGameState();
 }
+
 
 
 function renderOwnedSkills() {
@@ -1532,44 +1539,46 @@ function renderOwnedSkills() {
 
   // 등급별 색상 매핑
   const rarityColorMapping = {
-    common: "#d3d3d3",
-    rare: "#4fc3f7",
-    epic: "#ba68c8",
-    legendary: "#ffb74d"
+    common: "#d3d3d3",      // 연한 회색
+    rare: "#4fc3f7",        // 연한 파란색
+    epic: "#ba68c8",        // 보라색
+    legendary: "#ffb74d"     // 주황색
   };
 
-  // 스킬은 { name: "강타", level: 1 } 형태로 저장되어 있다고 가정
+  // 플레이어 스킬은 { name: "강타", level: 1 } 형태로 저장되어 있다고 가정
   gameState.player.skills.forEach(skillObj => {
-    // skillObj는 { name: "...", level: ... }
     // storeSkillDB에서 해당 스킬 정보를 찾습니다.
     const skillData = storeSkillDB.find(s => s.name === skillObj.name);
     if (!skillData) return;
 
-    // 스킬 카드 컨테이너
+    // 스킬 카드 컨테이너 생성
     const cardWrap = document.createElement('div');
     cardWrap.classList.add('skill-wrap');
 
-    // 등급별 색상
+    // 등급별 색상 결정 (소문자로 변환)
     const rarityKey = (skillData.rarity || "common").toLowerCase();
     const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
 
-    // 현재 효과(1레벨) 텍스트
-    const currentEffect = skillData.effects[1] || {};
+    // 현재 효과(현재 레벨에 해당하는 효과)
+    const currentLevel = skillObj.level;
+    const currentEffect = skillData.effects[currentLevel] || {};
     const effectText = Object.entries(currentEffect)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
 
-    // 다음 강화 시 효과(레벨 2) 텍스트
+    // 다음 강화 효과: 현재 레벨+1이 존재하면 그 효과를, 없으면 "이미 최대 레벨" 표시
+    const nextLevel = currentLevel + 1;
     let nextUpgradeText = "";
-    if (skillData.effects[2]) {
-      const nextEffect = skillData.effects[2];
-      nextUpgradeText = Object.entries(nextEffect)
+    if (skillData.effects[nextLevel]) {
+      const nextEffect = skillData.effects[nextLevel];
+      nextUpgradeText = "다음 강화: " + Object.entries(nextEffect)
         .map(([key, value]) => `${key}: ${value}`)
         .join(", ");
-      nextUpgradeText = `다음 강화: ${nextUpgradeText}`;
+    } else {
+      nextUpgradeText = "이미 최대 레벨입니다.";
     }
 
-    // HTML 구성 (스킬 레벨 표시 추가)
+    // HTML 구성: 스킬 이름, 등급, 상세 설명, 필요 레벨, 발동 방식, 발동 확률, 현재 효과, 그리고 다음 강화 효과
     cardWrap.innerHTML = `
       <div class="skill-title" style="color: ${rarityColor};">
         ${skillData.name} 
@@ -1582,18 +1591,16 @@ function renderOwnedSkills() {
         <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
         <p class="skill-activation">발동 방식: ${skillData.activation}</p>
         <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
-        <p class="skill-effects">${effectText}</p>
+        <p class="skill-effects">현재 효과 (레벨 ${currentLevel}): ${effectText}</p>
         <p class="skill-effects">${nextUpgradeText}</p>
-        <p class="skill-level">보유 스킬 레벨: ${skillObj.level}</p>
       </div>
     `;
 
     cardList.appendChild(cardWrap);
   });
-
-  // 보유 스킬 목록 렌더링 후 강화 목록도 갱신
   renderEnforceList();
 }
+
 
 
 
