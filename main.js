@@ -1489,6 +1489,7 @@ function upgradeSkill(skillName) {
   // 다음 강화 시에는 20,000 × 2^2 = 80,000원, 그 다음은 20,000 × 2^3 = 160,000원 등이 됩니다.
   const upgradeCost = skillData.basePrice * Math.pow(2, playerSkill.level);
   
+  gameState.player.money = Number(gameState.player.money) || 0; // 소지금이 올바른 숫자인지 보장
   // (옵션) 강화석이 있다면, 강화석 사용 여부에 따라 비용을 대체할 수 있습니다.
   // 여기서는 단순히 돈으로 구매하는 로직을 사용합니다.
   if (gameState.player.money < upgradeCost) {
