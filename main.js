@@ -1591,7 +1591,7 @@ function renderOwnedSkills() {
         <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
         <p class="skill-activation">발동 방식: ${skillData.activation}</p>
         <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
-        <p class="skill-effects">현재 효과 (레벨 ${currentLevel}): ${effectText}</p>
+        <p class="skill-effects">스킬 레벨 ${currentLevel}: ${effectText}</p>
         <p class="skill-effects">${nextUpgradeText}</p>
       </div>
     `;
