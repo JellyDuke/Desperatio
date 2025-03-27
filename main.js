@@ -614,7 +614,8 @@ function resetGameExceptSkills() {
   };
 
   localStorage.setItem('gameState', JSON.stringify(gameState));
-
+  // 플레이어 사망 후 .user에 붙은 클래스 초기화
+  resetUserClasses();
   updateMyInfo();
   updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
   updateInventory();
@@ -622,7 +623,30 @@ function resetGameExceptSkills() {
   saveGameState();
 }
 
+// 플레이어 체력을 확인하여 0 이하이면 사망 처리하는 함수
+function checkPlayerHealth() {
+  if (gameState.player.health <= 0) {
+    const msgContainer = document.querySelector('.kingdom-message-combat');
+    if (msgContainer) {
+      const deathMsg = document.createElement('div');
+      deathMsg.textContent = "플레이어 체력이 0입니다. 사망합니다...";
+      deathMsg.style.color = "#ff0000"; // 빨간색 메시지
+      msgContainer.appendChild(deathMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+    resetGameExceptSkills(); // 사망 시 스킬 제외하고 초기화
+  }
+}
 
+setInterval(checkPlayerHealth, 500); // 500ms마다 체크
+
+function resetUserClasses() {
+  const userElem = document.querySelector('.user');
+  if (userElem) {
+    // 기본 클래스인 "user"만 남기고 나머지 클래스 제거
+    userElem.className = 'user';
+  }
+}
 // 이후 gameState를 이용하는 로직을 추가합니다.
 // [추가된 코드]
 /**
