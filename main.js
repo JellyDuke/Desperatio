@@ -616,9 +616,10 @@ function resetGameExceptSkills() {
   localStorage.setItem('gameState', JSON.stringify(gameState));
 
   updateMyInfo();
-  saveGameState();
   updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
   updateInventory();
+  updateUserClass()
+  saveGameState();
 }
 
 
@@ -1780,16 +1781,14 @@ function calculateDamage(attacker) {
 }
 
 // 스킬 효과 적용 함수 (공격 데미지 보정)
-// 스킬 효과 적용 함수 (공격 데미지 보정)
 function applyPlayerAttackSkills(baseDamage, msgContainer) {
-  // msgContainer가 전달되지 않으면 기본 영역 사용
   if (!msgContainer) {
     msgContainer = document.querySelector('.kingdom-message-combat');
   }
 
   let bonusDamage = 0;
 
-  // 스킬 종류별 색상 매핑 (우선순위 적용)
+  // 스킬 종류별 색상 매핑
   const skillTypeColorMapping = {
     "damage": "#ff6347", // 토마토 레드 (예: 강타)
     "heal": "#7CFC00",   // 연두색 (예: 회복)
@@ -1804,30 +1803,27 @@ function applyPlayerAttackSkills(baseDamage, msgContainer) {
     "legendary": "#ffb74d"
   };
 
-  // 플레이어가 보유한 모든 스킬 순회
-  gameState.player.skills.forEach(skillName => {
-    const skill = storeSkillDB.find(s => s.name === skillName);
+  // 플레이어 스킬이 객체 배열 { name, level } 형태라고 가정합니다.
+  gameState.player.skills.forEach(skillObj => {
+    const skill = storeSkillDB.find(s => s.name === skillObj.name);
     if (!skill) return;
 
     // "random" 스킬의 경우 발동 확률에 따라 보너스 데미지 적용
-    if (skill.activation === "random") {
-      if (Math.random() < skill.triggerChance) {
-        const dmgBonus = skill.effects[1]?.damageBonus || 0;
-        bonusDamage += dmgBonus;
-        // 우선, 스킬 종류에 따른 색상 선택 (존재하면)
-        let msgColor = skillTypeColorMapping[skill.type];
-        // 스킬 종류 색상이 없으면, 등급 색상 사용 (소문자로 변환)
-        if (!msgColor) {
-          msgColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#ffffff";
-        }
-        // 스킬 발동 메시지 생성
-        const skillMsg = document.createElement('div');
-        skillMsg.textContent = `[스킬 발동] ${skill.name}이(가) 발동하여 ${dmgBonus}의 추가 데미지를 부여합니다.`;
-        skillMsg.style.color = msgColor;
-        msgContainer.appendChild(skillMsg);
-        msgContainer.scrollTop = msgContainer.scrollHeight;
-        console.log(skillMsg.textContent);
+    if (skill.activation === "random" && Math.random() < skill.triggerChance) {
+      // 현재 강화 단계에 따른 효과 적용: 예를 들어, "강타"의 경우
+      const dmgBonus = skill.effects[skillObj.level]?.damageBonus || 0;
+      bonusDamage += dmgBonus;
+
+      let msgColor = skillTypeColorMapping[skill.type];
+      if (!msgColor) {
+        msgColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#ffffff";
       }
+      const skillMsg = document.createElement('div');
+      skillMsg.textContent = `[스킬 발동] ${skill.name}이(가) 발동하여 ${dmgBonus}의 추가 데미지를 부여합니다.`;
+      skillMsg.style.color = msgColor;
+      msgContainer.appendChild(skillMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+      console.log(skillMsg.textContent);
     }
   });
 
@@ -1838,21 +1834,21 @@ function applyPlayerAttackSkills(baseDamage, msgContainer) {
 // 패시브 회복 스킬 적용 함수 (매 라운드 시작 시)
 function applyPassiveHealing() {
   let totalHealing = 0;
-  gameState.player.skills.forEach(skillName => {
-    const skill = storeSkillDB.find(s => s.name === skillName);
+  gameState.player.skills.forEach(skillObj => {
+    const skill = storeSkillDB.find(s => s.name === skillObj.name);
     if (!skill) return;
 
     if (skill.activation === "passive") {
-      const healValue = skill.effects[1]?.healthBonus || 0;
+      // 현재 강화 단계에 따른 체력 회복 효과 적용
+      const healValue = skill.effects[skillObj.level]?.healthBonus || 0;
       totalHealing += healValue;
-      // 로그 출력 (UI에 표시하는 방식으로 수정 가능)
       console.log(`[스킬 발동] ${skill.name}이(가) 발동하여 ${healValue}의 체력을 회복합니다.`);
     }
   });
-  // 회복된 체력은 플레이어 체력에 추가 (최대 체력 초과 여부는 별도 처리 가능)
   gameState.player.health += totalHealing;
   return totalHealing;
 }
+
 
 // 출혈 효과를 매 턴 적용하는 함수
 function applyBleedEffect(target, msgContainer) {
@@ -1879,27 +1875,28 @@ function applyBleedEffect(target, msgContainer) {
 }
 
 // 출혈 스킬 발동을 시도하는 함수 (플레이어 공격 시점에 호출)
-function tryApplyBleedSkill(monster, msgContainer) {  
-  // 플레이어가 "출혈" 스킬을 가지고 있는지 확인
-  if (!gameState.player.skills.includes("출혈")) return;
+function tryApplyBleedSkill(monster, msgContainer) {
+  // 플레이어가 "출혈" 스킬을 가지고 있는지 객체 배열에서 찾기
+  const playerBleedSkill = gameState.player.skills.find(s => s.name === "출혈");
+  if (!playerBleedSkill) return;
 
   const bleedSkill = storeSkillDB.find(s => s.name === "출혈");
   if (!bleedSkill) return;
 
-  // 이미 bleed 효과가 있다면 새로 적용하지 않음
+  // 이미 monster에 bleed 효과가 있다면 새로 적용하지 않음
   if (monster.bleed) return;
 
   // 출혈 스킬이 random인 경우 triggerChance에 따라 발동
   if (bleedSkill.activation === "random" && Math.random() < bleedSkill.triggerChance) {
-    // 예를 들어, 레벨 1일 때 bleedDamage: 3, 지속 3턴 (값은 데이터에 따라 조정)
-    const bleedDamage = bleedSkill.effects[1]?.bleedDamage || 0;
-    // bleed 효과를 부여 (이미 적용되어 있다면, 덮어쓰거나 지속 턴을 갱신하는 로직 추가 가능)
+    // 플레이어의 현재 강화 단계에 따른 bleedDamage 적용
+    const bleedDamage = bleedSkill.effects[playerBleedSkill.level]?.bleedDamage || 0;
+    // bleed 효과를 부여 (예: 지속 3턴)
     monster.bleed = { damage: bleedDamage, rounds: 3 };
 
-    // 스킬 발동 메시지 출력 - 출혈 스킬 메시지에 색상 적용 (오렌지레드)
+    // 스킬 발동 메시지 생성 및 UI 출력 (오렌지레드)
     const skillMsg = document.createElement('div');
     skillMsg.textContent = `[스킬 발동] ${bleedSkill.name}이(가) 발동하여 ${bleedDamage}의 추가 피해를 3턴 동안 부여합니다.`;
-    skillMsg.style.color = "#ff4500"; // 오렌지레드
+    skillMsg.style.color = "#ff4500";
     if (msgContainer) {
       msgContainer.appendChild(skillMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -1907,6 +1904,7 @@ function tryApplyBleedSkill(monster, msgContainer) {
     console.log(skillMsg.textContent);
   }
 }
+
 /**
  * 전투 라운드를 진행하는 함수
  * 플레이어와 몬스터가 동시에 공격을 주고받으며, 한 라운드마다 체력을 갱신합니다.
