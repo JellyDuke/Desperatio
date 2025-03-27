@@ -1404,8 +1404,6 @@ function renderEnforceList() {
   if (!enforceListElem) return;
   enforceListElem.innerHTML = ''; // 기존 내용 초기화
 
-  // 플레이어 보유 스킬을 객체 배열로 가정: [{ name: "강타", level: 1 }, ...]
-  // 강화 가능한 스킬만 필터링 (storeSkillDB 기준 최대 강화 단계보다 낮은 스킬)
   const enforceableSkills = gameState.player.skills.filter(skillObj => {
     const skillData = storeSkillDB.find(s => s.name === skillObj.name);
     if (!skillData) return false;
@@ -1413,7 +1411,6 @@ function renderEnforceList() {
     return skillObj.level < maxLevel;
   });
 
-  // 강화 가능한 스킬이 하나도 없다면 메시지 표시
   if (enforceableSkills.length === 0) {
     const noSkillMsg = document.createElement('div');
     noSkillMsg.classList.add("no-skills");
@@ -1422,7 +1419,6 @@ function renderEnforceList() {
     return;
   }
 
-  // 등급별 색상 매핑 (기본 common은 연한 회색)
   const rarityColorMapping = {
     common: "#d3d3d3",
     rare: "#4fc3f7",
@@ -1435,28 +1431,42 @@ function renderEnforceList() {
     if (!skillData) return;
 
     const maxLevel = Object.keys(skillData.effects).length;
-    if (skillObj.level >= maxLevel) return; // 최대 강화이면 표시하지 않음
+    if (skillObj.level >= maxLevel) return;
 
-    // .card-enforce-wrap 요소 생성 (각 스킬 카드)
-    const cardWrap = document.createElement('div');
-    cardWrap.classList.add('enforce-list');
+    const upgradeCost = skillData.basePrice * Math.pow(2, skillObj.level);
+    const nextLevel = skillObj.level + 1;
+    let nextEffectText = "";
+    if (skillData.effects[nextLevel]) {
+      const nextEffect = skillData.effects[nextLevel];
+      nextEffectText = Object.entries(nextEffect)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ");
+      nextEffectText = "다음 강화 효과: " + nextEffectText;
+    } else {
+      nextEffectText = "이미 최대 레벨";
+    }
 
-    // 스킬 등급에 따른 색상 결정
+    // 외부 컨테이너: container (이전의 cardWrap 대신 사용)
+    const container = document.createElement('div');
+    container.classList.add('enforce-list');
+
+    // 내부 컨테이너: skillInfoDiv 안에 card-enforce-wrap를 생성하여 스킬 정보를 표시
+    const skillInfoDiv = document.createElement('div');
+    skillInfoDiv.classList.add('skill-info');
+
     const rarityKey = (skillData.rarity || "common").toLowerCase();
     const rarityColor = rarityColorMapping[rarityKey] || "#d3d3d3";
 
-    // 스킬 이름과 현재 강화 단계 표시
-    const skillInfo = document.createElement('div');
-    skillInfo.classList.add('skill-info');
-    // 여기서 스킬 이름과 강화 단계를 등급별 색상으로 표시
-    skillInfo.innerHTML = `<div class="card-enforce-wrap"><strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skillObj.level})</div>`;
+    const cardWrapDiv = document.createElement('div');
+    cardWrapDiv.classList.add('card-enforce-wrap');
+    cardWrapDiv.innerHTML = `<strong style="color: ${rarityColor};">${skillData.name}</strong> (강화 단계: ${skillObj.level})<br>
+      강화 비용: ${upgradeCost.toLocaleString()}원<br>
+      ${nextEffectText}`;
 
-    const upgradeCost = skillData.basePrice * Math.pow(2, skillObj.level);
-    const costInfo = document.createElement('p');
-    costInfo.classList.add('skill-upgrade-cost');
-    costInfo.textContent = `강화 비용: ${upgradeCost.toLocaleString()}원`;
+    skillInfoDiv.appendChild(cardWrapDiv);
+    container.appendChild(skillInfoDiv);
 
-    // 강화 버튼 생성
+    // 강화 버튼 생성 및 추가
     const enforceBtn = document.createElement('button');
     enforceBtn.classList.add('enforce-btn');
     enforceBtn.textContent = '강화하기';
@@ -1465,13 +1475,12 @@ function renderEnforceList() {
       e.preventDefault();
       upgradeSkill(skillData.name);
     });
+    container.appendChild(enforceBtn);
 
-    // 카드에 스킬 정보와 버튼 추가
-    cardWrap.appendChild(skillInfo);
-    cardWrap.appendChild(enforceBtn);
-    enforceListElem.appendChild(cardWrap);
+    enforceListElem.appendChild(container);
   });
 }
+
 
 
 function upgradeSkill(skillName) {
