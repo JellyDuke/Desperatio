@@ -502,6 +502,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //사망시
 function resetGameExceptSkills() {
+  
+  // 기존 타이머 중지
+  stopGameDateTimer();
+
   const savedSkills = gameState?.player?.skills ? [...gameState.player.skills] : [];
   localStorage.clear();
   let oldRoundCount = gameState.progress.roundCount || 1;
@@ -619,7 +623,8 @@ function resetGameExceptSkills() {
   updateMyInfo();
   updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
   updateInventory();
-  updateUserClass()
+  updateUserClass();
+  startGameDateTimer();
   saveGameState();
 }
 
