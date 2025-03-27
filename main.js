@@ -1653,8 +1653,8 @@ function renderOwnedSkills() {
       <div class="skill-detail">
         <p class="skill-description">${skillData.description}</p>
         <p class="skill-required-level">필요 레벨: ${skillData.requiredLevel}</p>
-        <p class="skill-activation">발동 방식: ${skillData.activation}</p>
         <p class="skill-triggerChance">발동 확률: ${Math.round(skillData.triggerChance * 100)}%</p>
+        <p class="skill-activation">발동 방식: ${skillData.activation}</p>
         <p class="skill-effects">스킬 레벨: ${currentLevel}</p>
         <p class="skill-effects">${effectText}</p>
         <p class="skill-effects">${nextUpgradeText}</p>
@@ -1945,6 +1945,17 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
   let roundNumber = 1;
 
   function roundFight() {
+    
+    // 라운드 시작 시 패시브 회복 스킬 적용
+    const healed = applyPassiveHealing();
+    if (healed > 0) {
+      const healMsg = document.createElement('div');
+      healMsg.textContent = `패시브 회복 효과로 ${healed}의 체력이 회복되었습니다.`;
+      healMsg.style.color = "#7CFC00"; // 연두색
+      msgContainer.appendChild(healMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
     const roundMsg = document.createElement('div');
     roundMsg.textContent = `=== Round ${roundNumber} ===`;
     msgContainer.appendChild(roundMsg);
