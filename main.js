@@ -1946,6 +1946,11 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
 
   function roundFight() {
     
+    const roundMsg = document.createElement('div');
+    roundMsg.textContent = `=== Round ${roundNumber} ===`;
+    msgContainer.appendChild(roundMsg);
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
     // 라운드 시작 시 패시브 회복 스킬 적용
     const healed = applyPassiveHealing();
     if (healed > 0) {
@@ -1955,11 +1960,6 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
       msgContainer.appendChild(healMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
-
-    const roundMsg = document.createElement('div');
-    roundMsg.textContent = `=== Round ${roundNumber} ===`;
-    msgContainer.appendChild(roundMsg);
-    msgContainer.scrollTop = msgContainer.scrollHeight;
 
     // 매 라운드 시작 시, 출혈 효과 적용 (있다면)
     applyBleedEffect(monster, msgContainer);
