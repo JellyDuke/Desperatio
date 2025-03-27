@@ -480,9 +480,13 @@ function resetGameCompletely() {
   localStorage.setItem('gameState', JSON.stringify(gameState));
 
   // UI 업데이트 (예: 내 정보, 왕국 상태, 인벤토리 등)
+  resetUserClasses();
   updateMyInfo();
-  updateKingdomStatus(gameState.kingdom);
+  updateKingdomStatus(gameState.kingdom); //왕국 정보 업데이트
   updateInventory();
+  updateUserClass();
+  startGameDateTimer();
+  updateLocationMoveUI();
   saveGameState();
   console.log("게임이 완전히 초기화되었습니다.");
 }
@@ -625,6 +629,7 @@ function resetGameExceptSkills() {
   updateInventory();
   updateUserClass();
   startGameDateTimer();
+  updateLocationMoveUI();
   saveGameState();
 }
 
@@ -1313,6 +1318,18 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 //이동 관련
+
+function updateLocationMoveUI() {
+  const locationElem = document.querySelector('.location-move');
+  if (locationElem) {
+    locationElem.textContent = gameState.player.location;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateLocationMoveUI();
+});
+
 function moveTo(destination, msgContainer) {
   // 이동 중 수색 및 전투 중이면 이동 불가
   if (combatInProgress) {
@@ -1364,6 +1381,7 @@ function moveTo(destination, msgContainer) {
     msgContainer.scrollTop = msgContainer.scrollHeight;
     updateCombatPopupUI();
     saveGameState();
+    updateLocationMoveUI()
   }
 
   setTimeout(() => {
