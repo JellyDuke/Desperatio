@@ -502,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //사망시
 function resetGameExceptSkills() {
-  
+
   // 기존 타이머 중지
   stopGameDateTimer();
 
@@ -1520,45 +1520,45 @@ function upgradeSkill(skillName) {
     alert("해당 스킬을 보유하고 있지 않습니다.");
     return;
   }
-  
+
   // storeSkillDB에서 스킬 데이터를 찾습니다.
   const skillData = storeSkillDB.find(s => s.name === skillName);
   if (!skillData) {
     alert("스킬 데이터가 존재하지 않습니다.");
     return;
   }
-  
+
   const currentLevel = playerSkill.level;
   const maxLevel = Object.keys(skillData.effects).length;
-  
+
   if (currentLevel >= maxLevel) {
     alert("이미 최대 강화 단계입니다.");
     return;
   }
-  
+
   // 강화 비용 계산: basePrice × 2^(현재 강화 단계)
   const upgradeCost = skillData.basePrice * Math.pow(2, currentLevel);
-  
+
   // 소지금이 올바른 숫자인지 강제 변환
   gameState.player.money = Number(gameState.player.money) || 0;
   if (gameState.player.money < upgradeCost) {
     alert(`강화 비용이 부족합니다. 필요한 금액: ${upgradeCost.toLocaleString()}원`);
     return;
   }
-  
+
   // 강화 비용 차감 (강화 성공/실패 여부와 상관없이 차감)
   gameState.player.money -= upgradeCost;
-  
+
   // 랜덤 성공 확률: 0.3 ~ 0.9 사이
   const successRate = 0.3 + Math.random() * 0.6;
   if (Math.random() < successRate) {
     // 강화 성공: 현재 강화 단계 증가
     playerSkill.level++;
-    
+
     const msgContainer = document.querySelector('.kingdom-message-combat');
     if (msgContainer) {
       const upgradeMsg = document.createElement('div');
-      upgradeMsg.textContent = `${skillName} 스킬 강화 성공! 현재 강화 단계: ${playerSkill.level} (비용: ${upgradeCost.toLocaleString()}원, 성공 확률: ${(successRate*100).toFixed(1)}%)`;
+      upgradeMsg.textContent = `${skillName} 스킬 강화 성공! 현재 강화 단계: ${playerSkill.level} (비용: ${upgradeCost.toLocaleString()}원, 성공 확률: ${(successRate * 100).toFixed(1)}%)`;
       upgradeMsg.style.color = "#32cd32"; // 연두색: 성공 메시지
       msgContainer.appendChild(upgradeMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -1569,14 +1569,14 @@ function upgradeSkill(skillName) {
     const msgContainer = document.querySelector('.kingdom-message-combat');
     if (msgContainer) {
       const failMsg = document.createElement('div');
-      failMsg.textContent = `${skillName} 스킬 강화 실패! (비용: ${upgradeCost.toLocaleString()}원, 성공 확률: ${(successRate*100).toFixed(1)}%)`;
+      failMsg.textContent = `${skillName} 스킬 강화 실패! (비용: ${upgradeCost.toLocaleString()}원, 성공 확률: ${(successRate * 100).toFixed(1)}%)`;
       failMsg.style.color = "#ff0000"; // 빨간색: 실패 메시지
       msgContainer.appendChild(failMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
     }
     console.log(`${skillName} upgrade failed.`);
   }
-  
+
   // UI 업데이트
   renderEnforceList();
   renderOwnedSkills();
@@ -1751,7 +1751,7 @@ function startNarrativeCombat(monsterKey, msgContainer, finalCallback, isAmbush 
     ? `${monster.name}에게 기습당했습니다!`
     : `${monster.name} 수색을 시작합니다...`;
   const startDiv = document.createElement('div');
-  startDiv.textContent = initialMessage;  
+  startDiv.textContent = initialMessage;
   msgContainer.appendChild(startDiv);
   msgContainer.scrollTop = msgContainer.scrollHeight;
 
@@ -1945,7 +1945,7 @@ function simulateCombatRounds(monster, monsterKey, msgContainer, finalCallback) 
   let roundNumber = 1;
 
   function roundFight() {
-    
+
     const roundMsg = document.createElement('div');
     roundMsg.textContent = `=== Round ${roundNumber} ===`;
     msgContainer.appendChild(roundMsg);
@@ -2153,9 +2153,9 @@ function checkLevelUp(messageContainer) {
       updateUserClass();
       updateUserStatus();
 
-       // 레벨업 후 스킬 해금 조건이 바뀌었을 수 있으므로 UI 갱신
-       updateTodaySkillList();
-       renderSkillShop();
+      // 레벨업 후 스킬 해금 조건이 바뀌었을 수 있으므로 UI 갱신
+      updateTodaySkillList();
+      renderSkillShop();
 
       // 플레이어 최대 체력 갱신: 초기 50에서 레벨당 1.3배씩 증가
       player.health = Math.floor(50 * Math.pow(1.3, player.level - 1));
@@ -2247,7 +2247,7 @@ function checkSkillUnlockCondition(condition) {
     default:
       return false;
   }
-  
+
 }
 
 function renderSkillShop() {
@@ -2267,7 +2267,7 @@ function renderSkillShop() {
     const rarityColor = rarityColorMapping[skill.rarity.toLowerCase()] || "#d3d3d3";
     // 해금 여부는 checkSkillUnlockCondition 함수로 판단 (true이면 해금된 것)
     const unlocked = checkSkillUnlockCondition(skill.unlockCondition);
-    
+
     const skillElem = document.createElement("div");
     skillElem.classList.add("skill-sell-list");
 
@@ -2308,7 +2308,7 @@ function renderSkillShop() {
   setSkillBuyButtonEvents();
   renderOwnedSkills();
   renderEnforceList()
-  
+
 }
 function updateTodaySkillList() {
   // storeSkillDB에 있는 모든 스킬 정보를 오늘의 스킬 목록으로 저장합니다.
@@ -2345,7 +2345,7 @@ function setSkillBuyButtonEvents() {
       gameState.player.skills.push({ name: skillName, level: 1 });
       alert(`[${skill.name}] 스킬을 구매했습니다!`);
 
-      updateTodaySkillList() 
+      updateTodaySkillList()
       renderSkillShop();
       updateUserStatus();
       saveGameState();
