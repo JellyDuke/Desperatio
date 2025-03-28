@@ -25,7 +25,10 @@ const itemClassMapping = {
   "루비": "ruby",
   "사파이어": "sapphire",
   "다이아몬드": "diamond",
-  "개구리 다리": "frogleg"
+  "개구리 다리": "frogleg",
+  "끈적한 거미줄": "cooked-spider-web",
+  "거미 송곳니": "spider-fangs",
+  "딱정벌레 껍질": "beetle-shell"
 };
 
 // 상점 스킬 DB (전투 시 스킬 효과 적용 방식 포함)
