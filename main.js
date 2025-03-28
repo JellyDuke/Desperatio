@@ -315,7 +315,7 @@ const regionMonsters = {
   "왕국 외곽": {
     "왕국 서부 평야": ["plant", "slime"],
     "왕국 동부 경계": ["slime", "orc"],
-    "피안의 숲": ["frog","spider","beetle"]
+    "피안의 숲": ["frog","beetle","spider"]
   },
   "왕도": {
     "왕궁 중심부": [],
@@ -1358,7 +1358,7 @@ function updateLocationMoveUI() {
     locationElem.textContent = `현재위치: ${gameState.player.location}`;
     locationElem.style.fontSize = '12px';
   }
-}
+} 
 document.addEventListener('DOMContentLoaded', () => {
   updateLocationMoveUI();
 });
