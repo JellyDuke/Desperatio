@@ -287,13 +287,13 @@ const monsterData = {
     name: "숲거미",
     discoveryMessage: "숲의 거미줄 사이에서 거대한 거미가 모습을 드러냅니다...",
     maxDelay: 25000,
-    health: 28,
+    health: 128,
     deathMessage: "거미줄에 갇혀 무기력하게 당했습니다...",
     victoryMessage: "거미를 베어냈습니다!",
     militaryLevel: 3,
     loot: [
       { item: "끈적한 거미줄", basePrice: 12, variance: 6, dropChance: 0.7 },
-      { item: "거미 송곳니", basePrice: 20, variance: 10, dropChance: 0.2 }
+      { item: "거미 송곳니", basePrice: 120, variance: 100, dropChance: 0.2 }
     ],
     experience: 35,
     narrativeSteps: [
@@ -310,9 +310,20 @@ const monsterData = {
 //지역
 const regionMonsters = {
   "왕국 외곽": {
-    "왕국 서부 평야": ["plant", "slime", "frog"],
+    "왕국 서부 평야": ["plant", "slime"],
     "왕국 동부 경계": ["slime", "orc"],
-    "피안의 숲": ["plant", "slime", "frog"]
+    "피안의 숲": ["frog","spider","beetle"]
+  },
+  "왕도": {
+    "왕궁 중심부": [],
+    "군사 본부": [],
+    "계급 심사실": [],
+    "훈련장": [],
+    "왕국 상점가": [],
+    "시민 거주구역": [],
+    "영지 관리구역": [],
+    "배정된 영지": [],
+    "왕국 기록보관소": []
   } 
 };
 
