@@ -314,7 +314,7 @@ const regionMonsters = {
     "왕국 동부 경계": ["slime", "orc"],
     "피안의 숲": ["plant", "slime", "frog"]
   } 
-}
+};
 
 const gameState = {
   // 플레이어 정보
