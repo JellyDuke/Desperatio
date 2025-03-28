@@ -307,12 +307,14 @@ const monsterData = {
   // 필요할 때마다 더 추가...
 };
 
-// [추가된 코드] 각 지역별 몬스터 목록 (중앙 지역은 삭제)
+//지역
 const regionMonsters = {
-  "왕국 서부 평야": ["plant", "slime", "frog"],
-  "왕국 동부 경계": ["slime", "orc"],
-  "피안의 숲": ["plant", "slime", "frog"],
-};
+  "왕국 외곽": {
+    "왕국 서부 평야": ["plant", "slime", "frog"],
+    "왕국 동부 경계": ["slime", "orc"],
+    "피안의 숲": ["plant", "slime", "frog"]
+  } 
+}
 
 const gameState = {
   // 플레이어 정보
@@ -1012,7 +1014,6 @@ document.addEventListener('DOMContentLoaded', () => {
   showMessageGuideOnHover(); //mouse hover	
   updateInventory(); //인벤토리
   updateCombatPopupUI();// 팝업 UI에 현재 위치와 몬스터 표시
-  initLocationList();// 동적 이동
   renderOwnedSkills(); //보유스킬
 });
 
@@ -1406,44 +1407,93 @@ function moveTo(destination, msgContainer) {
   saveGameState();
 }
 
-function initLocationList() {
-  const locList = document.querySelector('.location-list');
-  if (!locList) return;
+function renderRegionGroups() {
+  // 탭 버튼 영역은 그대로 .region-group-tabs 사용
+  const tabsContainer = document.querySelector('.region-group-tabs');
+  // 콘텐츠 영역의 클래스명을 .location-list로 변경합니다.
+  const contentsContainer = document.querySelector('.location-list');
 
   // 기존 내용 초기화
-  locList.innerHTML = '';
+  tabsContainer.innerHTML = '';
+  contentsContainer.innerHTML = '';
 
-  // regionMonsters 객체에 있는 모든 지역에 대해 버튼 생성
-  Object.keys(regionMonsters).forEach(region => {
-    // 버튼을 감싸는 컨테이너 생성 (예: .move-list)
-    const moveDiv = document.createElement('div');
-    moveDiv.classList.add('move-list', 'flex');
+  // regionGroups 객체의 각 그룹에 대해 탭 버튼과 콘텐츠 영역 생성
+  Object.keys(regionGroups).forEach((groupName, index) => {
+    // 탭 버튼 생성
+    const tabBtn = document.createElement('button');
+    tabBtn.textContent = groupName;
+    tabBtn.setAttribute('data-group', groupName);
+    if (index === 0) {
+      tabBtn.classList.add('active');
+    }
+    tabsContainer.appendChild(tabBtn);
 
-    // 지역 이름 표시
-    const locName = document.createElement('div');
-    locName.classList.add('location-name');
-    locName.textContent = region;
+    // 그룹 콘텐츠 영역 생성
+    const groupContent = document.createElement('div');
+    groupContent.classList.add('region-content-group');
+    // 고유 ID는 기존과 같이 설정합니다.
+    groupContent.id = `group-${groupName.replace(/\s+/g, '-')}`;
+    // 첫 번째 그룹만 보이고, 나머지는 숨김
+    groupContent.style.display = index === 0 ? 'block' : 'none';
 
-    // 이동 버튼 생성
-    const btn = document.createElement('a');
-    btn.href = '#';
-    btn.classList.add('move-btn', 'w-button');
-    btn.textContent = '이동';
+    // 해당 그룹의 각 지역을 렌더링 (initLocationList() 참고)
+    const regions = regionGroups[groupName];
+    Object.keys(regions).forEach(regionName => {
+      const regionDiv = document.createElement('div');
+      // initLocationList()에서는 지역 컨테이너에 "move-list"와 "flex" 클래스를 사용했습니다.
+      regionDiv.classList.add('move-list', 'flex');
 
-    // 버튼 클릭 시 moveTo 함수 호출
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      const messageContainer = document.querySelector('.kingdom-message-combat');
-      if (!messageContainer) return;
-      moveTo(region, messageContainer);
+      // 지역 이름 요소
+      const locName = document.createElement('div');
+      locName.classList.add('location-name');
+      locName.textContent = regionName;
+
+      // 이동 버튼 생성
+      const btn = document.createElement('a');
+      btn.href = '#';
+      btn.classList.add('move-btn', 'w-button');
+      btn.textContent = '이동';
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        const messageContainer = document.querySelector('.kingdom-message-combat');
+        if (!messageContainer) return;
+        moveTo(regionName, messageContainer);
+      });
+
+      regionDiv.appendChild(locName);
+      regionDiv.appendChild(btn);
+      groupContent.appendChild(regionDiv);
     });
 
-    // 요소 조립 및 추가
-    moveDiv.appendChild(locName);
-    moveDiv.appendChild(btn);
-    locList.appendChild(moveDiv);
+    // 생성된 그룹 콘텐츠를 .location-list에 추가
+    contentsContainer.appendChild(groupContent);
+  });
+
+  // 탭 버튼 클릭 이벤트 처리
+  document.querySelectorAll('.region-group-tabs button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const selectedGroup = this.getAttribute('data-group');
+      // 모든 탭 버튼에서 active 클래스 제거
+      document.querySelectorAll('.region-group-tabs button').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      // 모든 그룹 콘텐츠 숨기기
+      document.querySelectorAll('.region-content-group').forEach(content => {
+        content.style.display = 'none';
+      });
+
+      // 선택한 그룹의 콘텐츠 보이기
+      const activeContent = document.getElementById(`group-${selectedGroup.replace(/\s+/g, '-')}`);
+      if (activeContent) {
+        activeContent.style.display = 'block';
+      }
+    });
   });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderRegionGroups();
+});
 
 //스킬
 
