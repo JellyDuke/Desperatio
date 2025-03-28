@@ -1356,7 +1356,7 @@ function updateLocationMoveUI() {
   const locationElem = document.querySelector('.location-move');
   if (locationElem) {
     // "현재위치:"는 12px, 나머지 위치 텍스트는 기본 스타일로 출력합니다.
-    locationElem.innerHTML = `<span style="font-size:12px;">현재위치: </span>${gameState.player.location}`;
+    locationElem.innerHTML = `${gameState.player.location}<span style="font-size:14px;"> 현 위치</span>`;
   }
 }
 
