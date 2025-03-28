@@ -901,7 +901,7 @@ function checkMonsterInvasion() {
   if (lastMinutes < 30) return;
   
   // 침공 확률 (1% ~ 10% 사이)
-  const invasionChance = Math.random() * 0.09 + 0.01;
+  const invasionChance = 1.0;
   if (Math.random() < invasionChance) {
     // monsterData에서 무작위 몬스터 선택
     const monsterKeys = Object.keys(monsterData);
