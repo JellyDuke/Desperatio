@@ -897,23 +897,32 @@ gameState.invasion = gameState.invasion || {}; // 침공 상태를 저장할 객
 
 // 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
 function checkMonsterInvasion() {
-  // 1분이 1일이라고 가정하면 lastMinutes(지난 일수)가 30 이상일 때 침공 체크
-  if (lastMinutes < 30) return; // 30일 이전에는 침공 없음
+  // 30일 미만이면 침공 체크하지 않음
+  if (lastMinutes < 30) return;
   
-  // 침공 확률을 1% ~ 10% 사이 랜덤으로 결정
+  // 침공 확률 (1% ~ 10% 사이)
   const invasionChance = Math.random() * 0.09 + 0.01;
   if (Math.random() < invasionChance) {
-    // 침공 발생: 왕도 내에 랜덤 몬스터 생성
+    // monsterData에서 무작위 몬스터 선택
     const monsterKeys = Object.keys(monsterData);
     const randomMonsterKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
-    // 몬스터 데이터를 복제해서 invasion용으로 사용 (원본 훼손 방지)
     const invasionMonster = Object.assign({}, monsterData[randomMonsterKey]);
-    invasionMonster.isInvasion = true; // 침공임을 표시
+    invasionMonster.isInvasion = true; // 침공 표시
     
-    // gameState.invasion 객체에 침공 몬스터 저장
+    // "왕도" 그룹 내의 지역 목록에서 무작위로 선택
+    const capitalRegions = Object.keys(regionMonsters["왕도"]);
+    if (capitalRegions.length > 0) {
+      const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
+      invasionMonster.location = randomRegion;
+    } else {
+      invasionMonster.location = "왕도"; // 예외 처리
+    }
+    
+    // 침공 몬스터를 gameState.invasion에 저장
+    gameState.invasion = gameState.invasion || {};
     gameState.invasion.monster = invasionMonster;
     
-    // 침공 발생 시, 왕국 자원을 추가로 감소 (예: 각 자원 10%씩 감소)
+    // 침공 발생 시 자원 10% 감소 처리
     for (let res in gameState.kingdom.resources) {
       const reduction = Math.floor(gameState.kingdom.resources[res] * 0.10);
       gameState.kingdom.resources[res] = Math.max(0, gameState.kingdom.resources[res] - reduction);
@@ -923,14 +932,13 @@ function checkMonsterInvasion() {
     const kingdomMsgElem = document.querySelector('.kingdom-message-news');
     if (kingdomMsgElem) {
       const invasionMsg = document.createElement('div');
-      invasionMsg.textContent = `몬스터 침공 발생! ${invasionMonster.name}가 왕도에 나타났습니다.`;
+      invasionMsg.textContent = `몬스터 침공 발생! ${invasionMonster.name}가 ${invasionMonster.location}에 나타났습니다.`;
       invasionMsg.style.color = "red";
       kingdomMsgElem.appendChild(invasionMsg);
       scrollToBottom(kingdomMsgElem);
     }
   }
 }
-
 // 2. 매일 30% 확률로 왕국 병사가 침공 몬스터를 잡아내는 함수
 function checkSoldierIntervention() {
   if (!gameState.invasion || !gameState.invasion.monster) return;
