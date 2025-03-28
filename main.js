@@ -901,7 +901,7 @@ function checkMonsterInvasion() {
   if (lastMinutes < 30) return;
   
   // 침공 확률 (1% ~ 10% 사이)
-  const invasionChance = 1.0;
+  const invasionChance = Math.random() * 0.09 + 0.01;
   if (Math.random() < invasionChance) {
     // monsterData에서 무작위 몬스터 선택
     const monsterKeys = Object.keys(monsterData);
@@ -1460,6 +1460,45 @@ function updateCombatList(region) {
     
     container.appendChild(clone);
   });
+   // 침공 몬스터 체크: 플레이어의 위치와 침공 몬스터의 location이 일치하면 추가
+   if (gameState.invasion && gameState.invasion.monster && gameState.invasion.monster.location === region) {
+    const invasionMonster = gameState.invasion.monster;
+    // 침공 몬스터 카드 생성 (예시)
+    const invasionCard = document.createElement('div');
+    invasionCard.classList.add('combat-list-wrap-combat');
+    invasionCard.style.display = "flex";
+    
+    const nameElem = document.createElement('div');
+    nameElem.classList.add('monster-name');
+    nameElem.textContent = invasionMonster.name + " (침공)";
+    invasionCard.appendChild(nameElem);
+    
+    const levelElem = document.createElement('div');
+    levelElem.classList.add('monster-level');
+    levelElem.textContent = `무력 레벨: ${invasionMonster.militaryLevel || 'N/A'}`;
+    invasionCard.appendChild(levelElem);
+    
+    // 전투 버튼 생성 및 이벤트 연결
+    const combatBtn = document.createElement('button');
+    combatBtn.classList.add('combat-btn');
+    combatBtn.textContent = '전투';
+    combatBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (combatInProgress) {
+        // 이미 전투 중이면 메시지 출력
+        return;
+      }
+      combatInProgress = true;
+      startNarrativeCombat(invasionMonster.key || 'invasion', document.querySelector('.kingdom-message-combat'), () => {
+        combatInProgress = false;
+        // 침공 전투가 끝나면 침공 몬스터 제거
+        delete gameState.invasion.monster;
+      });
+    });
+    invasionCard.appendChild(combatBtn);
+    
+    container.appendChild(invasionCard);
+  }
 }
 
 
