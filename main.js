@@ -1238,44 +1238,48 @@ function updateRankByLevel() {
  * 지역별 전투 목록 UI 업데이트 함수
  * @param {string} region - "왕국 서부", "왕국 동부" 등
  */
+
+// 플레이어의 위치(세부 지역 또는 그룹)를 기준으로 해당 몬스터 목록을 반환하는 헬퍼 함수
+function getMonstersForLocation(location) {
+  // 먼저, 어느 그룹의 하위에 location이 있는지 확인
+  for (const group in regionMonsters) {
+    if (regionMonsters[group].hasOwnProperty(location)) {
+      // 해당 세부 지역의 몬스터 배열 반환
+      return regionMonsters[group][location];
+    }
+  }
+  // 만약 location이 top-level(예: "왕국 외곽")이면, 그 그룹의 모든 하위 지역 몬스터 배열을 합칩니다.
+  if (regionMonsters.hasOwnProperty(location)) {
+    let monsters = [];
+    const groupData = regionMonsters[location];
+    if (Array.isArray(groupData)) {
+      return groupData;
+    } else if (typeof groupData === 'object') {
+      Object.values(groupData).forEach(arr => {
+        monsters = monsters.concat(arr);
+      });
+      return monsters;
+    }
+  }
+  return [];
+}
+
 function updateCombatList(region) {
   const container = document.querySelector('.card-list');
   if (!container) return;
   container.innerHTML = ''; // 기존 목록 초기화
+  console.log("container:", container);
 
-  let monsterKeys = [];
-
-  // 우선, regionMonsters에서 top-level 키로 일치하는지 확인
-  if (regionMonsters.hasOwnProperty(region)) {
-    // 만약 regionMonsters[region]가 배열이면 그대로 사용
-    if (Array.isArray(regionMonsters[region])) {
-      monsterKeys = regionMonsters[region];
-    } else if (typeof regionMonsters[region] === 'object') {
-      // 객체인 경우 모든 배열을 합칩니다.
-      Object.values(regionMonsters[region]).forEach(arr => {
-        monsterKeys = monsterKeys.concat(arr);
-      });
-    }
-  } else {
-    // top-level에 없으면, 세부 지역으로 판단하여 어느 그룹에 속하는지 찾기
-    for (const group in regionMonsters) {
-      if (regionMonsters[group].hasOwnProperty(region)) {
-        // 해당 그룹의 세부 지역의 배열만 사용
-        if (Array.isArray(regionMonsters[group][region])) {
-          monsterKeys = regionMonsters[group][region];
-        }
-        break;
-      }
-    }
-  }
-
+  // getMonstersForLocation()를 이용하여 해당 위치에 맞는 몬스터 키 배열을 구함
+  const monsterKeys = getMonstersForLocation(region);
   console.log('monsterKeys:', monsterKeys);
   if (!monsterKeys || monsterKeys.length === 0) return;
-
+  
   monsterKeys.forEach((key) => {
     const monster = monsterData[key];
     if (!monster) return;
     const template = document.querySelector('.combat-list-wrap-combat');
+    console.log('template:', template);
     if (!template) return;
     const clone = template.cloneNode(true);
     clone.style.display = "flex";
@@ -1314,6 +1318,8 @@ function updateCombatList(region) {
     container.appendChild(clone);
   });
 }
+
+
 document.addEventListener('DOMContentLoaded', function () {
   function closeParentPopup(element) {
     const parentPopup = element.closest('.popup');
