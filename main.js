@@ -1242,7 +1242,7 @@ function updateCombatList(region) {
   const container = document.querySelector('.card-list');
   if (!container) return;
   container.innerHTML = ''; // 기존 목록 초기화
-
+  console.log(container);
   let monsterKeys = [];
   
   // 만약 regionMonsters[region]가 배열이면 그대로 사용,
@@ -1254,7 +1254,7 @@ function updateCombatList(region) {
       monsterKeys = monsterKeys.concat(arr);
     });
   }
-  
+  console.log('monsterKeys:', monsterKeys);
   if (!monsterKeys || monsterKeys.length === 0) return;
   
   monsterKeys.forEach((key) => {
@@ -1263,6 +1263,7 @@ function updateCombatList(region) {
     // 템플릿 복제 후 몬스터 정보를 업데이트하는 기존 코드...
     // 예시:
     const template = document.querySelector('.combat-list-wrap-combat');
+    console.log('template');
     if (!template) return;
     const clone = template.cloneNode(true);
     clone.style.display = "flex";
