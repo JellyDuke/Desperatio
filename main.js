@@ -1355,10 +1355,11 @@ document.addEventListener('DOMContentLoaded', function () {
 function updateLocationMoveUI() {
   const locationElem = document.querySelector('.location-move');
   if (locationElem) {
-    locationElem.textContent = `현재위치: ${gameState.player.location}`;
-    locationElem.style.fontSize = '12px';
+    // "현재위치:"는 12px, 나머지 위치 텍스트는 기본 스타일로 출력합니다.
+    locationElem.innerHTML = `<span style="font-size:12px;">현재위치: </span>${gameState.player.location}`;
   }
-} 
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   updateLocationMoveUI();
 });
