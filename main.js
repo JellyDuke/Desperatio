@@ -1239,30 +1239,34 @@ function updateRankByLevel() {
  * @param {string} region - "왕국 서부", "왕국 동부" 등
  */
 function updateCombatList(region) {
-  // [수정] .card-list 컨테이너를 찾음
   const container = document.querySelector('.card-list');
   if (!container) return;
   container.innerHTML = ''; // 기존 목록 초기화
 
-  // regionMonsters[region] -> 예: ["orc", "slime"]
-  const monsterKeys = regionMonsters[region];
+  let monsterKeys = [];
+  
+  // 만약 regionMonsters[region]가 배열이면 그대로 사용,
+  // 아니라면 객체인 경우 그 안의 모든 값(배열)을 합칩니다.
+  if (Array.isArray(regionMonsters[region])) {
+    monsterKeys = regionMonsters[region];
+  } else if (typeof regionMonsters[region] === 'object') {
+    Object.values(regionMonsters[region]).forEach(arr => {
+      monsterKeys = monsterKeys.concat(arr);
+    });
+  }
+  
   if (!monsterKeys || monsterKeys.length === 0) return;
-
+  
   monsterKeys.forEach((key) => {
-    // monsterData에서 실제 몬스터 객체 얻기
     const monster = monsterData[key];
     if (!monster) return;
-
-    // [수정] 템플릿 요소를 찾음 (display: none)
+    // 템플릿 복제 후 몬스터 정보를 업데이트하는 기존 코드...
+    // 예시:
     const template = document.querySelector('.combat-list-wrap-combat');
     if (!template) return;
-
-    // [추가] 템플릿 복제
     const clone = template.cloneNode(true);
-    // 템플릿이 숨겨져 있으므로 복제 후 표시
     clone.style.display = "flex";
-
-    // 몬스터 이름, 무력 레벨 등 업데이트
+    
     const nameElem = clone.querySelector('.monster-name');
     if (nameElem) {
       nameElem.textContent = monster.name;
@@ -1271,33 +1275,29 @@ function updateCombatList(region) {
     if (levelElem) {
       levelElem.textContent = `무력 레벨: ${monster.militaryLevel}`;
     }
-
-    // [수정] "수색하기" 버튼 클릭 시 => 해당 monsterKey로 전투 시작
+    
+    // "수색하기" 버튼 클릭 이벤트 등 추가 처리
     const combatBtn = clone.querySelector('.combat-btn');
     if (combatBtn) {
       combatBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        // [추가] 전역 변수로 중복 전투 방지
         if (combatInProgress) {
           const msg = document.createElement('div');
           msg.textContent = "이미 수색중입니다!";
           document.querySelector('.kingdom-message-combat').appendChild(msg);
           return;
         }
-        combatInProgress = true; // 전투 시작
-
-        // monsterKey를 그대로 전달
+        combatInProgress = true;
         startNarrativeCombat(key, document.querySelector('.kingdom-message-combat'), () => {
-          combatInProgress = false; // 전투 끝
+          combatInProgress = false;
         });
-        // --- 수정됨: 수색 기능 실행 후 전투 팝업 닫기 ---
         const combatPopup = document.querySelector('.popup.combat');
         if (combatPopup) {
           combatPopup.style.display = 'none';
         }
       });
     }
-
+    
     container.appendChild(clone);
   });
 }
