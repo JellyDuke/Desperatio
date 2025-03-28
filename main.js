@@ -892,6 +892,94 @@ function dailyResourceChange() {
 
 
 
+// 침공 관련 전역 변수 추가 (게임 상태에 추가)
+gameState.invasion = gameState.invasion || {}; // 침공 상태를 저장할 객체
+
+// 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
+function checkMonsterInvasion() {
+  // 1분이 1일이라고 가정하면 lastMinutes(지난 일수)가 30 이상일 때 침공 체크
+  if (lastMinutes < 30) return; // 30일 이전에는 침공 없음
+  
+  // 침공 확률을 1% ~ 10% 사이 랜덤으로 결정
+  const invasionChance = Math.random() * 0.09 + 0.01;
+  if (Math.random() < invasionChance) {
+    // 침공 발생: 왕도 내에 랜덤 몬스터 생성
+    const monsterKeys = Object.keys(monsterData);
+    const randomMonsterKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
+    // 몬스터 데이터를 복제해서 invasion용으로 사용 (원본 훼손 방지)
+    const invasionMonster = Object.assign({}, monsterData[randomMonsterKey]);
+    invasionMonster.isInvasion = true; // 침공임을 표시
+    
+    // gameState.invasion 객체에 침공 몬스터 저장
+    gameState.invasion.monster = invasionMonster;
+    
+    // 침공 발생 시, 왕국 자원을 추가로 감소 (예: 각 자원 10%씩 감소)
+    for (let res in gameState.kingdom.resources) {
+      const reduction = Math.floor(gameState.kingdom.resources[res] * 0.10);
+      gameState.kingdom.resources[res] = Math.max(0, gameState.kingdom.resources[res] - reduction);
+    }
+    
+    // UI 메시지 출력
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const invasionMsg = document.createElement('div');
+      invasionMsg.textContent = `몬스터 침공 발생! ${invasionMonster.name}가 왕도에 나타났습니다.`;
+      invasionMsg.style.color = "red";
+      kingdomMsgElem.appendChild(invasionMsg);
+      scrollToBottom(kingdomMsgElem);
+    }
+  }
+}
+
+// 2. 매일 30% 확률로 왕국 병사가 침공 몬스터를 잡아내는 함수
+function checkSoldierIntervention() {
+  if (!gameState.invasion || !gameState.invasion.monster) return;
+  
+  // 30% 확률로 병사 개입
+  if (Math.random() < 0.30) {
+    // 병사가 침공을 막아내면서 20~100 명 정도의 병사 손실
+    const loss = Math.floor(Math.random() * (100 - 20 + 1)) + 20;
+    gameState.kingdom.soldiercount = Math.max(0, gameState.kingdom.soldiercount - loss);
+    
+    // 침공 몬스터 제거
+    delete gameState.invasion.monster;
+    
+    // UI 메시지 출력
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const soldierMsg = document.createElement('div');
+      soldierMsg.textContent = `왕국 병사들이 침공을 막아냈습니다! 병사 ${loss}명이 피해를 입었습니다.`;
+      soldierMsg.style.color = "orange";
+      kingdomMsgElem.appendChild(soldierMsg);
+      scrollToBottom(kingdomMsgElem);
+    }
+  }
+}
+
+// 3. 플레이어가 직접 침공 몬스터를 처치했을 때 호출하는 함수 (예: 전투 승리 후)
+function playerDefeatInvasionMonster() {
+  if (gameState.invasion && gameState.invasion.monster) {
+    delete gameState.invasion.monster;
+    
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const playerMsg = document.createElement('div');
+      playerMsg.textContent = `플레이어가 침공 몬스터를 처치했습니다!`;
+      playerMsg.style.color = "green";
+      kingdomMsgElem.appendChild(playerMsg);
+      scrollToBottom(kingdomMsgElem);
+    }
+  }
+}
+
+// updateGameDate 함수의 끝부분이나 매일 실행되는 로직에서 아래 함수를 호출합니다.
+function dailyInvasionCheck() {
+  checkMonsterInvasion();
+  checkSoldierIntervention();
+  // 만약 플레이어가 왕도 지역에 있을 경우, 전투 UI에서 침공 몬스터와의 전투를 진행할 수 있도록
+  // 추가적인 로직(예: updateCombatPopupUI 내에서 '왕도' 지역일 때 gameState.invasion.monster가 있다면 전투 대상에 포함)을 구현하면 됩니다.
+}
+
 /**
  * .popup.my-info 내의 rank, experience, level, militaryLevel, charisma, governance, roundCount
  * 를 현재 gameState 값으로 갱신
@@ -3578,6 +3666,7 @@ function updateGameDate() {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
 
+  dailyInvasionCheck();
   refreshShopItemsForNewDay();
   initShopItems();
   updateShopInventory();
