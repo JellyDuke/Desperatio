@@ -1422,6 +1422,7 @@ function renderRegionGroups() {
     const tabBtn = document.createElement('button');
     tabBtn.textContent = groupName;
     tabBtn.setAttribute('data-group', groupName);
+    tabBtn.classList.add('region-tab-btn');
     if (index === 0) {
       tabBtn.classList.add('active');
     }
