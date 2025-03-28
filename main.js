@@ -1242,28 +1242,40 @@ function updateCombatList(region) {
   const container = document.querySelector('.card-list');
   if (!container) return;
   container.innerHTML = ''; // 기존 목록 초기화
-  console.log(container);
+
   let monsterKeys = [];
-  
-  // 만약 regionMonsters[region]가 배열이면 그대로 사용,
-  // 아니라면 객체인 경우 그 안의 모든 값(배열)을 합칩니다.
-  if (Array.isArray(regionMonsters[region])) {
-    monsterKeys = regionMonsters[region];
-  } else if (typeof regionMonsters[region] === 'object') {
-    Object.values(regionMonsters[region]).forEach(arr => {
-      monsterKeys = monsterKeys.concat(arr);
-    });
+
+  // 우선, regionMonsters에서 top-level 키로 일치하는지 확인
+  if (regionMonsters.hasOwnProperty(region)) {
+    // 만약 regionMonsters[region]가 배열이면 그대로 사용
+    if (Array.isArray(regionMonsters[region])) {
+      monsterKeys = regionMonsters[region];
+    } else if (typeof regionMonsters[region] === 'object') {
+      // 객체인 경우 모든 배열을 합칩니다.
+      Object.values(regionMonsters[region]).forEach(arr => {
+        monsterKeys = monsterKeys.concat(arr);
+      });
+    }
+  } else {
+    // top-level에 없으면, 세부 지역으로 판단하여 어느 그룹에 속하는지 찾기
+    for (const group in regionMonsters) {
+      if (regionMonsters[group].hasOwnProperty(region)) {
+        // 해당 그룹의 세부 지역의 배열만 사용
+        if (Array.isArray(regionMonsters[group][region])) {
+          monsterKeys = regionMonsters[group][region];
+        }
+        break;
+      }
+    }
   }
+
   console.log('monsterKeys:', monsterKeys);
   if (!monsterKeys || monsterKeys.length === 0) return;
-  
+
   monsterKeys.forEach((key) => {
     const monster = monsterData[key];
     if (!monster) return;
-    // 템플릿 복제 후 몬스터 정보를 업데이트하는 기존 코드...
-    // 예시:
     const template = document.querySelector('.combat-list-wrap-combat');
-    console.log('template');
     if (!template) return;
     const clone = template.cloneNode(true);
     clone.style.display = "flex";
@@ -1277,7 +1289,7 @@ function updateCombatList(region) {
       levelElem.textContent = `무력 레벨: ${monster.militaryLevel}`;
     }
     
-    // "수색하기" 버튼 클릭 이벤트 등 추가 처리
+    // "수색하기" 버튼 클릭 이벤트 처리
     const combatBtn = clone.querySelector('.combat-btn');
     if (combatBtn) {
       combatBtn.addEventListener('click', (e) => {
@@ -1302,7 +1314,6 @@ function updateCombatList(region) {
     container.appendChild(clone);
   });
 }
-
 document.addEventListener('DOMContentLoaded', function () {
   function closeParentPopup(element) {
     const parentPopup = element.closest('.popup');
