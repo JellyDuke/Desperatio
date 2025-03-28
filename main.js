@@ -1753,21 +1753,32 @@ function renderOwnedSkills() {
  * 전투 팝업 업데이트 (헤더: 지역명만 표시)
  ********************************************************/
 function updateCombatPopupUI() {
-  // [수정] 지역 이름만 헤더에 표시
-  const location = gameState.player.location;
+  // 플레이어의 현재 위치를 기반으로 상위 그룹을 결정합니다.
+  const group = getRegionGroupFromLocation(gameState.player.location);
   const combatCard = document.querySelector('.popup.combat');
   if (!combatCard) return;
 
-  // 헤더에 지역명만 표시
+  // 헤더에 상위 그룹 이름 표시
   const cardTitle = combatCard.querySelector('.card-title');
   if (cardTitle) {
-    cardTitle.textContent = location;
+    cardTitle.textContent = group;
   }
 
-  // [추가] 지역별 몬스터 목록 UI 생성
-  updateCombatList(location);
+  // 해당 그룹의 몬스터 목록을 업데이트합니다.
+  updateCombatList(group);
 }
 
+// 플레이어의 위치(예: "왕국 서부 평야")를 받아서 해당하는 상위 그룹(예: "왕국 외곽")을 리턴하는 함수
+function getRegionGroupFromLocation(location) {
+  for (const group in regionMonsters) {
+    const regions = regionMonsters[group];
+    if (regions.hasOwnProperty(location)) {
+      return group;
+    }
+  }
+  // 만약 해당하는 그룹이 없다면, 기본적으로 입력된 location을 리턴하거나 다른 처리를 합니다.
+  return location;
+}
 //전투 관련
 // 전역 변수 선언 (전투 진행 여부)
 let combatInProgress = false;
