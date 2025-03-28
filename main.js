@@ -972,14 +972,29 @@ function playerDefeatInvasionMonster() {
   }
 }
 
-// updateGameDate 함수의 끝부분이나 매일 실행되는 로직에서 아래 함수를 호출합니다.
-function dailyInvasionCheck() {
-  checkMonsterInvasion();
-  checkSoldierIntervention();
-  // 만약 플레이어가 왕도 지역에 있을 경우, 전투 UI에서 침공 몬스터와의 전투를 진행할 수 있도록
-  // 추가적인 로직(예: updateCombatPopupUI 내에서 '왕도' 지역일 때 gameState.invasion.monster가 있다면 전투 대상에 포함)을 구현하면 됩니다.
+// 현재 날짜를 문자열로 생성하는 헬퍼 함수 (예: "24-04-15")
+function getCurrentDateKey() {
+  const { year, month, day } = gameState.currentDate;
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
+// 하루에 한 번 침공 여부를 결정하는 함수
+function dailyInvasionCheck() {
+  const currentDateKey = getCurrentDateKey();
+  // 이미 오늘 침공 체크가 완료되었다면 아무 작업도 하지 않음
+  if (gameState.lastInvasionDate === currentDateKey) {
+    return;
+  }
+  
+  // 오늘은 아직 침공 체크를 하지 않았으므로, 날짜 기록 업데이트
+  gameState.lastInvasionDate = currentDateKey;
+  
+  // 게임 시작 후 30일이 지난 경우 침공 여부 체크
+  if (lastMinutes >= 30) {
+    checkMonsterInvasion();
+    checkSoldierIntervention();
+  }
+}
 /**
  * .popup.my-info 내의 rank, experience, level, militaryLevel, charisma, governance, roundCount
  * 를 현재 gameState 값으로 갱신
