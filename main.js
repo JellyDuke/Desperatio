@@ -1492,6 +1492,15 @@ function renderRegionGroups() {
 // DOMContentLoaded 시 초기 렌더링
 document.addEventListener('DOMContentLoaded', () => {
   renderRegionGroups();
+   // 기존 초기화 코드들이 있다면 그 아래에 추가
+   document.querySelectorAll('.move-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const popup = btn.closest('.popup.move');
+      if (popup) {
+        popup.style.display = 'none';
+      }
+    });
+  });
 });
 
 //스킬
