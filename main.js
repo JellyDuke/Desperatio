@@ -1355,10 +1355,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function updateLocationMoveUI() {
   const locationElem = document.querySelector('.location-move');
   if (locationElem) {
-    locationElem.textContent = gameState.player.location;
+    locationElem.textContent = `현재위치: ${gameState.player.location}`;
+    locationElem.style.fontSize = '12px';
   }
 }
-
 document.addEventListener('DOMContentLoaded', () => {
   updateLocationMoveUI();
 });
