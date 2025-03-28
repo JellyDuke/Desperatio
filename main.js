@@ -680,19 +680,12 @@ function resetUserClasses() {
  * @param {Object} data - 예: { status: '위기', citizenAnxiety: 78, soldiercount: 2544, ... }
  */
 
-// -- updateKingdomStatus 함수 (중복 정의 제거 및 일관성 유지)
-// [수정/추가] : 한 개의 updateKingdomStatus 함수만 사용하며, gameState.kingdom의 키와 일치하도록 소문자로 통일합니다.
-// -- updateKingdomStatus 함수 (수정/추가)
 function updateKingdomStatus(data) {
-  // [수정/추가]
-  // 만약 아직 자원이 초기화되지 않았다면, resources 객체 내부에 랜덤 값을 생성합니다.
+  // 자원이 아직 초기화되지 않았다면, resources 객체 내부에 랜덤 값을 생성합니다.
   if (!gameState.progress.resourcesInitialized) {
-    data.citizenanxiety = Math.floor(Math.random() * 41) + 10; // 10 ~ 50
-    // [수정] 시민 수를 1,000,000 ~ 3,000,000 사이의 랜덤 값으로 설정
+    // 기존 방식으로 불안도, 인구, 병사, 자원 등을 랜덤 생성
     data.population = Math.floor(Math.random() * (3000000 - 1000000 + 1)) + 1000000;
-    // [수정] 병사수는 시민 수의 1/3
     data.soldiercount = Math.floor(data.population / 3);
-    // 자원값을 resources 객체 내부에 저장
     data.resources = {
       food: Math.floor(Math.random() * 2000) + 4000,       // 4000 ~ 5999
       wood: Math.floor(Math.random() * 2000) + 4000,       // 4000 ~ 5999
@@ -701,35 +694,59 @@ function updateKingdomStatus(data) {
       gold: Math.floor(Math.random() * 500) + 500          // 500 ~ 999
     };
 
+    // 식량에 따른 시민 불안도 계산
+    const food = data.resources.food;
+    if (food > 3000) {
+      data.citizenanxiety = 10;
+    } else if (food >= 500) {
+      // 식량이 3000~500 사이: 식량 부족분에 비례하여 서서히 상승 (식량=500일 때 최대 55)
+      data.citizenanxiety = 10 + (3000 - food) * 0.018;
+    } else {
+      // 식량이 500 미만: 식량이 500일 때 55, 식량이 0이면 55 + (500*0.06) = 85
+      data.citizenanxiety = 55 + (500 - food) * 0.06;
+    }
+
     gameState.progress.resourcesInitialized = true;
   }
 
-  // HTML 요소 업데이트 (클래스 모두 소문자)
+  // 왕국 상태(status) 결정: 시민 불안도가 35 이상이면 "위기", 15 이상이면 "주의", 그 미만이면 "안정"
+  if (data.citizenanxiety < 15) {
+    data.status = "안정";
+  } else if (data.citizenanxiety < 35) {
+    data.status = "주의";
+  } else {
+    data.status = "위기";
+  }
+
+  // 만약 상태가 "위기"라면 왕국 뉴스 영역에 빨간색 메시지 출력
+  if (data.status === "위기") {
+    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+    if (kingdomMsgElem) {
+      const crisisMsg = document.createElement('div');
+      crisisMsg.textContent = "위기: 왕국이 심각한 위기에 처해 있습니다!";
+      crisisMsg.style.color = "red";
+      kingdomMsgElem.appendChild(crisisMsg);
+      scrollToBottom(kingdomMsgElem);
+    }
+  }
+
+  // HTML 요소 업데이트
   const statusElem = document.querySelector('.status');
   if (statusElem) {
     statusElem.textContent = data.status ?? '';
   }
-
-  // 시민 불안도 (숫자가 그리 크지 않다면 그대로 표시하거나,
-  // 3자리 콤마 표시를 원하시면 toLocaleString() 적용)
   const anxietyElem = document.querySelector('.citizenanxiety');
   if (anxietyElem) {
     anxietyElem.textContent = (data.citizenanxiety ?? 0).toLocaleString();
   }
-
-  // 병사수
   const soldierElem = document.querySelector('.soldiercount');
   if (soldierElem) {
     soldierElem.textContent = (data.soldiercount ?? 0).toLocaleString();
   }
-
-  // 시민수
   const citizenElem = document.querySelector('.citizen');
   if (citizenElem) {
     citizenElem.textContent = (data.population ?? 0).toLocaleString();
   }
-
-  // 자원 (food, wood, ore, magicstone, gold)
   const foodElem = document.querySelector('.food');
   if (foodElem) {
     foodElem.textContent = (data.resources.food ?? 0).toLocaleString();
@@ -759,6 +776,8 @@ function updateKingdomStatus(data) {
 
   saveGameState();
 }
+
+
 
 
 //매일 자원 감소 왕국
