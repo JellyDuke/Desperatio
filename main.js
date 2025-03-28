@@ -1241,14 +1241,13 @@ function updateRankByLevel() {
 
 // 플레이어의 위치(세부 지역 또는 그룹)를 기준으로 해당 몬스터 목록을 반환하는 헬퍼 함수
 function getMonstersForLocation(location) {
-  // 먼저, 어느 그룹의 하위에 location이 있는지 확인
+  // 먼저, 세부 지역으로 존재하는지 확인
   for (const group in regionMonsters) {
     if (regionMonsters[group].hasOwnProperty(location)) {
-      // 해당 세부 지역의 몬스터 배열 반환
       return regionMonsters[group][location];
     }
   }
-  // 만약 location이 top-level(예: "왕국 외곽")이면, 그 그룹의 모든 하위 지역 몬스터 배열을 합칩니다.
+  // 만약 세부 지역이 아니라면(즉, 그룹명인 경우), 해당 그룹의 모든 하위 지역을 합칩니다.
   if (regionMonsters.hasOwnProperty(location)) {
     let monsters = [];
     const groupData = regionMonsters[location];
@@ -1318,6 +1317,7 @@ function updateCombatList(region) {
     container.appendChild(clone);
   });
 }
+
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1770,19 +1770,19 @@ function renderOwnedSkills() {
  * 전투 팝업 업데이트 (헤더: 지역명만 표시)
  ********************************************************/
 function updateCombatPopupUI() {
-  // 플레이어의 현재 위치를 기반으로 상위 그룹을 결정합니다.
-  const group = getRegionGroupFromLocation(gameState.player.location);
+  // 플레이어의 상세 위치(예: "왕국 서부 평야")를 그대로 사용
+  const location = gameState.player.location;
   const combatCard = document.querySelector('.popup.combat');
   if (!combatCard) return;
 
-  // 헤더에 상위 그룹 이름 표시
+  // 헤더에 상세 위치 표시
   const cardTitle = combatCard.querySelector('.card-title');
   if (cardTitle) {
-    cardTitle.textContent = group;
+    cardTitle.textContent = location;
   }
 
-  // 해당 그룹의 몬스터 목록을 업데이트합니다.
-  updateCombatList(group);
+  // 해당 상세 위치의 몬스터 목록을 업데이트합니다.
+  updateCombatList(location);
 }
 
 // 플레이어의 위치(예: "왕국 서부 평야")를 받아서 해당하는 상위 그룹(예: "왕국 외곽")을 리턴하는 함수
