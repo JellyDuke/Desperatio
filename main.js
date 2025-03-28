@@ -1408,17 +1408,16 @@ function moveTo(destination, msgContainer) {
 }
 
 function renderRegionGroups() {
-  // 탭 버튼 영역은 그대로 .region-group-tabs 사용
+  // 탭 버튼 영역과 콘텐츠 영역(이동 리스트)를 선택합니다.
   const tabsContainer = document.querySelector('.region-group-tabs');
-  // 콘텐츠 영역의 클래스명을 .location-list로 변경합니다.
-  const contentsContainer = document.querySelector('.location-list');
+  const contentsContainer = document.querySelector('.location-list'); // 기존 initLocationList()의 컨테이너와 동일
 
   // 기존 내용 초기화
   tabsContainer.innerHTML = '';
   contentsContainer.innerHTML = '';
 
-  // regionGroups 객체의 각 그룹에 대해 탭 버튼과 콘텐츠 영역 생성
-  Object.keys(regionGroups).forEach((groupName, index) => {
+  // regionMonsters 객체의 각 그룹(여기서는 "왕국 외곽")에 대해 처리
+  Object.keys(regionMonsters).forEach((groupName, index) => {
     // 탭 버튼 생성
     const tabBtn = document.createElement('button');
     tabBtn.textContent = groupName;
@@ -1428,27 +1427,25 @@ function renderRegionGroups() {
     }
     tabsContainer.appendChild(tabBtn);
 
-    // 그룹 콘텐츠 영역 생성
+    // 그룹 콘텐츠 영역 생성 (각 그룹에 해당하는 지역 목록을 보여줄 영역)
     const groupContent = document.createElement('div');
     groupContent.classList.add('region-content-group');
-    // 고유 ID는 기존과 같이 설정합니다.
+    // 고유 ID를 생성 (예: group-왕국-외곽)
     groupContent.id = `group-${groupName.replace(/\s+/g, '-')}`;
-    // 첫 번째 그룹만 보이고, 나머지는 숨김
+    // 첫 번째 그룹은 기본적으로 보이고, 나머지는 숨김 (여기선 하나뿐이라 block)
     groupContent.style.display = index === 0 ? 'block' : 'none';
 
-    // 해당 그룹의 각 지역을 렌더링 (initLocationList() 참고)
-    const regions = regionGroups[groupName];
+    // 해당 그룹의 지역 객체 (예: "왕국 외곽" 아래에 "왕국 서부 평야", "왕국 동부 경계", "피안의 숲")
+    const regions = regionMonsters[groupName];
     Object.keys(regions).forEach(regionName => {
+      // 기존 initLocationList()와 유사한 구조: move-list, location-name, move-btn
       const regionDiv = document.createElement('div');
-      // initLocationList()에서는 지역 컨테이너에 "move-list"와 "flex" 클래스를 사용했습니다.
       regionDiv.classList.add('move-list', 'flex');
 
-      // 지역 이름 요소
       const locName = document.createElement('div');
       locName.classList.add('location-name');
       locName.textContent = regionName;
 
-      // 이동 버튼 생성
       const btn = document.createElement('a');
       btn.href = '#';
       btn.classList.add('move-btn', 'w-button');
@@ -1465,15 +1462,15 @@ function renderRegionGroups() {
       groupContent.appendChild(regionDiv);
     });
 
-    // 생성된 그룹 콘텐츠를 .location-list에 추가
+    // 생성한 그룹 콘텐츠를 이동 리스트(콘텐츠 영역)에 추가
     contentsContainer.appendChild(groupContent);
   });
 
-  // 탭 버튼 클릭 이벤트 처리
+  // 탭 버튼 클릭 이벤트: 클릭 시 해당 그룹 콘텐츠만 보이도록 처리
   document.querySelectorAll('.region-group-tabs button').forEach(btn => {
     btn.addEventListener('click', function() {
       const selectedGroup = this.getAttribute('data-group');
-      // 모든 탭 버튼에서 active 클래스 제거
+      // 모든 탭 버튼에서 active 클래스 제거 후 현재 버튼에 active 추가
       document.querySelectorAll('.region-group-tabs button').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
 
@@ -1482,7 +1479,7 @@ function renderRegionGroups() {
         content.style.display = 'none';
       });
 
-      // 선택한 그룹의 콘텐츠 보이기
+      // 선택한 그룹 콘텐츠만 표시
       const activeContent = document.getElementById(`group-${selectedGroup.replace(/\s+/g, '-')}`);
       if (activeContent) {
         activeContent.style.display = 'block';
@@ -1491,6 +1488,7 @@ function renderRegionGroups() {
   });
 }
 
+// DOMContentLoaded 시 초기 렌더링
 document.addEventListener('DOMContentLoaded', () => {
   renderRegionGroups();
 });
