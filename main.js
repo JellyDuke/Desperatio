@@ -638,7 +638,7 @@ function resetGameExceptSkills() {
     day: 12
   };
   gameState.invasion = {
-    monster: null,       // 침공 몬스터 객체 저장
+    monster: null,       // 침공 몬스터 객체 저장 
     lastCheckDate: ""    // 마지막 침공 체크 날짜
   };
   gameState.progress = {
@@ -710,7 +710,7 @@ function updateKingdomStatus(data) {
 
   // 식량에 따른 시민 불안도 계산
   const food = data.resources.food;
-  console.log("DEBUG: food =", food);
+
   if (food > 3000) {
     data.citizenanxiety = 10;
   } else if (food >= 500) {
@@ -1564,6 +1564,7 @@ function updateCombatList(region) {
           combatInProgress = false;
           // 전투 후 침공 몬스터 제거 및 UI 갱신
           delete gameState.invasion.monster;
+          saveGameState(); // 저장!
           updateCombatList(region);
         });
       });
