@@ -995,13 +995,16 @@ function checkMonsterInvasion() {
 function checkSoldierIntervention() {
   if (!gameState.invasion || !gameState.invasion.monster) return;
   
+  // 로컬 변수로 침공 몬스터를 참조
+  const invasionMonster = gameState.invasion.monster;
+
   // 30% 확률로 병사 개입
   if (Math.random() < 0.30) {
     // 병사가 침공을 막아내면서 2~5 명 정도의 병사 손실
     const loss = Math.floor(Math.random() * (5 - 2 + 1)) + 20;
     gameState.kingdom.soldiercount = Math.max(0, gameState.kingdom.soldiercount - loss);
     
-    console.log("선택된 침공 몬스터:", invasionMonster);
+    console.log("침공 몬스터:", invasionMonster);
     // 침공 몬스터 제거
     delete gameState.invasion.monster;
     
