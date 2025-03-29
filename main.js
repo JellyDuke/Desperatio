@@ -1535,6 +1535,7 @@ function updateCombatList(region) {
     const invasionMonster = gameState.invasion.monster;
     if (invasionMonster.location.trim() === region.trim()) {
       const invasionCard = document.createElement('div');
+      console.log("침공 몬스터의 위치:", invasionMonster.location, "현재 region:", region);
       invasionCard.classList.add('combat-list-wrap-combat');
       invasionCard.style.display = "flex";
       
