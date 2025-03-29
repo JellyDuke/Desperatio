@@ -947,6 +947,8 @@ gameState.invasion = gameState.invasion || {}; // 침공 상태를 저장할 객
 // 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
 function checkMonsterInvasion() {
   // 30일 미만이면 침공 체크하지 않음
+  console.log("checkMonsterInvasion 호출됨");
+  console.log(gameState.invasion.monster);
   if (lastMinutes < 30) return;
   
   // 침공 확률 (1% ~ 10% 사이)
@@ -974,9 +976,9 @@ function checkMonsterInvasion() {
     // 저장
     saveGameState();
 
-    // 침공 발생 시 자원 10% 감소 처리
+    // 침공 발생 시 자원 3% 감소 처리
     for (let res in gameState.kingdom.resources) {
-      const reduction = Math.floor(gameState.kingdom.resources[res] * 0.10);
+      const reduction = Math.floor(gameState.kingdom.resources[res] * 0.03);
       gameState.kingdom.resources[res] = Math.max(0, gameState.kingdom.resources[res] - reduction);
     }
     
@@ -997,8 +999,8 @@ function checkSoldierIntervention() {
   
   // 30% 확률로 병사 개입
   if (Math.random() < 0.30) {
-    // 병사가 침공을 막아내면서 20~100 명 정도의 병사 손실
-    const loss = Math.floor(Math.random() * (100 - 20 + 1)) + 20;
+    // 병사가 침공을 막아내면서 2~5 명 정도의 병사 손실
+    const loss = Math.floor(Math.random() * (5 - 2 + 1)) + 20;
     gameState.kingdom.soldiercount = Math.max(0, gameState.kingdom.soldiercount - loss);
     
     // 침공 몬스터 제거
