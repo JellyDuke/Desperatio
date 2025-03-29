@@ -311,7 +311,7 @@ const monsterData = {
 };
 
 //지역
-const regionMonsters = {
+let regionMonsters = {
   "왕국 외곽": {
     "왕국 서부 평야": ["plant", "slime"],
     "왕국 동부 경계": ["slime", "orc"],
