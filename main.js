@@ -947,8 +947,6 @@ gameState.invasion = gameState.invasion || {}; // 침공 상태를 저장할 객
 // 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
 function checkMonsterInvasion() {
   // 30일 미만이면 침공 체크하지 않음
-  console.log("checkMonsterInvasion 호출됨");
-  console.log(gameState.invasion.monster);
   if (lastMinutes < 30) return;
   
   // 침공 확률 (1% ~ 10% 사이)
@@ -972,7 +970,7 @@ function checkMonsterInvasion() {
     // 침공 몬스터를 gameState.invasion에 저장
     gameState.invasion = gameState.invasion || {};
     gameState.invasion.monster = invasionMonster;
-    console.log(gameState.invasion.monster);
+    console.log("선택된 침공 몬스터:", invasionMonster);
     // 저장
     saveGameState();
 
