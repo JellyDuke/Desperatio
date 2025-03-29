@@ -1049,6 +1049,14 @@ function dailyInvasionCheck() {
   // 오늘은 아직 침공 체크를 하지 않았으므로, 날짜 기록 업데이트
   gameState.lastInvasionDate = currentDateKey;
   
+  // 침공 몬스터가 생성되었으면, 플레이어의 현재 위치와 비교 후 UI 갱신
+  if (gameState.invasion && gameState.invasion.monster) {
+    const invasionMonster = gameState.invasion.monster;
+    if (gameState.player.location.trim() === invasionMonster.location.trim()) {
+      triggerInvasionEvent();
+    }
+  } 
+
   // 게임 시작 후 30일이 지난 경우 침공 여부 체크
   if (lastMinutes >= 30) {
     checkMonsterInvasion();
@@ -1458,6 +1466,11 @@ function getMonstersForLocation(location) {
   }
   return [];
 }
+function triggerInvasionEvent() {
+  // 침공 이벤트가 발생한 시점에 바로 updateCombatList 호출해서 UI 갱신
+  updateCombatList(gameState.player.location);
+  console.log("침공 이벤트 발생 -> UI 강제 갱신:", gameState.player.location);
+}
 
 function updateCombatList(region) {
   const container = document.querySelector('.card-list');
@@ -1627,21 +1640,6 @@ function moveTo(destination, msgContainer) {
 
   const travelTime = 5000; // 이동 시간 예시 (5초)
 
-  function completeMovement() {
-    gameState.player.location = destination;
-    gameState.player.isMoving = false;
-    // 이동 완료 후 수색 버튼 재활성화
-    if (combatBtn) {
-      combatBtn.disabled = false;
-    }
-    const endMsg = document.createElement('div');
-    endMsg.textContent = `${destination}에 도착했습니다!`;
-    msgContainer.appendChild(endMsg);
-    msgContainer.scrollTop = msgContainer.scrollHeight;
-    updateCombatPopupUI();
-    saveGameState();
-    updateLocationMoveUI()
-  }
 
   setTimeout(() => {
     let encounterOccurred = Math.random() < 0.3; // 30% 확률 기습 발생
@@ -1662,8 +1660,36 @@ function moveTo(destination, msgContainer) {
     }
   }, travelTime);
 
+  updateLocationMoveUI();
   saveGameState();
 }
+
+function completeMovement() {
+  // 플레이어의 위치 업데이트
+  gameState.player.location = destination;
+  gameState.player.isMoving = false;
+  
+  // 전투 버튼 재활성화
+  const combatBtn = document.querySelector('.combat-btn');
+  if (combatBtn) {
+    combatBtn.disabled = false;
+  }
+  
+  const endMsg = document.createElement('div');
+  endMsg.textContent = `${destination}에 도착했습니다!`;
+  msgContainer.appendChild(endMsg);
+  msgContainer.scrollTop = msgContainer.scrollHeight;
+  
+  updateLocationMoveUI();
+  saveGameState();
+  
+  // 플레이어의 위치가 업데이트된 후, 침공 몬스터가 있는지 체크
+  if (gameState.invasion && gameState.invasion.monster &&
+      gameState.invasion.monster.location.trim() === destination.trim()) {
+    triggerInvasionEvent();
+  }
+}
+
 
 function renderRegionGroups() {
   // 탭 버튼 영역과 콘텐츠 영역(이동 리스트)를 선택합니다.
