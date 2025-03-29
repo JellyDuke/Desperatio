@@ -1059,14 +1059,8 @@ function dailyInvasionCheck() {
     checkMonsterInvasion();
     checkSoldierIntervention();
   }
-  
-  // 침공 체크 후, 만약 침공 몬스터가 생성되었고, 플레이어의 현재 위치와 일치하면 UI 갱신
-  if (gameState.invasion && gameState.invasion.monster) {
-    const invasionMonster = gameState.invasion.monster;
-    if (gameState.player.location.trim() === invasionMonster.location.trim()) {
-      triggerInvasionEvent();
-    }
-  }
+  triggerInvasionEvent();
+
 }
 /**
  * .popup.my-info 내의 rank, experience, level, militaryLevel, charisma, governance, roundCount
