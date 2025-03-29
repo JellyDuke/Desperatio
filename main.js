@@ -953,55 +953,58 @@ gameState.invasion = gameState.invasion || {}; // 침공 상태를 저장할 객
 
 // 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
 function checkMonsterInvasion() {
-  // 30일 미만이면 침공 체크하지 않음
+  // 30일 미만이면 침공 없음
   if (lastMinutes < 30) return;
-  
-  // 침공 확률 (1% ~ 10% 사이)
+
+  // 침공 확률 (현재 100%)
   const invasionChance = 1.0;
-  if (Math.random() < invasionChance) {
-    // monsterData에서 무작위 몬스터 선택
-    const monsterKeys = Object.keys(monsterData);
-    const randomMonsterKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
-    const invasionMonster = Object.assign({}, monsterData[randomMonsterKey]);
-    invasionMonster.isInvasion = true; // 침공 표시
-    
-    // "왕도" 그룹 내의 지역 목록에서 무작위로 선택
-    const capitalRegions = Object.keys(regionMonsters["왕도"]);
-    if (capitalRegions.length > 0) {
-      const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
-      invasionMonster.location = randomRegion;
-    } else {
-      invasionMonster.location = "왕도"; // 예외 처리
-    }
-    
-    // 침공 몬스터를 gameState.invasion에 저장
-    gameState.invasion = gameState.invasion || {};
-    gameState.invasion.monster = invasionMonster;
+  if (Math.random() >= invasionChance) return;
 
-    if (regionMonsters["왕도"][invasionMonster.location]) {
-      regionMonsters["왕도"][invasionMonster.location].push(randomMonsterKey);
-    }
+  // 침공 몬스터 선택
+  const monsterKeys = Object.keys(monsterData);
+  const randomKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
+  const selectedMonster = Object.assign({}, monsterData[randomKey], {
+    isInvasion: true,
+    key: randomKey
+  });
 
-    // 저장
-    saveGameState();
+  // 침공 지역 선택 ("왕도" 내부 랜덤)
+  const capitalRegions = Object.keys(regionMonsters["왕도"]);
+  const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
+  selectedMonster.location = randomRegion;
 
-    // 침공 발생 시 자원 3% 감소 처리
-    for (let res in gameState.kingdom.resources) {
-      const reduction = Math.floor(gameState.kingdom.resources[res] * 0.03);
-      gameState.kingdom.resources[res] = Math.max(0, gameState.kingdom.resources[res] - reduction);
-    }
-    
-    // UI 메시지 출력
-    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
-    if (kingdomMsgElem) {
-      const invasionMsg = document.createElement('div');
-      invasionMsg.textContent = `몬스터 침공 발생! ${invasionMonster.name}가(이) ${invasionMonster.location}에 나타났습니다.`;
-      invasionMsg.style.color = "red";
-      kingdomMsgElem.appendChild(invasionMsg);
-      scrollToBottom(kingdomMsgElem);
-    }
+  // gameState에 저장
+  gameState.invasion = {
+    monster: selectedMonster,        // 침공 몬스터 전체 객체
+    lastCheckDate: getCurrentDateKey(),
+    region: selectedMonster.location // 침공 지역도 명시적으로 저장
+  };
+
+  // 지역 몬스터 DB에도 등록 (새로고침해도 보이게 하기 위해 저장 필요)
+  if (!regionMonsters["왕도"][randomRegion].includes(randomKey)) {
+    regionMonsters["왕도"][randomRegion].push(randomKey);
   }
+
+  // 자원 3% 감소
+  Object.keys(gameState.kingdom.resources).forEach(res => {
+    const current = gameState.kingdom.resources[res];
+    gameState.kingdom.resources[res] = Math.max(0, current - Math.floor(current * 0.03));
+  });
+
+  // 침공 메시지 출력
+  const news = document.querySelector('.kingdom-message-news');
+  if (news) {
+    const msg = document.createElement('div');
+    msg.textContent = `몬스터 침공 발생! ${selectedMonster.name}가(이) ${randomRegion}에 나타났습니다.`;
+    msg.style.color = "red";
+    news.appendChild(msg);
+    scrollToBottom(news);
+  }
+
+  // 저장
+  saveGameState();
 }
+
 // 2. 매일 30% 확률로 왕국 병사가 침공 몬스터를 잡아내는 함수
 function checkSoldierIntervention() {
   if (!gameState.invasion || !gameState.invasion.monster) return;
