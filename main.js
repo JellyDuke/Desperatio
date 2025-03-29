@@ -1547,6 +1547,7 @@ function updateCombatList(region) {
     container.appendChild(invasionCard);
     console.log("침공 몬스터 카드 추가됨");
   }
+  console.log("침공 상태:", gameState.invasion);
 }
 
 
