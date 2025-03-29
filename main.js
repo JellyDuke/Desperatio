@@ -972,7 +972,7 @@ function checkMonsterInvasion() {
     // 침공 몬스터를 gameState.invasion에 저장
     gameState.invasion = gameState.invasion || {};
     gameState.invasion.monster = invasionMonster;
-    
+    console.log(gameState.invasion.monster);
     // 저장
     saveGameState();
 
