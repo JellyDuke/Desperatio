@@ -708,19 +708,23 @@ function updateKingdomStatus(data) {
   } else {
     // 식량이 500 미만: 식량이 500일 때 55, 식량이 0이면 55 + (500*0.06) = 85
     data.citizenanxiety = 55 + (500 - food) * 0.06;
-  }
+  } 
 
-  // 왕국 상태(status) 결정: 시민 불안도가 35 이상이면 "위기", 15 이상이면 "주의", 그 미만이면 "안정"
+  // 왕국 상태(status) 결정: 시민 불안도가 75 이상이면 "위기", 15 이상이면 "주의", 그 미만이면 "안정"
   if (data.citizenanxiety < 15) {
     data.status = "안정";
-  } else if (data.citizenanxiety < 35) {
+  } else if (data.citizenanxiety < 75) {
     data.status = "주의";
   } else {
     data.status = "위기";
   }
 
-  // 만약 상태가 "위기"라면 왕국 뉴스 영역에 빨간색 메시지 출력
-  if (data.status === "위기") {
+// 위기 메시지가 이미 출력되었는지 여부를 저장할 플래그를 gameState.kingdom에 추가합니다.
+gameState.kingdom.crisisMessageShown = gameState.kingdom.crisisMessageShown || false;
+
+if (data.status === "위기") {
+  // 위기 상태인데, 아직 메시지가 출력되지 않았다면
+  if (!gameState.kingdom.crisisMessageShown) {
     const kingdomMsgElem = document.querySelector('.kingdom-message-news');
     if (kingdomMsgElem) {
       const crisisMsg = document.createElement('div');
@@ -729,7 +733,13 @@ function updateKingdomStatus(data) {
       kingdomMsgElem.appendChild(crisisMsg);
       scrollToBottom(kingdomMsgElem);
     }
+    // 메시지 출력 후 플래그를 true로 설정
+    gameState.kingdom.crisisMessageShown = true;
   }
+} else {
+  // 위기가 아닐 때는 플래그를 리셋해 다음 번 위기 발생 시 메시지가 출력되도록 함
+  gameState.kingdom.crisisMessageShown = false;
+}
 
   // HTML 요소 업데이트
   const statusElem = document.querySelector('.status');
