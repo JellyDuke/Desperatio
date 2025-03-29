@@ -1014,6 +1014,7 @@ function checkSoldierIntervention() {
       scrollToBottom(kingdomMsgElem);
     }
   }
+  console.log("선택된 침공 몬스터:", invasionMonster);
 }
 
 // 3. 플레이어가 직접 침공 몬스터를 처치했을 때 호출하는 함수 (예: 전투 승리 후)
@@ -1569,7 +1570,7 @@ function updateCombatList(region) {
   }
   console.log("침공 상태:", gameState.invasion);
 }
-console.log("침공 상태:", gameState.invasion);
+
 
 
 document.addEventListener('DOMContentLoaded', function () {
