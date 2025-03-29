@@ -1046,21 +1046,21 @@ function dailyInvasionCheck() {
     return;
   }
   
-  // 오늘은 아직 침공 체크를 하지 않았으므로, 날짜 기록 업데이트
+  // 오늘 침공 체크를 아직 안했다면 날짜 기록 업데이트
   gameState.lastInvasionDate = currentDateKey;
   
-  // 침공 몬스터가 생성되었으면, 플레이어의 현재 위치와 비교 후 UI 갱신
+  // 게임 시작 후 30일이 지난 경우 침공 여부 체크 (침공 몬스터 생성 및 병사 개입)
+  if (lastMinutes >= 30) {
+    checkMonsterInvasion();
+    checkSoldierIntervention();
+  }
+  
+  // 침공 체크 후, 만약 침공 몬스터가 생성되었고, 플레이어의 현재 위치와 일치하면 UI 갱신
   if (gameState.invasion && gameState.invasion.monster) {
     const invasionMonster = gameState.invasion.monster;
     if (gameState.player.location.trim() === invasionMonster.location.trim()) {
       triggerInvasionEvent();
     }
-  } 
-
-  // 게임 시작 후 30일이 지난 경우 침공 여부 체크
-  if (lastMinutes >= 30) {
-    checkMonsterInvasion();
-    checkSoldierIntervention();
   }
 }
 /**
@@ -1650,40 +1650,36 @@ function moveTo(destination, msgContainer) {
         let encounteredKey = monsters[randomIndex];
         // 기습 전투는 이동 상태 무시 (isAmbush === true)
         startNarrativeCombat(encounteredKey, msgContainer, () => {
-          completeMovement();
+          completeMovement(destination, msgContainer);
         }, true);
       } else {
-        completeMovement();
+        completeMovement(destination, msgContainer);
       }
     } else {
-      completeMovement();
+      completeMovement(destination, msgContainer);
     }
   }, travelTime);
 
   updateLocationMoveUI();
   saveGameState();
 }
-
-function completeMovement() {
-  // 플레이어의 위치 업데이트
+function completeMovement(destination, msgContainer) {
   gameState.player.location = destination;
   gameState.player.isMoving = false;
-  
-  // 전투 버튼 재활성화
+
   const combatBtn = document.querySelector('.combat-btn');
   if (combatBtn) {
     combatBtn.disabled = false;
   }
-  
+
   const endMsg = document.createElement('div');
   endMsg.textContent = `${destination}에 도착했습니다!`;
   msgContainer.appendChild(endMsg);
   msgContainer.scrollTop = msgContainer.scrollHeight;
-  
+
   updateLocationMoveUI();
   saveGameState();
-  
-  // 플레이어의 위치가 업데이트된 후, 침공 몬스터가 있는지 체크
+
   if (gameState.invasion && gameState.invasion.monster &&
       gameState.invasion.monster.location.trim() === destination.trim()) {
     triggerInvasionEvent();
