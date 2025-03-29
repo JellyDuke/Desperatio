@@ -1531,46 +1531,38 @@ function updateCombatList(region) {
     container.appendChild(clone);
   });
 
-   // 침공 몬스터 체크: 플레이어의 위치와 침공 몬스터의 location이 일치하면 추가
-   if (gameState.invasion && gameState.invasion.monster && gameState.invasion.monster.location === region) {
+  if (gameState.invasion && gameState.invasion.monster) {
     const invasionMonster = gameState.invasion.monster;
-    console.log("침공 몬스터의 위치:", invasionMonster.location, "현재 지역:", region);
-    // 침공 몬스터 카드 생성 (예시)
-    const invasionCard = document.createElement('div');
-    invasionCard.classList.add('combat-list-wrap-combat');
-    invasionCard.style.display = "flex";
-    
-    const nameElem = document.createElement('div');
-    nameElem.classList.add('monster-name');
-    nameElem.textContent = invasionMonster.name + " (침공)";
-    invasionCard.appendChild(nameElem);
-    
-    const levelElem = document.createElement('div');
-    levelElem.classList.add('monster-level');
-    levelElem.textContent = `무력 레벨: ${invasionMonster.militaryLevel || 'N/A'}`;
-    invasionCard.appendChild(levelElem);
-    
-    // 전투 버튼 생성 및 이벤트 연결
-    const combatBtn = document.createElement('button');
-    combatBtn.classList.add('combat-btn');
-    combatBtn.textContent = '전투';
-    combatBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (combatInProgress) {
-        // 이미 전투 중이면 메시지 출력
-        return;
-      }
-      combatInProgress = true;
-      startNarrativeCombat(invasionMonster.key || 'invasion', document.querySelector('.kingdom-message-combat'), () => {
-        combatInProgress = false;
-        // 침공 전투가 끝나면 침공 몬스터 제거
-        delete gameState.invasion.monster;
+    if (invasionMonster.location.trim() === region.trim()) {
+      const invasionCard = document.createElement('div');
+      invasionCard.classList.add('combat-list-wrap-combat');
+      invasionCard.style.display = "flex";
+      
+      const nameElem = document.createElement('div');
+      nameElem.classList.add('monster-name');
+      nameElem.textContent = invasionMonster.name + " (침공)";
+      invasionCard.appendChild(nameElem);
+      
+      // 전투 버튼 생성
+      const combatBtn = document.createElement('button');
+      combatBtn.classList.add('combat-btn');
+      combatBtn.textContent = '전투';
+      combatBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (combatInProgress) return;
+        combatInProgress = true;
+        startNarrativeCombat(invasionMonster.key || 'invasion', document.querySelector('.kingdom-message-combat'), () => {
+          combatInProgress = false;
+          // 전투 후 침공 몬스터 제거 및 UI 갱신
+          delete gameState.invasion.monster;
+          updateCombatList(region);
+        });
       });
-    });
-    invasionCard.appendChild(combatBtn);
-    
-    container.appendChild(invasionCard);
-    console.log("침공 몬스터 카드 추가됨");
+      invasionCard.appendChild(combatBtn);
+      
+      container.appendChild(invasionCard);
+      console.log("침공 몬스터 카드 추가됨");
+    }
   }
   console.log("침공 상태:", gameState.invasion);
 }
