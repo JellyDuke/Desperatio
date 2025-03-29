@@ -971,6 +971,9 @@ function checkMonsterInvasion() {
     gameState.invasion = gameState.invasion || {};
     gameState.invasion.monster = invasionMonster;
     
+    // 저장
+    saveGameState();
+
     // 침공 발생 시 자원 10% 감소 처리
     for (let res in gameState.kingdom.resources) {
       const reduction = Math.floor(gameState.kingdom.resources[res] * 0.10);
