@@ -1569,7 +1569,7 @@ function updateCombatList(region) {
   }
   console.log("침공 상태:", gameState.invasion);
 }
-
+console.log("침공 상태:", gameState.invasion);
 
 
 document.addEventListener('DOMContentLoaded', function () {
