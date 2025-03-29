@@ -1468,14 +1468,14 @@ function getMonstersForLocation(location) {
 function triggerInvasionEvent() {
   // 침공 이벤트가 발생한 시점에 바로 updateCombatList 호출해서 UI 갱신
   updateCombatList(gameState.player.location);
-  console.log("침공 이벤트 발생 -> UI 강제 갱신:", gameState.player.location);
+  console.log("침공 이벤트 발생 -> UI 강제 갱신:",gameState.player.location);
 }
 
 function updateCombatList(region) {
   const container = document.querySelector('.card-list');
   if (!container) return;
+  console.log("[DEBUG] updateCombatList 실행됨 - 현재 지역:", region);
   container.innerHTML = ''; // 기존 목록 초기화
-  console.log("container:", container);
 
   // getMonstersForLocation()를 이용하여 해당 위치에 맞는 몬스터 키 배열을 구함
   const monsterKeys = getMonstersForLocation(region);
@@ -1526,10 +1526,10 @@ function updateCombatList(region) {
   });
 
   if (gameState.invasion && gameState.invasion.monster) {
+    const invasionMonster = gameState.invasion.monster;
     console.log("침공 몬스터 존재:", invasionMonster);
     console.log("침공 몬스터의 location:", invasionMonster.location);
     console.log("전달된 region:", region);
-    const invasionMonster = gameState.invasion.monster;
     if (invasionMonster.location.trim() === region.trim()) {
       const invasionCard = document.createElement('div');
       console.log("침공 몬스터의 위치:", invasionMonster.location, "현재 region:", region);
