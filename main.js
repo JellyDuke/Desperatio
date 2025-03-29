@@ -957,36 +957,34 @@ function checkMonsterInvasion() {
   // 30일 미만이면 침공 없음
   if (lastMinutes < 30) return;
 
-  // 침공 확률 (현재 100%)
-  const invasionChance = 1.0;
+  const invasionChance = 1.0; // 현재 100% 확률
   if (Math.random() >= invasionChance) return;
 
-  // 침공 몬스터 선택
+  // monsterData에서 무작위 몬스터 선택
   const monsterKeys = Object.keys(monsterData);
   const randomKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
-  
-  // 침공 지역 선택 ("왕도" 내부 랜덤)
+
+  // "왕도" 그룹 내의 지역 목록에서 무작위로 선택
   const capitalRegions = Object.keys(regionMonsters["왕도"]);
   const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
 
-  // UI 출력용 임시 몬스터 객체 생성 (사용자는 바로 볼 수 있도록)
+  // 침공 이벤트 시 저장할 핵심 정보만 준비
+  gameState.invasion = {
+    monsterKey: randomKey,          // 몬스터 식별을 위한 키
+    region: randomRegion,           // 침공이 발생한 지역
+    lastCheckDate: getCurrentDateKey()
+  };
+
+  // UI용으로 바로 사용하기 위해 침공 몬스터 객체를 생성 (이 객체는 게임 상태 저장에는 사용하지 않음)
   const selectedMonster = Object.assign({}, monsterData[randomKey], {
     isInvasion: true,
     key: randomKey,
     location: randomRegion
   });
-  selectedMonster.location = randomRegion;
+  // 이 객체는 런타임에서 UI에 바로 사용하기 위해 gameState.invasion.monster로도 임시 저장해둘 수 있음.
+  gameState.invasion.monster = selectedMonster;
 
-  // gameState에 저장
-  gameState.invasion = {
-    monsterKey: randomKey, // ← 핵심
-    region: randomRegion,
-    lastCheckDate: getCurrentDateKey()
-  };
-
-  gameState.invasion.monster = selectedMonster; // ← 저장은 안되지만 런타임에서 사용 가능
-
-  // 지역 몬스터 DB에도 등록 (새로고침해도 보이게 하기 위해 저장 필요)
+  // 지역 몬스터 DB에도 등록 (지역 데이터도 저장할 예정이라면 나중에 복원)
   if (!regionMonsters["왕도"][randomRegion].includes(randomKey)) {
     regionMonsters["왕도"][randomRegion].push(randomKey);
   }
@@ -1010,6 +1008,7 @@ function checkMonsterInvasion() {
   // 저장
   saveGameState();
 }
+
 
 // 2. 매일 30% 확률로 왕국 병사가 침공 몬스터를 잡아내는 함수
 function checkSoldierIntervention() {
@@ -3839,36 +3838,27 @@ setInterval(updateGameDate, 1000);
 // 저장 함수
 function saveGameState() {
   localStorage.setItem("gameState", JSON.stringify(gameState));
-  // 필요하면 regionMonsters 등 다른 객체도 저장할 수 있음
   localStorage.setItem("regionMonsters", JSON.stringify(regionMonsters));
 }
+
 function loadGameState() {
-  // gameState 불러오기
   const savedState = localStorage.getItem("gameState");
   if (savedState) {
     try {
-      const parsedState = JSON.parse(savedState);
-      // 기존 gameState 객체의 내부 속성만 업데이트 (재할당하지 않음)
-      Object.assign(gameState, parsedState);
+      Object.assign(gameState, JSON.parse(savedState));
       console.log("게임 상태 복원:", gameState);
     } catch (e) {
       console.error("gameState 복원 실패:", e);
     }
   } else {
-    console.log("저장된 gameState가 없음");
+    console.log("저장된 게임 상태가 없음");
   }
-
-  // regionMonsters 불러오기 (const로 선언된 경우, 내부 속성만 업데이트)
+  
+  // regionMonsters의 경우에도 저장해두었다면 복원 (const 대신 let 또는 내부 업데이트 사용)
   const savedRegion = localStorage.getItem("regionMonsters");
   if (savedRegion) {
-    try {
-      Object.assign(regionMonsters, JSON.parse(savedRegion));
-      console.log("지역 데이터 복원:", regionMonsters);
-    } catch (e) {
-      console.error("regionMonsters 복원 실패:", e);
-    }
-  } else {
-    console.log("저장된 regionMonsters가 없음");
+    Object.assign(regionMonsters, JSON.parse(savedRegion));
+    console.log("지역 데이터 복원:", regionMonsters);
   }
 }
 
@@ -3879,18 +3869,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function restoreInvasionMonster() {
-  if (gameState.invasion?.monsterKey && gameState.invasion?.region) {
+  // 저장된 침공 정보가 있고, monsterKey와 region이 있다면 복원
+  if (gameState.invasion && gameState.invasion.monsterKey && gameState.invasion.region) {
     const key = gameState.invasion.monsterKey;
     const region = gameState.invasion.region;
-    // monsterData에서 필요한 정보만 복원하여 순수 객체로 만듦
-    const restoredMonster = {
-      ...monsterData[key],
+    const restoredMonster = Object.assign({}, monsterData[key], {
       key: key,
       isInvasion: true,
       location: region
-    };
+    });
     gameState.invasion.monster = restoredMonster;
     console.log("침공 몬스터 복원됨:", restoredMonster);
+  } else {
+    console.log("복원할 침공 정보가 없음");
   }
 }
 
