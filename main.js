@@ -739,6 +739,7 @@ function updateKingdomStatus(data) {
   if (anxietyElem) {
     anxietyElem.textContent = (data.citizenanxiety ?? 0).toLocaleString();
   }
+  console.log("UI 값:", anxietyElem.textContent, "gameState 값:", data.citizenanxiety);
   const soldierElem = document.querySelector('.soldiercount');
   if (soldierElem) {
     soldierElem.textContent = (data.soldiercount ?? 0).toLocaleString();
