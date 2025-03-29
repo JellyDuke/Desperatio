@@ -488,7 +488,10 @@ function resetGameCompletely() {
     month: 4,
     day: 12
   };
-
+  gameState.invasion = {
+    monster: null,       // 침공 몬스터 객체 저장
+    lastCheckDate: ""    // 마지막 침공 체크 날짜
+  };
   gameState.progress = {
     currentCycle: 1,
     monsterInvasions: [],
@@ -633,6 +636,10 @@ function resetGameExceptSkills() {
     year: 24,
     month: 4,
     day: 12
+  };
+  gameState.invasion = {
+    monster: null,       // 침공 몬스터 객체 저장
+    lastCheckDate: ""    // 마지막 침공 체크 날짜
   };
   gameState.progress = {
     currentCycle: 1,
