@@ -694,20 +694,20 @@ function updateKingdomStatus(data) {
       gold: Math.floor(Math.random() * 500) + 500          // 500 ~ 999
     };
    
-    // 식량에 따른 시민 불안도 계산
-    const food = data.resources.food;
-    console.log("DEBUG: food =", food);
-    if (food > 3000) {
-      data.citizenanxiety = 10;
-    } else if (food >= 500) {
-      // 식량이 3000~500 사이: 식량 부족분에 비례하여 서서히 상승 (식량=500일 때 최대 55)
-      data.citizenanxiety = 10 + (3000 - food) * 0.018;
-    } else {
-      // 식량이 500 미만: 식량이 500일 때 55, 식량이 0이면 55 + (500*0.06) = 85
-      data.citizenanxiety = 55 + (500 - food) * 0.06;
-    }
-
     gameState.progress.resourcesInitialized = true;
+  }
+
+  // 식량에 따른 시민 불안도 계산
+  const food = data.resources.food;
+  console.log("DEBUG: food =", food);
+  if (food > 3000) {
+    data.citizenanxiety = 10;
+  } else if (food >= 500) {
+    // 식량이 3000~500 사이: 식량 부족분에 비례하여 서서히 상승 (식량=500일 때 최대 55)
+    data.citizenanxiety = 10 + (3000 - food) * 0.018;
+  } else {
+    // 식량이 500 미만: 식량이 500일 때 55, 식량이 0이면 55 + (500*0.06) = 85
+    data.citizenanxiety = 55 + (500 - food) * 0.06;
   }
 
   // 왕국 상태(status) 결정: 시민 불안도가 35 이상이면 "위기", 15 이상이면 "주의", 그 미만이면 "안정"
