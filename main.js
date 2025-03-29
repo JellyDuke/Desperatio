@@ -970,7 +970,11 @@ function checkMonsterInvasion() {
     // 침공 몬스터를 gameState.invasion에 저장
     gameState.invasion = gameState.invasion || {};
     gameState.invasion.monster = invasionMonster;
-    console.log("선택된 침공 몬스터:", invasionMonster);
+
+    if (regionMonsters["왕도"][invasionMonster.location]) {
+      regionMonsters["왕도"][invasionMonster.location].push(randomMonsterKey);
+    }
+
     // 저장
     saveGameState();
 
