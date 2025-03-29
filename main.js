@@ -739,7 +739,6 @@ function updateKingdomStatus(data) {
   if (anxietyElem) {
     anxietyElem.textContent = (data.citizenanxiety ?? 0).toLocaleString();
   }
-  console.log(anxietyElem, (data.citizenanxiety ?? 0).toLocaleString());
   const soldierElem = document.querySelector('.soldiercount');
   if (soldierElem) {
     soldierElem.textContent = (data.soldiercount ?? 0).toLocaleString();
@@ -774,7 +773,7 @@ function updateKingdomStatus(data) {
   gameState.kingdom.soldiercount = data.soldiercount;
   gameState.kingdom.population = data.population;
   gameState.kingdom.resources = data.resources;
-
+  console.log("식량:", data.resources.food, "계산된 불안도:", data.citizenanxiety);
   saveGameState();
 }
 
