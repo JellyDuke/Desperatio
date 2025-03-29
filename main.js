@@ -789,7 +789,42 @@ function updateKingdomStatus(data) {
   saveGameState();
 }
 
+// 페이지 종료 전 마지막 업데이트 시각 저장 (예: window.onbeforeunload 이벤트 등에서)
+function saveLastUpdateTime() {
+  localStorage.setItem('lastUpdateTime', Date.now());
+}
+window.addEventListener('beforeunload', saveLastUpdateTime);
 
+// 페이지 로드 시 경과 시간 계산 및 오프라인 이벤트 처리
+function processOfflineProgress() {
+  const lastUpdate = Number(localStorage.getItem('lastUpdateTime'));
+  if (!lastUpdate) return;
+  const now = Date.now();
+  // 예를 들어, 1분 = 1일로 가정
+  const elapsedMinutes = Math.floor((now - lastUpdate) / (1000 * 60));
+  if (elapsedMinutes <= 0) return;
+
+  console.log(`Offline Progress: ${elapsedMinutes} "일"이 지났습니다.`);
+  
+  // 경과된 "일"수 만큼 자원 변화, 침공 이벤트, 시민 불안도 업데이트 등 처리
+  for (let i = 0; i < elapsedMinutes; i++) {
+    // 매 "일"마다 실행할 로직 호출
+    refreshShopItemsForNewDay()
+    dailyResourceChange();
+    dailyInvasionCheck();  // 침공 이벤트 체크
+    // 기타 매일 처리해야 할 로직 호출...
+  }
+  
+  // 게임 상태 업데이트 후, UI 갱신 등을 수행합니다.
+  updateKingdomStatus(gameState.kingdom);
+  // 업데이트 완료 후 마지막 업데이트 시간을 현재 시간으로 초기화
+  localStorage.setItem('lastUpdateTime', now);
+}
+
+// 페이지 로드 시 오프라인 진행 함수 호출
+document.addEventListener('DOMContentLoaded', () => {
+  processOfflineProgress();
+});
 
 
 //매일 자원 감소 왕국
@@ -1475,6 +1510,7 @@ function updateCombatList(region) {
    // 침공 몬스터 체크: 플레이어의 위치와 침공 몬스터의 location이 일치하면 추가
    if (gameState.invasion && gameState.invasion.monster && gameState.invasion.monster.location === region) {
     const invasionMonster = gameState.invasion.monster;
+    console.log("침공 몬스터의 위치:", invasionMonster.location, "현재 지역:", region);
     // 침공 몬스터 카드 생성 (예시)
     const invasionCard = document.createElement('div');
     invasionCard.classList.add('combat-list-wrap-combat');
@@ -1510,6 +1546,7 @@ function updateCombatList(region) {
     invasionCard.appendChild(combatBtn);
     
     container.appendChild(invasionCard);
+    console.log("침공 몬스터 카드 추가됨");
   }
 }
 
