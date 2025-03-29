@@ -693,9 +693,10 @@ function updateKingdomStatus(data) {
       magicstone: Math.floor(Math.random() * 2000) + 4000, // 4000 ~ 5999
       gold: Math.floor(Math.random() * 500) + 500          // 500 ~ 999
     };
-    console.log("DEBUG: food =", food);
+   
     // 식량에 따른 시민 불안도 계산
     const food = data.resources.food;
+    console.log("DEBUG: food =", food);
     if (food > 3000) {
       data.citizenanxiety = 10;
     } else if (food >= 500) {
