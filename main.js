@@ -1532,6 +1532,9 @@ function updateCombatList(region) {
   });
 
   if (gameState.invasion && gameState.invasion.monster) {
+    console.log("침공 몬스터 존재:", invasionMonster);
+    console.log("침공 몬스터의 location:", invasionMonster.location);
+    console.log("전달된 region:", region);
     const invasionMonster = gameState.invasion.monster;
     if (invasionMonster.location.trim() === region.trim()) {
       const invasionCard = document.createElement('div');
