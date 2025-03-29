@@ -3838,14 +3838,55 @@ setInterval(updateGameDate, 1000);
 
 // 저장 함수
 function saveGameState() {
-  localStorage.setItem('gameState', JSON.stringify(gameState));
+  localStorage.setItem("gameState", JSON.stringify(gameState));
+  // 필요하면 regionMonsters 등 다른 객체도 저장할 수 있음
+  localStorage.setItem("regionMonsters", JSON.stringify(regionMonsters));
 }
-
 function loadGameState() {
-  const saved = localStorage.getItem("gameState");
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    Object.assign(gameState, parsed);
+  const savedState = localStorage.getItem("gameState");
+  if (savedState) {
+    // 기존 gameState 객체에 저장된 값을 병합
+    Object.assign(gameState, JSON.parse(savedState));
+  }
+  
+  const savedRegion = localStorage.getItem("regionMonsters");
+  if (savedRegion) {
+    // 전역 변수 regionMonsters가 재할당 가능하도록 let으로 선언되어 있어야 함.
+    regionMonsters = JSON.parse(savedRegion);
+  }
+}
+document.addEventListener("DOMContentLoaded", () => {
+  loadGameState();  // 저장된 값이 있다면 불러옴
+
+  // 혹은 저장된 상태가 없다면 기본값으로 초기화
+  if (!gameState.invasion) {
+    gameState.invasion = {
+      monster: null,
+      lastCheckDate: ""
+    };
+  }
+
+  // 복원: 침공 몬스터가 localStorage에 저장된 경우, 복원 처리
+  if (gameState.invasion && gameState.invasion.monsterKey) {
+    restoreInvasionMonster();
+  }
+  
+  // UI 갱신 (예: updateCombatList 호출)
+  updateCombatList(gameState.player.location);
+});
+
+function restoreInvasionMonster() {
+  if (gameState.invasion?.monsterKey && gameState.invasion?.region) {
+    const key = gameState.invasion.monsterKey;
+    const region = gameState.invasion.region;
+    // monsterData에서 필요한 정보만 복원하여 순수 객체로 만듦
+    const restoredMonster = {
+      ...monsterData[key],
+      key: key,
+      isInvasion: true,
+      location: region
+    };
+    gameState.invasion.monster = restoredMonster;
   }
 }
 
