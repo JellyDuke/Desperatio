@@ -968,13 +968,14 @@ function checkMonsterInvasion() {
   // 침공 지역 선택 ("왕도" 내부 랜덤)
   const capitalRegions = Object.keys(regionMonsters["왕도"]);
   const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
-  selectedMonster.location = randomRegion;
+
   // UI 출력용 임시 몬스터 객체 생성 (사용자는 바로 볼 수 있도록)
   const selectedMonster = Object.assign({}, monsterData[randomKey], {
     isInvasion: true,
     key: randomKey,
     location: randomRegion
   });
+  selectedMonster.location = randomRegion;
 
   // gameState에 저장
   gameState.invasion = {
@@ -982,7 +983,9 @@ function checkMonsterInvasion() {
     region: randomRegion,
     lastCheckDate: getCurrentDateKey()
   };
+
   gameState.invasion.monster = selectedMonster; // ← 저장은 안되지만 런타임에서 사용 가능
+
   // 지역 몬스터 DB에도 등록 (새로고침해도 보이게 하기 위해 저장 필요)
   if (!regionMonsters["왕도"][randomRegion].includes(randomKey)) {
     regionMonsters["왕도"][randomRegion].push(randomKey);
