@@ -750,7 +750,6 @@ function updateKingdomStatus(data) {
   if (anxietyElem) {
     anxietyElem.textContent = (data.citizenanxiety ?? 0).toLocaleString();
   }
-  console.log("UI 값:", anxietyElem.textContent, "gameState 값:", data.citizenanxiety);
   const soldierElem = document.querySelector('.soldiercount');
   if (soldierElem) {
     soldierElem.textContent = (data.soldiercount ?? 0).toLocaleString();
@@ -785,7 +784,6 @@ function updateKingdomStatus(data) {
   gameState.kingdom.soldiercount = data.soldiercount;
   gameState.kingdom.population = data.population;
   gameState.kingdom.resources = data.resources;
-  console.log("식량:", data.resources.food, "계산된 불안도:", data.citizenanxiety);
   saveGameState();
 }
 
@@ -1482,7 +1480,7 @@ function updateCombatList(region) {
     if (levelElem) {
       levelElem.textContent = `무력 레벨: ${monster.militaryLevel}`;
     }
-    
+   
     // "수색하기" 버튼 클릭 이벤트 처리
     const combatBtn = clone.querySelector('.combat-btn');
     if (combatBtn) {
@@ -1507,6 +1505,7 @@ function updateCombatList(region) {
     
     container.appendChild(clone);
   });
+  console.log("updateCombatList 호출, region =", region);
    // 침공 몬스터 체크: 플레이어의 위치와 침공 몬스터의 location이 일치하면 추가
    if (gameState.invasion && gameState.invasion.monster && gameState.invasion.monster.location === region) {
     const invasionMonster = gameState.invasion.monster;
