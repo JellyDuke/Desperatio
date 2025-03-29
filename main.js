@@ -739,7 +739,7 @@ function updateKingdomStatus(data) {
   if (anxietyElem) {
     anxietyElem.textContent = (data.citizenanxiety ?? 0).toLocaleString();
   }
-  console(anxietyElem, (data.citizenanxiety ?? 0).toLocaleString());
+  console.log(anxietyElem, (data.citizenanxiety ?? 0).toLocaleString());
   const soldierElem = document.querySelector('.soldiercount');
   if (soldierElem) {
     soldierElem.textContent = (data.soldiercount ?? 0).toLocaleString();
