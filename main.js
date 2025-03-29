@@ -1525,7 +1525,7 @@ function updateCombatList(region) {
     
     container.appendChild(clone);
   });
-  console.log("updateCombatList 호출, region =", region);
+  
    // 침공 몬스터 체크: 플레이어의 위치와 침공 몬스터의 location이 일치하면 추가
    if (gameState.invasion && gameState.invasion.monster && gameState.invasion.monster.location === region) {
     const invasionMonster = gameState.invasion.monster;
