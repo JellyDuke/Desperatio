@@ -984,7 +984,7 @@ function checkMonsterInvasion() {
     const kingdomMsgElem = document.querySelector('.kingdom-message-news');
     if (kingdomMsgElem) {
       const invasionMsg = document.createElement('div');
-      invasionMsg.textContent = `몬스터 침공 발생! ${invasionMonster.name}가 ${invasionMonster.location}에 나타났습니다.`;
+      invasionMsg.textContent = `몬스터 침공 발생! ${invasionMonster.name}가(이) ${invasionMonster.location}에 나타났습니다.`;
       invasionMsg.style.color = "red";
       kingdomMsgElem.appendChild(invasionMsg);
       scrollToBottom(kingdomMsgElem);
@@ -1525,7 +1525,7 @@ function updateCombatList(region) {
     
     container.appendChild(clone);
   });
-  
+
    // 침공 몬스터 체크: 플레이어의 위치와 침공 몬스터의 location이 일치하면 추가
    if (gameState.invasion && gameState.invasion.monster && gameState.invasion.monster.location === region) {
     const invasionMonster = gameState.invasion.monster;
