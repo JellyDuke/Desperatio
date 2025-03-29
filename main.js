@@ -368,6 +368,10 @@ const gameState = {
     month: 4,
     day: 12
   },
+  invasion: {
+    monster: null,       // 침공 몬스터 객체 저장
+    lastCheckDate: ""    // 마지막 침공 체크 날짜
+  },
   // 게임 진행 상황 및 이벤트 기록
   progress: {
     currentCycle: 1,
