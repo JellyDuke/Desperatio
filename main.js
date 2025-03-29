@@ -719,27 +719,27 @@ function updateKingdomStatus(data) {
     data.status = "위기";
   }
 
-// 위기 메시지가 이미 출력되었는지 여부를 저장할 플래그를 gameState.kingdom에 추가합니다.
-gameState.kingdom.crisisMessageShown = gameState.kingdom.crisisMessageShown || false;
+  // 위기 메시지가 이미 출력되었는지 여부를 저장할 플래그를 gameState.kingdom에 추가합니다.
+  gameState.kingdom.crisisMessageShown = gameState.kingdom.crisisMessageShown || false;
 
-if (data.status === "위기") {
-  // 위기 상태인데, 아직 메시지가 출력되지 않았다면
-  if (!gameState.kingdom.crisisMessageShown) {
-    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
-    if (kingdomMsgElem) {
-      const crisisMsg = document.createElement('div');
-      crisisMsg.textContent = "위기: 왕국이 심각한 위기에 처해 있습니다!";
-      crisisMsg.style.color = "red";
-      kingdomMsgElem.appendChild(crisisMsg);
-      scrollToBottom(kingdomMsgElem);
+  if (data.status === "위기") {
+    // 위기 상태인데, 아직 메시지가 출력되지 않았다면
+    if (!gameState.kingdom.crisisMessageShown) {
+      const kingdomMsgElem = document.querySelector('.kingdom-message-news');
+      if (kingdomMsgElem) {
+        const crisisMsg = document.createElement('div');
+        crisisMsg.textContent = "위기: 왕국이 심각한 위기에 처해 있습니다!";
+        crisisMsg.style.color = "red";
+        kingdomMsgElem.appendChild(crisisMsg);
+        scrollToBottom(kingdomMsgElem);
+      }
+      // 메시지 출력 후 플래그를 true로 설정
+      gameState.kingdom.crisisMessageShown = true;
     }
-    // 메시지 출력 후 플래그를 true로 설정
-    gameState.kingdom.crisisMessageShown = true;
+  } else {
+    // 위기가 아닐 때는 플래그를 리셋해 다음 번 위기 발생 시 메시지가 출력되도록 함
+    gameState.kingdom.crisisMessageShown = false;
   }
-} else {
-  // 위기가 아닐 때는 플래그를 리셋해 다음 번 위기 발생 시 메시지가 출력되도록 함
-  gameState.kingdom.crisisMessageShown = false;
-}
 
   // HTML 요소 업데이트
   const statusElem = document.querySelector('.status');
