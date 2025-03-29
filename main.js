@@ -657,6 +657,7 @@ function resetGameExceptSkills() {
   updateUserClass();
   startGameDateTimer();
   updateLocationMoveUI();
+  loadGameState();
   saveGameState();
 }
 
@@ -3833,6 +3834,14 @@ setInterval(updateGameDate, 1000);
 // 저장 함수
 function saveGameState() {
   localStorage.setItem('gameState', JSON.stringify(gameState));
+}
+
+function loadGameState() {
+  const saved = localStorage.getItem("gameState");
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    Object.assign(gameState, parsed);
+  }
 }
 
 //회복로직
