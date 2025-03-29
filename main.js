@@ -1001,6 +1001,7 @@ function checkSoldierIntervention() {
     const loss = Math.floor(Math.random() * (5 - 2 + 1)) + 20;
     gameState.kingdom.soldiercount = Math.max(0, gameState.kingdom.soldiercount - loss);
     
+    console.log("선택된 침공 몬스터:", invasionMonster);
     // 침공 몬스터 제거
     delete gameState.invasion.monster;
     
@@ -1014,7 +1015,7 @@ function checkSoldierIntervention() {
       scrollToBottom(kingdomMsgElem);
     }
   }
-  console.log("선택된 침공 몬스터:", invasionMonster);
+ 
 }
 
 // 3. 플레이어가 직접 침공 몬스터를 처치했을 때 호출하는 함수 (예: 전투 승리 후)
