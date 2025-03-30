@@ -1346,11 +1346,6 @@ function getMonstersForLocation(location) {
   }
   return [];
 }
-function triggerInvasionEvent() {
-  // 침공 이벤트가 발생한 시점에 바로 updateCombatList 호출해서 UI 갱신
-  updateCombatList(gameState.player.location);
-  console.log("침공 이벤트 발생 -> UI 강제 갱신:",gameState.player.location);
-}
 
 function updateCombatList(region) {
   const container = document.querySelector('.card-list');
@@ -1514,11 +1509,6 @@ function completeMovement(destination, msgContainer) {
 
   updateLocationMoveUI();
   saveGameState();
-
-  if (gameState.invasion && gameState.invasion.monster &&
-      gameState.invasion.monster.location.trim() === destination.trim()) {
-    triggerInvasionEvent();
-  }
 }
 
 
