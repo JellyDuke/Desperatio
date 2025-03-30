@@ -949,48 +949,41 @@ function dailyResourceChange() {
 
 // 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
 function checkMonsterInvasion() {
-  // 30일 미만이면 침공 없음
   if (lastMinutes < 30) return;
-
-  const invasionChance = 1.0; // 현재 100% 확률
+  const invasionChance = 1.0;
   if (Math.random() >= invasionChance) return;
 
-  // monsterData에서 무작위 몬스터 선택
   const monsterKeys = Object.keys(monsterData);
   const randomKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
 
-  // "왕도" 그룹 내의 지역 목록에서 무작위로 선택
   const capitalRegions = Object.keys(regionMonsters["왕도"]);
   const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
 
-  // 침공 이벤트 시 저장할 핵심 정보만 준비
+  // 침공 정보는 gameState.invasion에 핵심 값만 저장
   gameState.invasion = {
-    monsterKey: randomKey,          // 몬스터 식별을 위한 키
-    region: randomRegion,           // 침공이 발생한 지역
+    monsterKey: randomKey,          // 몬스터 식별용
+    region: randomRegion,
     lastCheckDate: getCurrentDateKey()
   };
 
-  // UI용으로 바로 사용하기 위해 침공 몬스터 객체를 생성 (이 객체는 게임 상태 저장에는 사용하지 않음)
-  const selectedMonster = Object.assign({}, monsterData[randomKey], {
+  // UI에 바로 사용할 객체 (런타임 전용)
+  const selectedMonster = {
+    ...monsterData[randomKey],
     isInvasion: true,
     key: randomKey,
     location: randomRegion
-  });
-  // 이 객체는 런타임에서 UI에 바로 사용하기 위해 gameState.invasion.monster로도 임시 저장해둘 수 있음.
+  };
   gameState.invasion.monster = selectedMonster;
 
-  // 지역 몬스터 DB에도 등록 (지역 데이터도 저장할 예정이라면 나중에 복원)
-  if (!regionMonsters["왕도"][randomRegion].includes(randomKey)) {
-    regionMonsters["왕도"][randomRegion].push(randomKey);
-  }
+  // (지역 몬스터 등록은 생략해도 됨)
 
-  // 자원 3% 감소
+  // 자원 3% 감소 처리
   Object.keys(gameState.kingdom.resources).forEach(res => {
     const current = gameState.kingdom.resources[res];
     gameState.kingdom.resources[res] = Math.max(0, current - Math.floor(current * 0.03));
   });
 
-  // 침공 메시지 출력
+  // UI 메시지 출력
   const news = document.querySelector('.kingdom-message-news');
   if (news) {
     const msg = document.createElement('div');
@@ -1000,7 +993,6 @@ function checkMonsterInvasion() {
     scrollToBottom(news);
   }
 
-  // 저장
   saveGameState();
 }
 
@@ -1539,42 +1531,37 @@ function updateCombatList(region) {
     container.appendChild(clone);
   });
 
+  // 침공 몬스터 출력
   if (gameState.invasion && gameState.invasion.monster) {
-    const invasionMonster = gameState.invasion.monster;
-    console.log("침공 몬스터 존재:", invasionMonster);
-    console.log("침공 몬스터의 location:", invasionMonster.location);
-    console.log("전달된 region:", region);
-    if (invasionMonster.location.trim() === region.trim()) {
+    const invasion = gameState.invasion.monster;
+    if (invasion.location.trim() === region.trim()) {
       const invasionCard = document.createElement('div');
-      console.log("침공 몬스터의 위치:", invasionMonster.location, "현재 region:", region);
       invasionCard.classList.add('combat-list-wrap-combat');
       invasionCard.style.display = "flex";
-      
+
       const nameElem = document.createElement('div');
       nameElem.classList.add('monster-name');
-      nameElem.textContent = invasionMonster.name + " (침공)";
+      nameElem.textContent = invasion.name + " (침공)";
       invasionCard.appendChild(nameElem);
-      
-      // 전투 버튼 생성
+
       const combatBtn = document.createElement('button');
       combatBtn.classList.add('combat-btn');
       combatBtn.textContent = '전투';
-      combatBtn.addEventListener('click', (e) => {
+      combatBtn.addEventListener('click', e => {
         e.preventDefault();
         if (combatInProgress) return;
         combatInProgress = true;
-        startNarrativeCombat(invasionMonster.key || 'invasion', document.querySelector('.kingdom-message-combat'), () => {
+        startNarrativeCombat(invasion.key, container, () => {
           combatInProgress = false;
-          // 전투 후 침공 몬스터 제거 및 UI 갱신
+          // 전투 후 침공 몬스터 제거
           delete gameState.invasion.monster;
-          saveGameState(); // 저장!
+          saveGameState();
           updateCombatList(region);
         });
       });
       invasionCard.appendChild(combatBtn);
-      
       container.appendChild(invasionCard);
-      console.log("침공 몬스터 카드 추가됨");
+      console.log("침공 몬스터 카드 UI 표시됨:", invasion.name);
     }
   }
   console.log("침공 상태:", gameState.invasion);
@@ -3864,19 +3851,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function restoreInvasionMonster() {
-  // 저장된 침공 정보가 있고, monsterKey와 region이 있다면 복원
   if (gameState.invasion && gameState.invasion.monsterKey && gameState.invasion.region) {
     const key = gameState.invasion.monsterKey;
     const region = gameState.invasion.region;
-    const restoredMonster = Object.assign({}, monsterData[key], {
+    const restoredMonster = {
+      ...monsterData[key],
       key: key,
       isInvasion: true,
       location: region
-    });
+    };
     gameState.invasion.monster = restoredMonster;
     console.log("침공 몬스터 복원됨:", restoredMonster);
-  } else {
-    console.log("복원할 침공 정보가 없음");
   }
 }
 
