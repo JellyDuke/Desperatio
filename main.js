@@ -368,10 +368,6 @@ const gameState = {
     month: 4,
     day: 12
   },
-  invasion: {
-    monster: null,       // 침공 몬스터 객체 저장
-    lastCheckDate: ""    // 마지막 침공 체크 날짜
-  },
   // 게임 진행 상황 및 이벤트 기록
   progress: {
     currentCycle: 1,
@@ -488,10 +484,7 @@ function resetGameCompletely() {
     month: 4,
     day: 12
   };
-  gameState.invasion = {
-    monster: null,       // 침공 몬스터 객체 저장
-    lastCheckDate: ""    // 마지막 침공 체크 날짜
-  };
+
   gameState.progress = {
     currentCycle: 1,
     monsterInvasions: [],
@@ -636,10 +629,6 @@ function resetGameExceptSkills() {
     year: 24,
     month: 4,
     day: 12
-  };
-  gameState.invasion = {
-    monster: null,       // 침공 몬스터 객체 저장 
-    lastCheckDate: ""    // 마지막 침공 체크 날짜
   };
   gameState.progress = {
     currentCycle: 1,
@@ -947,101 +936,6 @@ function dailyResourceChange() {
   saveGameState();
 }
 
-// 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
-function checkMonsterInvasion() {
-  if (lastMinutes < 30) return;
-  const invasionChance = 1.0;
-  if (Math.random() >= invasionChance) return;
-
-  const monsterKeys = Object.keys(monsterData);
-  const randomKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
-
-  const capitalRegions = Object.keys(regionMonsters["왕도"]);
-  const randomRegion = capitalRegions[Math.floor(Math.random() * capitalRegions.length)];
-
-  // 침공 정보는 gameState.invasion에 핵심 값만 저장
-  gameState.invasion = {
-    monsterKey: randomKey,          // 몬스터 식별용
-    region: randomRegion,
-    lastCheckDate: getCurrentDateKey()
-  };
-
-  // UI에 바로 사용할 객체 (런타임 전용)
-  const selectedMonster = {
-    ...monsterData[randomKey],
-    isInvasion: true,
-    key: randomKey,
-    location: randomRegion
-  };
-  gameState.invasion.monster = selectedMonster;
-
-  // (지역 몬스터 등록은 생략해도 됨)
-
-  // 자원 3% 감소 처리
-  Object.keys(gameState.kingdom.resources).forEach(res => {
-    const current = gameState.kingdom.resources[res];
-    gameState.kingdom.resources[res] = Math.max(0, current - Math.floor(current * 0.03));
-  });
-
-  // UI 메시지 출력
-  const news = document.querySelector('.kingdom-message-news');
-  if (news) {
-    const msg = document.createElement('div');
-    msg.textContent = `몬스터 침공 발생! ${selectedMonster.name}가(이) ${randomRegion}에 나타났습니다.`;
-    msg.style.color = "red";
-    news.appendChild(msg);
-    scrollToBottom(news);
-  }
-
-  saveGameState();
-}
-
-
-// 2. 매일 30% 확률로 왕국 병사가 침공 몬스터를 잡아내는 함수
-function checkSoldierIntervention() {
-  if (!gameState.invasion || !gameState.invasion.monster) return;
-  
-  // 로컬 변수로 침공 몬스터를 참조
-  const invasionMonster = gameState.invasion.monster;
-
-  // 30% 확률로 병사 개입
-  if (Math.random() < 0.30) {
-    // 병사가 침공을 막아내면서 2~5 명 정도의 병사 손실
-    const loss = Math.floor(Math.random() * (5 - 2 + 1)) + 20;
-    gameState.kingdom.soldiercount = Math.max(0, gameState.kingdom.soldiercount - loss);
-    
-    console.log("침공 몬스터:", invasionMonster);
-    // 침공 몬스터 제거
-    delete gameState.invasion.monster;
-    
-    // UI 메시지 출력
-    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
-    if (kingdomMsgElem) {
-      const soldierMsg = document.createElement('div');
-      soldierMsg.textContent = `왕국 병사들이 침공을 막아냈습니다! 병사 ${loss}명이 피해를 입었습니다.`;
-      soldierMsg.style.color = "orange";
-      kingdomMsgElem.appendChild(soldierMsg);
-      scrollToBottom(kingdomMsgElem);
-    }
-  }
- 
-}
-
-// 3. 플레이어가 직접 침공 몬스터를 처치했을 때 호출하는 함수 (예: 전투 승리 후)
-function playerDefeatInvasionMonster() {
-  if (gameState.invasion && gameState.invasion.monster) {
-    delete gameState.invasion.monster;
-    
-    const kingdomMsgElem = document.querySelector('.kingdom-message-news');
-    if (kingdomMsgElem) {
-      const playerMsg = document.createElement('div');
-      playerMsg.textContent = `플레이어가 침공 몬스터를 처치했습니다!`;
-      playerMsg.style.color = "green";
-      kingdomMsgElem.appendChild(playerMsg);
-      scrollToBottom(kingdomMsgElem);
-    }
-  }
-}
 
 // 현재 날짜를 문자열로 생성하는 헬퍼 함수 (예: "24-04-15")
 function getCurrentDateKey() {
@@ -1049,25 +943,6 @@ function getCurrentDateKey() {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// 하루에 한 번 침공 여부를 결정하는 함수
-function dailyInvasionCheck() {
-  const currentDateKey = getCurrentDateKey();
-  // 이미 오늘 침공 체크가 완료되었다면 아무 작업도 하지 않음
-  if (gameState.lastInvasionDate === currentDateKey) {
-    return;
-  }
-  
-  // 오늘 침공 체크를 아직 안했다면 날짜 기록 업데이트
-  gameState.lastInvasionDate = currentDateKey;
-  
-  // 게임 시작 후 30일이 지난 경우 침공 여부 체크 (침공 몬스터 생성 및 병사 개입)
-  if (lastMinutes >= 30) {
-    checkMonsterInvasion();
-    checkSoldierIntervention();
-  }
-  triggerInvasionEvent();
-
-}
 /**
  * .popup.my-info 내의 rank, experience, level, militaryLevel, charisma, governance, roundCount
  * 를 현재 gameState 값으로 갱신
@@ -1530,44 +1405,7 @@ function updateCombatList(region) {
     
     container.appendChild(clone);
   });
-
-  // 침공 몬스터 출력
-  if (gameState.invasion && gameState.invasion.monster) {
-    const invasion = gameState.invasion.monster;
-    if (invasion.location.trim() === region.trim()) {
-      const invasionCard = document.createElement('div');
-      invasionCard.classList.add('combat-list-wrap-combat');
-      invasionCard.style.display = "flex";
-
-      const nameElem = document.createElement('div');
-      nameElem.classList.add('monster-name');
-      nameElem.textContent = invasion.name + " (침공)";
-      invasionCard.appendChild(nameElem);
-
-      const combatBtn = document.createElement('button');
-      combatBtn.classList.add('combat-btn');
-      combatBtn.textContent = '전투';
-      combatBtn.addEventListener('click', e => {
-        e.preventDefault();
-        if (combatInProgress) return;
-        combatInProgress = true;
-        startNarrativeCombat(invasion.key, container, () => {
-          combatInProgress = false;
-          // 전투 후 침공 몬스터 제거
-          delete gameState.invasion.monster;
-          saveGameState();
-          updateCombatList(region);
-        });
-      });
-      invasionCard.appendChild(combatBtn);
-      container.appendChild(invasionCard);
-      console.log("침공 몬스터 카드 UI 표시됨:", invasion.name);
-    }
-  }
-  console.log("침공 상태:", gameState.invasion);
 }
-
-console.log("전체 침공 상태:", gameState.invasion); 
 
 document.addEventListener('DOMContentLoaded', function () {
   function closeParentPopup(element) {
@@ -3835,35 +3673,11 @@ function loadGameState() {
   } else {
     console.log("저장된 게임 상태가 없음");
   }
-  
-  // regionMonsters의 경우에도 저장해두었다면 복원 (const 대신 let 또는 내부 업데이트 사용)
-  const savedRegion = localStorage.getItem("regionMonsters");
-  if (savedRegion) {
-    Object.assign(regionMonsters, JSON.parse(savedRegion));
-    console.log("지역 데이터 복원:", regionMonsters);
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadGameState(); 
-  restoreInvasionMonster();
   updateCombatList(gameState.player.location);
 });
-
-function restoreInvasionMonster() {
-  if (gameState.invasion && gameState.invasion.monsterKey && gameState.invasion.region) {
-    const key = gameState.invasion.monsterKey;
-    const region = gameState.invasion.region;
-    const restoredMonster = {
-      ...monsterData[key],
-      key: key,
-      isInvasion: true,
-      location: region
-    };
-    gameState.invasion.monster = restoredMonster;
-    console.log("침공 몬스터 복원됨:", restoredMonster);
-  }
-}
 
 //회복로직
 document.addEventListener('DOMContentLoaded', () => {
