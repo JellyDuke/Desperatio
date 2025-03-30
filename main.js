@@ -947,11 +947,6 @@ function dailyResourceChange() {
   saveGameState();
 }
 
-
-
-// 침공 관련 전역 변수 추가 (게임 상태에 추가)
-gameState.invasion = gameState.invasion || {}; // 침공 상태를 저장할 객체
-
 // 1. 침공 발생 여부를 체크하는 함수 (게임 시작 후 30일 이후부터 작동)
 function checkMonsterInvasion() {
   // 30일 미만이면 침공 없음
