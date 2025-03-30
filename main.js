@@ -810,7 +810,6 @@ function processOfflineProgress() {
     // 매 "일"마다 실행할 로직 호출
     refreshShopItemsForNewDay()
     dailyResourceChange();
-    dailyInvasionCheck();  // 침공 이벤트 체크
     // 기타 매일 처리해야 할 로직 호출...
   }
   
@@ -3631,7 +3630,7 @@ function updateGameDate() {
     dateInfoElem.textContent = `함락 ${newYear}년 ${String(newMonth).padStart(2, '0')}월 ${String(newDay).padStart(2, '0')}일`;
   }
 
-  dailyInvasionCheck();
+
   refreshShopItemsForNewDay();
   initShopItems();
   updateShopInventory();
