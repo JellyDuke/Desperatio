@@ -1,3 +1,107 @@
+ // Firebase 초기화 및 필요한 모듈 가져오기
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+ import {
+   getFirestore,
+   doc,
+   setDoc,
+   getDoc
+ } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+ import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+ // Firebase 설정
+ const firebaseConfig = {
+   apiKey: "AIzaSyC2SSTwR74MNggXve5_lTrzYgd9lVe2A1E",
+   authDomain: "game-1a6bb.firebaseapp.com",
+   projectId: "game-1a6bb",
+   storageBucket: "game-1a6bb.appspot.com",
+   messagingSenderId: "131774298629",
+   appId: "1:131774298629:web:1e39f2b854bc258202ba6c"
+ };
+
+ // Firebase 앱 초기화
+ const app = initializeApp(firebaseConfig);
+ const db = getFirestore(app);
+ const auth = getAuth(app);
+
+ // localStorage에서 방 ID와 사용자 UID 읽어오기
+ const roomId = localStorage.getItem("roomId");
+ const uid = localStorage.getItem("uid");
+
+ if (!roomId || !uid) {
+   console.error("필요한 정보가 부족합니다.");
+   // 필요에 따라 대기실로 리디렉션하는 코드 추가
+   // location.href = "/wallgame/robby";
+   throw new Error("roomId 또는 uid가 없음");
+ }
+
+ // 게임에서 사용할 플레이어의 초기 상태 객체 (실제 값으로 대체)
+ const playerState = {
+   x: 100,            // 예시 값 (게임 로직에 따라 player.x)
+   y: 200,            // 예시 값 (게임 로직에 따라 player.y)
+   direction: "down", // 예시 값 (예: "down", "up", "left", "right")
+   frameIndex: 0      // 예시 값 (애니메이션 프레임 인덱스)
+ };
+
+ /**
+  * Firebase에 플레이어 초기 상태 등록 함수
+  * @param {string} roomId - 방 ID
+  * @param {string} uid - 사용자 UID
+  * @param {object} playerState - 플레이어 상태 객체 (x, y, direction, frameIndex 등)
+  */
+ async function initFirebaseGame(roomId, uid, playerState) {
+   // 해당 방의 players 컬렉션 아래에 uid 문서 생성/덮어쓰기
+   const playerRef = doc(db, "rooms", roomId, "players", uid);
+   await setDoc(playerRef, {
+     x: playerState.x,
+     y: playerState.y,
+     direction: playerState.direction,
+     frameIndex: playerState.frameIndex,
+     lastUpdate: Date.now()  // 업데이트 시간 기록 (옵션)
+   });
+   console.log(`[Firebase] 플레이어 정보 등록 완료: ${uid}`);
+ }
+
+ /**
+  * Firestore에서 방 데이터를 로드하는 함수
+  * @param {string} roomId - 방 ID
+  * @param {string} uid - 사용자 UID
+  */
+ async function loadGameData(roomId, uid) {
+   const roomRef = doc(db, "rooms", roomId);
+   const roomSnap = await getDoc(roomRef);
+   if (roomSnap.exists()) {
+     const roomData = roomSnap.data();
+     console.log("방 정보:", roomData);
+
+     // 내 플레이어 정보 읽기
+     const myPlayerData = roomData.players ? roomData.players[uid] : null;
+     console.log("내 플레이어 정보:", myPlayerData);
+     // 필요한 후속 작업을 여기에 추가 (예: 화면 렌더링, 업데이트 시작 등)
+     return roomData;
+   } else {
+     console.error("해당 방이 존재하지 않습니다.");
+     return null;
+   }
+ }
+
+ // Firebase에 플레이어 데이터 등록 후, 데이터 로드
+ initFirebaseGame(roomId, uid, playerState)
+   .then(() => loadGameData(roomId, uid))
+   .then((data) => {
+     if (data) {
+       console.log("게임 데이터 로드 완료:", data);
+       // 이후 게임 로직에 맞게 데이터를 활용 (예: 실시간 업데이트 리스너 등록 등)
+     }
+   })
+   .catch((error) => {
+     console.error("Firebase 작업 중 오류 발생:", error);
+   });
+
+
+
+
+
+
 // 1. 캔버스와 컨텍스트 가져오기 (HTML에 <canvas id="mapCanvas"> 와 <button id="resetBtn">가 있어야 함)
 const canvas = document.getElementById("mapCanvas");
 const ctx = canvas.getContext("2d");
@@ -26,7 +130,7 @@ const player = {
   x: 0,
   y: 0,
   radius: 8,  // 충돌 검사 등에 사용
-  speed: 1,
+  speed: 0.8,
 };
 
 // 6. 맵 데이터를 기준으로 플레이어를 중앙에 배치
