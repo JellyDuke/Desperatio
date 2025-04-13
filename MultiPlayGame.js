@@ -152,14 +152,24 @@ onAuthStateChanged(auth, (user) => {
   uid = user.uid;
   roomId = localStorage.getItem("roomId");
   if (!roomId || !uid) return;
+
+  // ✅ 최초 1회: 자신의 위치를 등록
+  syncPlayer();
+
+  // ✅ 실시간으로 다른 플레이어들 위치 감지
   onValue(ref(rtdb, `rooms/${roomId}/players`), (snapshot) => {
     const val = snapshot.val();
     if (!val) return;
+
+    // ✅ 갱신 전에 초기화 (떠난 유저 제거 목적)
+    Object.keys(otherPlayers).forEach(key => delete otherPlayers[key]);
+
     for (const [pid, pdata] of Object.entries(val)) {
       if (pid !== uid) otherPlayers[pid] = pdata;
     }
   });
 });
+
 
 Promise.all([playerSprite.decode(), ...Object.values(tileImages).map(img => img.decode())])
   .then(loadMapData)
