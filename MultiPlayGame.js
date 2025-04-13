@@ -78,6 +78,7 @@ let frameIndex = 0;
 let frameTimer = 0;
 let lastTime = performance.now();
 let keys = {};
+let lastSync = 0; // 🔁 Firebase 동기화 간격 조절용
 
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space") e.preventDefault();
@@ -160,6 +161,8 @@ async function updateMyPosition() {
 }
 setInterval(updateMyPosition, 200); // 0.2초 간격으로 위치 업데이트
 
+// 12. 게임 루프: 플레이어 이동 + 애니메이션 업데이트
+
 function update(currentTime) {
   const delta = (currentTime - lastTime) / 1000;
   lastTime = currentTime;
@@ -171,23 +174,44 @@ function update(currentTime) {
   if (keys["d"]) dx += 1;
 
   if (dx !== 0 || dy !== 0) {
-    direction = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up");
+    if (Math.abs(dx) > Math.abs(dy)) {
+      direction = dx > 0 ? "right" : "left";
+    } else {
+      direction = dy > 0 ? "down" : "up";
+    }
+
     frameTimer += delta * 60;
     if (frameTimer >= FRAME_SPEED) {
       frameTimer = 0;
       frameIndex = (frameIndex + 1) % MAX_FRAMES;
     }
+
     const len = Math.hypot(dx, dy);
     dx /= len;
     dy /= len;
     const moveDist = player.speed * delta;
     const nextX = player.x + dx * moveDist;
     const nextY = player.y + dy * moveDist;
+
     if (!isWall(nextX, player.y)) player.x = nextX;
     if (!isWall(player.x, nextY)) player.y = nextY;
   } else {
     frameIndex = 0;
     frameTimer = 0;
+  }
+
+  // ✅ Firestore에 내 위치 동기화 (0.2초마다)
+  if (currentTime - lastSync > 200) {
+    lastSync = currentTime;
+
+    const myRef = doc(db, "rooms", roomId, "players", uid);
+    setDoc(myRef, {
+      x: player.x,
+      y: player.y,
+      direction: direction,
+      frameIndex: frameIndex,
+      lastUpdate: Date.now()
+    }, { merge: true });
   }
 
   draw();
