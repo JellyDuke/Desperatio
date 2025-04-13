@@ -208,7 +208,12 @@ function isWall(x, y) {
 }
 
 // 12. 게임 루프: 플레이어 이동 + 애니메이션 업데이트
-function update() {
+let lastTime = performance.now(); // 이전 프레임 시각 저장
+
+function update(currentTime) {
+  const delta = (currentTime - lastTime) / 1000; // 경과 시간(초)
+  lastTime = currentTime;
+
   let dx = 0, dy = 0;
   if (keys["w"]) dy -= 1;
   if (keys["s"]) dy += 1;
@@ -216,32 +221,33 @@ function update() {
   if (keys["d"]) dx += 1;
 
   if (dx !== 0 || dy !== 0) {
-    // 이동 방향 -> 애니메이션 방향
+    // 방향 판단
     if (Math.abs(dx) > Math.abs(dy)) {
       direction = dx > 0 ? "right" : "left";
     } else {
       direction = dy > 0 ? "down" : "up";
     }
 
-    // 프레임 전환
-    frameTimer++;
+    // 프레임 전환 타이머 (시간 단위로 보정)
+    frameTimer += delta * 60; // delta * 60은 "프레임 기준"과 비슷하게 동작
     if (frameTimer >= FRAME_SPEED) {
       frameTimer = 0;
-      frameIndex = (frameIndex + 1) % MAX_FRAMES; // 0~4 반복
+      frameIndex = (frameIndex + 1) % MAX_FRAMES;
     }
 
-    // 플레이어 이동
+    // 정규화된 방향에 시간 기반 이동 거리 계산
     const len = Math.hypot(dx, dy);
     dx /= len;
     dy /= len;
-    const nextX = player.x + dx * player.speed;
-    const nextY = player.y + dy * player.speed;
+
+    const moveDist = player.speed * delta;
+    const nextX = player.x + dx * moveDist;
+    const nextY = player.y + dy * moveDist;
+
     if (!isWall(nextX, player.y)) player.x = nextX;
     if (!isWall(player.x, nextY)) player.y = nextY;
 
   } else {
-    // 정지 시: 한 프레임(여기서는 0번 or 중간 프레임) 유지
-    // 필요에 따라 원하는 프레임 인덱스를 지정 가능
     frameIndex = 0;
     frameTimer = 0;
   }
@@ -249,6 +255,7 @@ function update() {
   draw();
   requestAnimationFrame(update);
 }
+
 
 // 13. 그리기 함수
 function draw() {
