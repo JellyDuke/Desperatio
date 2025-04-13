@@ -45,9 +45,9 @@ const tileImages = {
   1: new Image(),
   2: new Image()
 };
-tileImages[0].src = "..."; // grass
-tileImages[1].src = "..."; // wall
-tileImages[2].src = "..."; // decoration
+tileImages[0].src = "https://cdn.prod.website-files.com/67c6e0338a6a5dbe54292175/67f28581e22715681416a38f_tile-img.png"; // grass
+tileImages[1].src = "https://cdn.prod.website-files.com/67c6e0338a6a5dbe54292175/67f287564c514c8de81a0ee2_wall.png"; // wall
+tileImages[2].src = "https://cdn.prod.website-files.com/67c6e0338a6a5dbe54292175/67f3af44d3491da525dc42f5_ChatGPT%20Image%202025%EB%85%84%204%EC%9B%94%207%EC%9D%BC%20%EC%98%A4%ED%9B%84%2007_54_38%20(1).png"; // decoration
 
 async function loadMapData() {
   const res = await fetch("https://jellyduke.github.io/Desperatio/mapData.json");
@@ -164,4 +164,3 @@ onAuthStateChanged(auth, (user) => {
 Promise.all([playerSprite.decode(), ...Object.values(tileImages).map(img => img.decode())])
   .then(loadMapData)
   .then(() => requestAnimationFrame(update));
-  
