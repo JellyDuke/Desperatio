@@ -260,54 +260,67 @@ function update(currentTime) {
 // 13. 그리기 함수
 function draw() {
   ctx.clearRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
-  
-  // 맵을 플레이어 중심으로 오프셋
-  // (mapData가 48픽셀 타일이라 가정)
+
   const offsetX = DESIGN_WIDTH / 2 - player.x;
   const offsetY = DESIGN_HEIGHT / 2 - player.y;
 
-  // 맵 타일 그리기
-  // 실제 맵 타일 크기(48 or 16)에 맞게 수정
+  // 🧱 맵 타일 먼저 그림
   for (let r = 0; r < mapData.length; r++) {
     for (let c = 0; c < mapData[r].length; c++) {
       const tile = mapData[r][c];
       const img = tileImages[tile];
       if (img) {
-        ctx.drawImage(img,
-          c * 48 + offsetX, // ★ 여기도 48→16 변경할 수도 있음
-          r * 48 + offsetY,
-          48, 48
-        );
+        ctx.drawImage(img, c * 48 + offsetX, r * 48 + offsetY, 48, 48);
       }
     }
   }
-  
-  // 플레이어 스프라이트 그리기
-  // 5칸(열) × 4칸(행) = 20프레임
-  // 행(0: down, 1: left, 2: right, 3: up),
-  // 열(frameIndex: 0..4)
-  const drawX = DESIGN_WIDTH / 2 - FRAME_WIDTH / 2;
-  const drawY = DESIGN_HEIGHT / 2 - FRAME_HEIGHT / 2;
 
-  let spriteRow;
-  if (direction === "down") {
-    spriteRow = 0;
-  } else if (direction === "left") {
-    spriteRow = 3;
-  } else if (direction === "right") {
-    spriteRow = 2;
-  } else {
-    spriteRow = 1; // up
+  // 👾 다른 플레이어들 렌더링
+  for (const player of Object.values(otherPlayers)) {
+    const drawX = player.x + offsetX - FRAME_WIDTH / 2;
+    const drawY = player.y + offsetY - FRAME_HEIGHT / 2;
+
+    const dirMap = { down: 0, left: 3, right: 2, up: 1 };
+    const spriteRow = dirMap[player.direction] ?? 0;
+    const spriteX = player.frameIndex * FRAME_WIDTH;
+    const spriteY = spriteRow * FRAME_HEIGHT;
+
+    ctx.drawImage(
+      playerSprite,
+      spriteX, spriteY, FRAME_WIDTH, FRAME_HEIGHT,
+      drawX, drawY, FRAME_WIDTH, FRAME_HEIGHT
+    );
   }
-  const spriteX = frameIndex * FRAME_WIDTH;
-  const spriteY = spriteRow * FRAME_HEIGHT;
+
+  // 🙋 내 캐릭터는 항상 가운데
+  const myDrawX = DESIGN_WIDTH / 2 - FRAME_WIDTH / 2;
+  const myDrawY = DESIGN_HEIGHT / 2 - FRAME_HEIGHT / 2;
+
+  const dirMap = { down: 0, left: 3, right: 2, up: 1 };
+  const mySpriteRow = dirMap[direction] ?? 0;
+  const mySpriteX = frameIndex * FRAME_WIDTH;
+  const mySpriteY = mySpriteRow * FRAME_HEIGHT;
 
   ctx.drawImage(
     playerSprite,
-    spriteX, spriteY, FRAME_WIDTH, FRAME_HEIGHT,
-    drawX, drawY, FRAME_WIDTH, FRAME_HEIGHT
+    mySpriteX, mySpriteY, FRAME_WIDTH, FRAME_HEIGHT,
+    myDrawX, myDrawY, FRAME_WIDTH, FRAME_HEIGHT
   );
 }
+
+let otherPlayers = {}; // 다른 플레이어 상태 저장
+
+onSnapshot(currentRoomRef, (snapshot) => {
+  const data = snapshot.data();
+  if (!data || !data.players) return;
+
+  otherPlayers = {};
+
+  for (const [uid, playerInfo] of Object.entries(data.players)) {
+    if (uid === currentUser.uid) continue; // 자신은 제외
+    otherPlayers[uid] = playerInfo;
+  }
+});
 
 // 14. scrollToPlayer 함수 (별도 로직 없음)
 function scrollToPlayer() {
