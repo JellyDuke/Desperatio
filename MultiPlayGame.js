@@ -3,7 +3,7 @@
  import {
    getFirestore,
    doc,
-   setDoc,
+   setDoc,  
    getDoc,
    onSnapshot
  } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -311,15 +311,15 @@ function draw() {
 
 let otherPlayers = {}; // 다른 플레이어 상태 저장
 
-onSnapshot(currentRoomRef, (snapshot) => {
+onSnapshot(doc(db, "rooms", roomId), (snapshot) => {
   const data = snapshot.data();
   if (!data || !data.players) return;
 
   otherPlayers = {};
 
-  for (const [uid, playerInfo] of Object.entries(data.players)) {
-    if (uid === currentUser.uid) continue; // 자신은 제외
-    otherPlayers[uid] = playerInfo;
+  for (const [otherUid, playerInfo] of Object.entries(data.players)) {
+    if (otherUid === uid) continue; // 자신은 제외
+    otherPlayers[otherUid] = playerInfo;
   }
 });
 
