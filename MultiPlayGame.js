@@ -14,7 +14,7 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyC2SSTwR74MNggXve5_lTrzYgd9lVe2A1E",
   authDomain: "game-1a6bb.firebaseapp.com",
-  databaseURL: "https://game-1a6bb-default-rtdb.asia-southeast1.firebasedatabase.app",
+  databaseURL: "https://game-1a6bb-default-rtdb.asia-southeast1.firebasedatabase.app", 
   projectId: "game-1a6bb",
   storageBucket: "game-1a6bb.appspot.com",
   messagingSenderId: "131774298629",
@@ -39,6 +39,8 @@ const otherPlayers = {};
 
 const playerSprite = new Image();
 playerSprite.src = "https://cdn.prod.website-files.com/67c6e0338a6a5dbe54292175/67f74eb4c670b8a7a2114bb8_character_base_16x16.png";
+
+console.log("🔄 syncPlayer 호출", { uid, roomId, player });
 
 const tileImages = {
   0: new Image(),
