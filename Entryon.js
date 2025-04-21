@@ -30,7 +30,7 @@ async function loadChart() {
   // ✅ TwelveData 프록시 호출
   const res = await fetch(`https://twelvedata-proxy.vercel.app/api/twelvedata?symbol=${symbol}`);
   const data = await res.json();
-
+  console.log(data);
   // ✅ 기술적 지표 12종
   const indicators = [
     {
