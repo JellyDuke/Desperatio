@@ -98,18 +98,25 @@
     ];
 
     // 4️⃣ Webflow 구조에 결과 삽입
-    const resultBlocks = document.querySelectorAll('.list-i');
+   const resultBlocks = document.querySelectorAll('.list-i');
+
     indicators.forEach((indicator, idx) => {
       const item = resultBlocks[idx];
       if (!item) return;
-
+    
       const 판단 = indicator.signal !== undefined
         ? indicator.판단(indicator.value, indicator.signal)
         : indicator.판단(indicator.value);
-
-      const rightText = item.querySelector('.list-r .w-richtext, .list-r .Text Block, .list-r div');
-      if (rightText) rightText.textContent = 판단;
+    
+      const valueText = isNaN(indicator.value) ? "-" : indicator.value.toFixed(2);
+    
+      // ✅ list-r 안의 Text Block 2개 중 첫 번째 → 수치 / 두 번째 → 판단
+      const textBlocks = item.querySelectorAll('.list-r .w-richtext, .list-r .textblock, .list-r div');
+    
+      if (textBlocks[0]) textBlocks[0].textContent = valueText;
+      if (textBlocks[1]) textBlocks[1].textContent = 판단;
     });
+
   }
 
   // 버튼 클릭/엔터 입력
