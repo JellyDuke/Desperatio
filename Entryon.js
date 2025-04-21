@@ -27,8 +27,8 @@ const input = document.getElementById("symbol-input");
       hide_top_toolbar: false
     });
 
-    // 📡 Finnhub 프록시 호출
-    const res = await fetch(`https://YOUR_VERCEL_URL/api/finnhub?symbol=${symbol}&indicators=rsi,macd,adx`);
+    // 📡 Finnhub 프록시 호출 (🔥 실제 URL로 수정됨)
+    const res = await fetch(`https://api-proxy-drab-one.vercel.app/api/finnhub?symbol=${symbol}&indicators=rsi,macd,adx`);
     const data = await res.json();
     console.log("📦 API 응답:", data);
 
@@ -52,8 +52,9 @@ const input = document.getElementById("symbol-input");
       }
     ];
 
-    // 🧾 결과 표시
+    // 🧾 결과 출력
     const resultBlocks = document.querySelectorAll('.list-i');
+
     indicators.forEach((indicator, idx) => {
       const item = resultBlocks[idx];
       if (!item) return;
@@ -69,6 +70,7 @@ const input = document.getElementById("symbol-input");
     });
   }
 
+  // ✅ 버튼 + 엔터 키 입력 처리
   button.addEventListener("click", loadChart);
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") loadChart();
