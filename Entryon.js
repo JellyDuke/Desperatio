@@ -52,7 +52,7 @@ const input = document.getElementById("symbol-input");
       }
     ];
 
-    // 🧾 결과 출력
+    // 🧾 결과 출력ss
     const resultBlocks = document.querySelectorAll('.list-i');
 
     indicators.forEach((indicator, idx) => {
